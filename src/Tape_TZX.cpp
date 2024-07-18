@@ -434,8 +434,8 @@ void Tape::TZX_Open(string name) {
     
     // Check TZX header signature
     char tzxheader[8];
-    fread(&tzxheader, 8, 1, tape);    
-    if (strcmp(tzxheader,"ZXTape!\x1a") != 0) {
+    fread(&tzxheader, 8, 1, tape);
+    if (strncmp(tzxheader,"ZXTape!\x1a",8) != 0) {
         OSD::osdCenteredMsg(OSD_TAPE_LOAD_ERR, LEVEL_ERROR);
         fclose(tape);
         tape = NULL;
