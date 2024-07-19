@@ -132,8 +132,8 @@ IRAM_ATTR void OSD::click() {
     size_t written;
 
     if (Config::tape_player) return; // Disable interface click on tape player mode
-
-    pwm_audio_set_volume(ESP_VOLUME_MAX);
+    
+        pwm_audio_set_volume(ESP_VOLUME_MAX);
 
     if (Z80Ops::is48)
         pwm_audio_write((uint8_t *) click48, 12, &written,  5 / portTICK_PERIOD_MS);
@@ -503,9 +503,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
             FileUtils::remountSDCardIfNeeded();
 
             if ( FileUtils::SDReady ) {
-                ESPectrum::showMemInfo("Before F2 file dialog");
+//                ESPectrum::showMemInfo("Before F2 file dialog");
                 string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,17);
-                ESPectrum::showMemInfo("After F2 file dialog");
+//                ESPectrum::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     mFile.erase(0, 1);
                     string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
@@ -785,7 +785,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                             FileUtils::remountSDCardIfNeeded();
 
                             if ( FileUtils::SDReady ) {
-                                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, 36, 17);
+                                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, 34, 12);
                                 if (mFile != "") {
                                     mFile.erase(0, 1);
                                     string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
@@ -864,7 +864,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                             if ( FileUtils::SDReady ) {
                                 // menu_curopt = 1;
                                 // Select TAP File
-                                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang], DISK_TAPFILE, 46, 17);
+                                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang], DISK_TAPFILE, 38, 10);
 
                                 FileUtils::remountSDCardIfNeeded();
 
@@ -1016,7 +1016,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
                                     if ( FileUtils::SDReady ) {
                                         menu_saverect = true;
-                                        string mFile = fileDialog(FileUtils::DSK_Path, MENU_DSK_TITLE[Config::lang], DISK_DSKFILE, 46, 12);
+                                        string mFile = fileDialog(FileUtils::DSK_Path, MENU_DSK_TITLE[Config::lang], DISK_DSKFILE, 38, 10);
                                         if (mFile != "") {
                                             mFile.erase(0, 1);
                                             string fname = FileUtils::MountPoint + FileUtils::DSK_Path + mFile;
@@ -2084,7 +2084,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
                                         string tt = MENU_ROM_TITLE[Config::lang];
                                         tt += " (48K)";
-                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 46, 12);
+                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 23, 12);
 
                                         if (mFile != "") {
                                             mFile.erase(0, 1);
@@ -2128,7 +2128,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
                                         string tt = MENU_ROM_TITLE[Config::lang];
                                         tt += " (128K)";
-                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 46, 12);
+                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 23, 12);
 
                                         if (mFile != "") {
                                             mFile.erase(0, 1);
@@ -2660,7 +2660,7 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
         esp_err_t result = esp_partition_read(partition, offset, data, FWBUFFSIZE);
         if (result == ESP_OK) {    
             for (int n=0; n < FWBUFFSIZE; n++) {
-                if (data[n] == magic[sindex]) {
+                if (sindex < sizeof( magic ) && data[n] == magic[sindex]) {
                     sindex++;
                     if (sindex == 8) {
                         rom_off = offset + n - 7;
@@ -2675,7 +2675,7 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
                 } else {
                     sindex = 0;
                 }
-                if (data[n] == magic128[sindex128]) {
+                if (sindex128 < sizeof( magic128 ) && data[n] == magic128[sindex128]) {
                     sindex128++;
                     if (sindex128 == 8) {
                         rom_off_128 = offset + n - 7;

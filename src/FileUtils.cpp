@@ -410,9 +410,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     string fname2 = "";
     string fnameLastSaved = "";
 
-    printf("\nJust after entering dirtofile");
-    ESPectrum::showMemInfo();
-    printf("\n");
+//    printf("\nJust after entering dirtofile");
+//    ESPectrum::showMemInfo();
+//    printf("\n");
 
     // Populate filexts with valid filename extensions
     std::vector<std::string> filexts;
@@ -456,9 +456,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
         eof1 = false;
     }
 
-    printf("\nBefore checking tempdir");
-    ESPectrum::showMemInfo();
-    printf("\n");
+//    printf("\nBefore checking tempdir");
+//    ESPectrum::showMemInfo();
+//    printf("\n");
 
     string tempDir = FileUtils::createTmpDir();
     if ( tempDir == "" ) {
@@ -468,9 +468,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
         return;
     }
   
-    printf("\nAfter checking tempdir");
-    ESPectrum::showMemInfo();
-    printf("\n");
+//    printf("\nAfter checking tempdir");
+//    ESPectrum::showMemInfo();
+//    printf("\n");
 
 
     int bufferSize = item_count > DIR_CACHE_SIZE ? DIR_CACHE_SIZE : item_count;  // Size of buffer to read and sort
@@ -478,9 +478,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
 
     int iterations = 0;
 
-    printf("\nBefore while");
-    ESPectrum::showMemInfo();
-    printf("\n");
+//    printf("\nBefore while");
+//    ESPectrum::showMemInfo();
+//    printf("\n");
 
     while ( !eof2 || ( fin && !feof(fin)) ) {
         fnameLastSaved = "";
@@ -526,9 +526,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
                     
                     if ( bufferSize ) {
 
-                        printf("\nBefore buffer fill -> ");
-                        ESPectrum::showMemInfo();
-                        printf("\n");
+//                        printf("\nBefore buffer fill -> ");
+//                        ESPectrum::showMemInfo();
+//                        printf("\n");
 
                         while ( buffer.size() < bufferSize && (de = readdir(dir)) != nullptr ) {
                             if (de->d_name[0] != '.') {
@@ -544,9 +544,9 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
                         }
 
                         // printf("Buffer size: %d\n",buffer.size());
-                        printf("Before buffer sort -> ");
-                        ESPectrum::showMemInfo();
-                        printf("\n");
+//                        printf("Before buffer sort -> ");
+//                        ESPectrum::showMemInfo();
+//                        printf("\n");
 
                         // Sort buffer loaded with processed directory entries
                         sort(buffer.begin(), buffer.end(), [](const string& a, const string& b) {

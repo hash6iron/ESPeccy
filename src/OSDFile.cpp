@@ -69,41 +69,27 @@ bool OSD::fdSearchRefresh;
 void OSD::restoreBackbufferData(bool force) {
     if ( !SaveRectpos ) return;
     if (menu_saverect || force) {
-//    printf("--- OSD::restoreBackbufferData %d\n", SaveRectpos);
+//        printf("--- OSD::restoreBackbufferData %d\n", SaveRectpos);
 
-        // Restaurar datos del backbuffer utilizando RLE o bloques sin comprimir
-        uint32_t j = VIDEO::SaveRect[SaveRectpos - 1];  // Obtener la dirección de inicio del bloque
+        uint16_t w = VIDEO::SaveRect[--SaveRectpos] >> 16;
+        uint16_t h = VIDEO::SaveRect[SaveRectpos] & 0xffff;
 
-        SaveRectpos = j;
+        uint16_t x = VIDEO::SaveRect[--SaveRectpos] >> 16;
+        uint16_t y = VIDEO::SaveRect[SaveRectpos] & 0xffff;
 
-//        printf("OSD::restoreBackbufferData j=%d\n", j);
+        SaveRectpos -= ( ( ( ( x + w ) >> 2 ) + 1 ) - ( x >> 2 ) ) * h;
 
-        uint16_t x = VIDEO::SaveRect[j] >> 16;
-        uint16_t y = VIDEO::SaveRect[j++] & 0xffff;
-        uint16_t w = VIDEO::SaveRect[j] >> 16;
-        uint16_t h = VIDEO::SaveRect[j++] & 0xffff;
+        uint32_t j = SaveRectpos;
 
-//        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h);
+//        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h );
 
-        uint32_t *backbuffer32 = nullptr;
         for (uint32_t m = y; m < y + h; m++) {
-            backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
-            for (uint32_t x_off = x >> 2; x_off < ((x + w) >> 2) + 1;) {
-                uint32_t run_length = VIDEO::SaveRect[j++];
-                if (run_length & 0x80000000) {  // Bloque comprimido
-                    run_length &= 0x7FFFFFFF;  // Limpiar el bit más alto
-                    uint32_t value = VIDEO::SaveRect[j++];
-                    for (int k = 0; k < run_length; k++) {
-                        backbuffer32[x_off++] = value;
-                    }
-                } else {  // Bloque sin comprimir
-                    for (int k = 0; k < run_length; k++) {
-                        backbuffer32[x_off++] = VIDEO::SaveRect[j++];
-                    }
-                }
+            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
+            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
+                backbuffer32[n] = VIDEO::SaveRect[j++];
             }
         }
-//        printf("OSD::restoreBackbufferData exit %d\n", SaveRectpos);
+//        printf("OSD::restoreBackbufferData exit %d %d\n", SaveRectpos, j);
 //        if ( !force )
         menu_saverect = false;
     }
@@ -113,54 +99,18 @@ void OSD::saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, boo
 
     if ( force || menu_saverect ) {
 //        printf("OSD::saveBackbufferData x=%hd y=%hd w=%hd h=%hd pos=%d\n", x, y, w, h, SaveRectpos);
-        // Guardar datos del backbuffer utilizando RLE o bloques sin comprimir
-        uint32_t start_pos = SaveRectpos;
+
+        for (uint32_t m = y; m < y + h; m++) {
+            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
+            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
+                VIDEO::SaveRect[SaveRectpos++] = backbuffer32[n];
+            }
+        }
 
         VIDEO::SaveRect[SaveRectpos++] = ( x << 16 ) | y;
         VIDEO::SaveRect[SaveRectpos++] = ( w << 16 ) | h;
 
-        for (uint32_t m = y; m < y + h; m++) {
-            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
-            uint32_t n_start = x >> 2;
-            uint32_t current_value = backbuffer32[n_start];
-            bool raw_mode = true;
-            uint32_t count_pos = SaveRectpos;
-            
-            VIDEO::SaveRect[SaveRectpos++] = 1; // Contador a 1
-            VIDEO::SaveRect[SaveRectpos++] = current_value;
-
-            for (uint32_t n = n_start + 1; n < ((x + w) >> 2) + 1; n++) {
-                if (backbuffer32[n] == current_value) {
-                    if ( raw_mode ) {
-                        if ( VIDEO::SaveRect[count_pos] != 1 ) {
-                            // descarto el ultimo
-                            VIDEO::SaveRect[count_pos]--; 
-                        } else {
-                            SaveRectpos--;
-                        }
-                        count_pos = SaveRectpos - 1;
-                        VIDEO::SaveRect[count_pos] = 0x80000001;
-
-                        VIDEO::SaveRect[SaveRectpos++] = current_value;
-                        raw_mode = false;
-                    }
-                    VIDEO::SaveRect[count_pos]++;
-                } else {
-                    current_value = backbuffer32[n];
-                    if ( !raw_mode ) {
-                        count_pos = SaveRectpos++;
-                        VIDEO::SaveRect[count_pos] = 0; // count a 0
-                    }
-                    VIDEO::SaveRect[count_pos]++;
-                    VIDEO::SaveRect[SaveRectpos++] = current_value;
-                    raw_mode = true;
-                }
-            }
-        }
-
-        // Guardar la dirección de inicio del bloque
-        VIDEO::SaveRect[SaveRectpos++] = start_pos;
-//        printf("OSD::saveBackbufferData exit %d sp: %d\n", SaveRectpos, start_pos);
+//        printf("OSD::saveBackbufferData exit %d\n", SaveRectpos);
     }
 }
 
@@ -205,10 +155,15 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
     cols = mfcols;
     mf_rows = mfrows + (Config::aspect_16_9 ? 0 : 1);
 
+    // Adjust begin_row & focus in case of values doesn't fit in current dialog size 
     // printf("Focus: %d, Begin_row: %d, mf_rows: %d\n",(int) FileUtils::fileTypes[ftype].focus,(int) FileUtils::fileTypes[ftype].begin_row,(int) mf_rows);
     if (FileUtils::fileTypes[ftype].focus > mf_rows - 1) {
         FileUtils::fileTypes[ftype].begin_row += FileUtils::fileTypes[ftype].focus - (mf_rows - 1);
         FileUtils::fileTypes[ftype].focus = mf_rows - 1;
+    } else
+    if (FileUtils::fileTypes[ftype].focus + (FileUtils::fileTypes[ftype].begin_row - 2) < mf_rows) {
+        FileUtils::fileTypes[ftype].focus += FileUtils::fileTypes[ftype].begin_row - 2;
+        FileUtils::fileTypes[ftype].begin_row = 2;
     }
 
     // Size
@@ -241,7 +196,7 @@ reset:
 
     while(1) {
 
-        ESPectrum::showMemInfo("file dialog: before checking dir");
+//        ESPectrum::showMemInfo("file dialog: before checking dir");
 
         fdCursorFlash = 0;
 
@@ -319,7 +274,7 @@ reset:
             }
         }
 
-        ESPectrum::showMemInfo("file dialog: after checking dir");
+//        ESPectrum::showMemInfo("file dialog: after checking dir");
 
         // Force reindex (for testing)
         reIndex = ESPectrum::ESPtestvar ? true : reIndex;
@@ -327,14 +282,14 @@ reset:
         // There was no index or hashes are different: reIndex
         if (reIndex) {
 
-            ESPectrum::showMemInfo("file dialog: before reindex");
+//            ESPectrum::showMemInfo("file dialog: before reindex");
 
             if ( dirfile ) {
                 fclose(dirfile);
                 dirfile = nullptr;
             }
 
-#if 1
+#if 0
             multi_heap_info_t info;    
             size_t ram_consumption;
 
@@ -353,7 +308,7 @@ reset:
 
             FileUtils::DirToFile(filedir, ftype, hash, ndirs + elements ); // Prepare filelist
 
-#if 1
+#if 0
             uint32_t time_elapsed = esp_timer_get_time() - time_start;
 
             heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
@@ -385,7 +340,7 @@ reset:
             // Reset position
             FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
 
-            ESPectrum::showMemInfo("file dialog: after reindex");
+//            ESPectrum::showMemInfo("file dialog: after reindex");
 
         }
 
