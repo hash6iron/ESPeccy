@@ -56,7 +56,7 @@ using namespace std;
 #include "Z80_JLS/z80.h"
 #include "Tape.h"
 
-#define MENU_MAX_ROWS 17
+#define MENU_MAX_ROWS 15
 
 // Scroll
 #define UP true
@@ -88,6 +88,13 @@ void OSD::menuPrintRow(uint8_t virtual_row_num, uint8_t line_type) {
     PrintRow(virtual_row_num, line_type, true);
 }
 
+void OSD::statusbarDraw(const string& statusbar) {
+    VIDEO::vga.setCursor(x + 1, y + 1 + (virtual_rows * OSD_FONT_H));
+    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+    VIDEO::vga.print((statusbar + std::string(cols - statusbar.size(), ' ')).c_str());
+}
+
+
 // Draw the complete menu
 void OSD::WindowDraw() {
 
@@ -117,8 +124,130 @@ void OSD::WindowDraw() {
 
 }
 
+int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
+    int idx = menuRealRowFor( focus );
+
+    if (Menukey.vk == fabgl::VK_F2 && begin_row - 1 + focus < real_rows) {
+        click();
+        uint8_t flags = 0;
+
+        string new_name = input(1, focus, "", SLOTNAME_LEN, zxColor(0,0), zxColor(7,0), rowGet(menu, idx), &flags);
+        if ( !( flags & 1 ) ) { // if not canceled
+            char buffer[SLOTNAME_LEN+1] = {0};  // Buffer to store each line, extra char for null-terminator
+            const string catalogPath = FileUtils::MountPoint + DISK_PSNA_DIR + "/" + "catalog";
+
+            FILE *catalogFile = fopen(catalogPath.c_str(), "rb+");
+            if ( !catalogFile ) {
+                FILE *catalogFile = fopen(catalogPath.c_str(), "wb+");
+            }
+            if ( !catalogFile ) {
+                osdCenteredMsg(ERR_FS_EXT_FAIL[Config::lang], LEVEL_WARN, 1000);
+            } else {
+                if ( catalogFile ) {
+                    fseek(catalogFile, 0, SEEK_END);
+                    long catalogSize = ftell( catalogFile );
+
+                    long pos = ( idx - 1 ) * SLOTNAME_LEN;
+
+                    // write missing items if it happen
+                    while ( pos > catalogSize ) {
+                        uint8_t clean_buffer[ SLOTNAME_LEN + 1 ] = { 0 };
+                        if ( ( pos % SLOTNAME_LEN ) != 0 ) {
+                            fwrite( clean_buffer, pos % SLOTNAME_LEN, 1, catalogFile );
+                            catalogSize += pos % SLOTNAME_LEN;
+
+                        } else {
+                            fwrite( clean_buffer, SLOTNAME_LEN, 1, catalogFile );
+                            catalogSize += SLOTNAME_LEN;
+                        }
+                    }
+
+                    if (fseek(catalogFile, pos, SEEK_SET) == 0) {
+                        strcpy( buffer, new_name.c_str());
+                        fwrite( buffer, sizeof(uint8_t), SLOTNAME_LEN, catalogFile);
+
+                        if ( new_name == "" ) {
+                            const string fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/persist" + to_string( idx );
+                            struct stat stat_buf;
+                            int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
+                            if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
+                                new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(idx) + ">";
+                            } else {
+                                new_name = "Snapshot " + to_string(idx);
+                            }
+                        }
+                        menu = rowReplace(menu, idx, new_name);
+                    }
+                }
+                fclose(catalogFile);
+            }
+        }
+
+        last_focus = focus - 1; // force redraw
+        menuRedraw();
+
+        return 0;
+                
+    } else if (Menukey.vk == fabgl::VK_F8) {
+        click();
+
+        const string fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/persist" + to_string( idx );
+
+        struct stat stat_buf;
+        int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
+        if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
+            osdCenteredMsg(OSD_PSNA_NOT_AVAIL, LEVEL_INFO, 1000);
+        } else {
+            string title = MENU_DELETE_SNA[Config::lang];
+            string msg = OSD_DLG_SURE[Config::lang];
+            uint8_t res = msgDialog(title,msg);
+
+            if (res == DLG_YES) {
+                menu_saverect = true;
+
+                remove( ( fname + ".sna" ).c_str() );
+                remove( ( fname + ".esp" ).c_str() );
+
+                string new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(idx) + ">";
+                menu = rowReplace(menu, idx, new_name);
+                last_focus = focus - 1; // force redraw
+                menuRedraw();
+            }
+        }
+        return 0;
+    } else if (Menukey.vk == fabgl::VK_RETURN /*|| Menukey.vk == fabgl::VK_SPACE*/ || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C) {
+        int idx = menuRealRowFor( focus );
+        const string fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/persist" + to_string( idx );
+
+        struct stat stat_buf;
+        int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
+        if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
+            click();
+            osdCenteredMsg(OSD_PSNA_NOT_AVAIL, LEVEL_INFO, 1000);
+            return 0;
+
+        } else {
+            // Persist file exist continue normal process from main menuRun
+            return 1;
+        }
+    }
+        
+    return 1;
+}
+
+int OSD::menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey) {
+    if (Menukey.vk == fabgl::VK_RETURN /*|| Menukey.vk == fabgl::VK_SPACE*/ || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C) {
+        // use continue normal process from main menuRun
+        return 1;
+    }
+
+    return  menuProcessSnapshot(Menukey);
+
+}
+
+
 // Run a new menu
-unsigned short OSD::menuRun(string new_menu) {
+unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
 
     fabgl::VirtualKeyItem Menukey;
 
@@ -160,12 +289,15 @@ unsigned short OSD::menuRun(string new_menu) {
         col_count++;
     }
     // printf("Cols: %d\n",cols);
+
+    if ( statusbar != "" && cols < statusbar.length() ) cols = statusbar.length() + 2;
+
     cols += 8;
     cols = (cols > 28 ? 28 : cols);
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
-    h = (virtual_rows * OSD_FONT_H) + 2;
+    h = ((virtual_rows + (statusbar!=""?1:0) ) * OSD_FONT_H) + 2;
 
     if ( x + cols * OSD_FONT_W > 52 * OSD_FONT_W ) x = ( 52 - cols ) * OSD_FONT_W;
 
@@ -177,6 +309,10 @@ unsigned short OSD::menuRun(string new_menu) {
 
     menuRedraw(); // Draw menu content
 
+    if ( statusbar != "" ) {
+        statusbarDraw(statusbar);
+    }
+
     while (1) {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
@@ -187,6 +323,7 @@ unsigned short OSD::menuRun(string new_menu) {
         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
             if (ESPectrum::readKbd(&Menukey)) {
                 if (!Menukey.down) continue;
+                if ( proc_cb && !proc_cb(Menukey) ) continue;
                 if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
                     if (focus == 1 and begin_row > 1) {
                         menuScroll(DOWN);
@@ -577,8 +714,8 @@ void OSD::tapemenuRedraw(string title, bool force) {
         }
 
         if ( Tape::tapeFileType == TAPE_FTYPE_TAP ) {
-            string options = Config::lang ? " ESP: Selec. | F2: Ren. | F6: Mover | F8: Borrar" : 
-                                            " SPC: Select | F2: Ren. | F6: Move | F8: Delete";
+            string options = Config::lang ? " ESP:Sel F2:Ren F6:Mov F8:Bor":
+                                            " SPC:Sel F2:Ren F6:Mov F8:Del";
             menuAt(-1, 0);
             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
             VIDEO::vga.print((options + std::string(cols - options.size(), ' ')).c_str());
@@ -606,8 +743,14 @@ int OSD::menuTape(string title) {
     Tape::selectedBlocks.clear();
 
     real_rows = Tape::tapeNumBlocks + 1;
-    virtual_rows = (real_rows > 19 ? 19 : real_rows) + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
+    virtual_rows = (real_rows > 14 ? 14 : real_rows) + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
     // begin_row = last_begin_row = last_focus = focus = 1;
+
+
+    // ATENCION: NO ALCANZA LA MEMORIA. PARA LOS DIALOGOS DE CONFIRMACION.
+    // Se necesita recargar una vez que se borra un bloque, porque el tamaño de la ventana puede cambiar
+    if ( menu_level > 0 && virtual_rows > 10 ) virtual_rows = 10;
+
 
     if ( !Tape::tapeNumBlocks ) virtual_rows++;
 
@@ -641,8 +784,8 @@ int OSD::menuTape(string title) {
 //    }
 
     // Columns
-//    cols = 39; // 36 for block info + 2 pre and post space + 1 for scrollbar
-    cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
+    cols = 38; // 35 for block info + 2 pre and post space + 1 for scrollbar
+//    cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
@@ -776,7 +919,10 @@ int OSD::menuTape(string title) {
                         case TapeBlock::Number_array_header:
                         case TapeBlock::Character_array_header:
                         case TapeBlock::Code_header: {
-                            string new_name = input(21, focus, "", 10, zxColor(0,0), zxColor(7,0));
+
+                            string current_name = rtrim_copy(rowGet( menu, menuRealRowFor( focus ) ).substr(18,10));
+
+                            string new_name = input(19, focus, "", 10, zxColor(0,0), zxColor(7,0), current_name);
                             if ( new_name != "" ) {
                                 Tape::renameBlock( begin_row - 2 + focus, new_name );
                             }

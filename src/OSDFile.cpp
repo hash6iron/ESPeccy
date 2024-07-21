@@ -69,7 +69,7 @@ bool OSD::fdSearchRefresh;
 void OSD::restoreBackbufferData(bool force) {
     if ( !SaveRectpos ) return;
     if (menu_saverect || force) {
-//        printf("--- OSD::restoreBackbufferData %d\n", SaveRectpos);
+        printf("--- OSD::restoreBackbufferData %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
 
         uint16_t w = VIDEO::SaveRect[--SaveRectpos] >> 16;
         uint16_t h = VIDEO::SaveRect[SaveRectpos] & 0xffff;
@@ -81,7 +81,7 @@ void OSD::restoreBackbufferData(bool force) {
 
         uint32_t j = SaveRectpos;
 
-//        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h );
+        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h );
 
         for (uint32_t m = y; m < y + h; m++) {
             uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
@@ -89,7 +89,7 @@ void OSD::restoreBackbufferData(bool force) {
                 backbuffer32[n] = VIDEO::SaveRect[j++];
             }
         }
-//        printf("OSD::restoreBackbufferData exit %d %d\n", SaveRectpos, j);
+        printf("OSD::restoreBackbufferData exit %d 0x%x j:%d 0x%x\n", SaveRectpos, SaveRectpos * 4, j, j * 4);
 //        if ( !force )
         menu_saverect = false;
     }
@@ -98,7 +98,7 @@ void OSD::restoreBackbufferData(bool force) {
 void OSD::saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool force) {
 
     if ( force || menu_saverect ) {
-//        printf("OSD::saveBackbufferData x=%hd y=%hd w=%hd h=%hd pos=%d\n", x, y, w, h, SaveRectpos);
+        printf("OSD::saveBackbufferData x=%hd y=%hd w=%hd h=%hd pos=%d 0x%x\n", x, y, w, h, SaveRectpos, SaveRectpos * 4);
 
         for (uint32_t m = y; m < y + h; m++) {
             uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
@@ -110,7 +110,7 @@ void OSD::saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, boo
         VIDEO::SaveRect[SaveRectpos++] = ( x << 16 ) | y;
         VIDEO::SaveRect[SaveRectpos++] = ( w << 16 ) | h;
 
-//        printf("OSD::saveBackbufferData exit %d\n", SaveRectpos);
+        printf("OSD::saveBackbufferData exit %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
     }
 }
 
@@ -578,6 +578,7 @@ reset:
                             string title = MENU_DELETE_CURRENT_FILE[Config::lang];
                             string msg = OSD_DLG_SURE[Config::lang];
                             uint8_t res = msgDialog(title,msg);
+                            menu_saverect = true;
 
                             if (res == DLG_YES) {
                                 if ( FileUtils::getResolvedPath( FileUtils::MountPoint + fdir + filedir ) == FileUtils::getResolvedPath( Tape::tapeSaveName ) ) Tape::tapeEject();
@@ -790,9 +791,9 @@ reset:
                 menuAt(mfrows + (Config::aspect_16_9 ? 0 : 1), 1);
                 VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
                 if ( ftype == DISK_TAPFILE ) { // Dirty hack
-                    VIDEO::vga.print(Config::lang ? "F2: Nuevo | " : "F2: New | " );
+                    VIDEO::vga.print(Config::lang ? "F2:Nuevo " : "F2:New " );
                 }
-                VIDEO::vga.print(Config::lang ? "F3: B\xA3sq. | F8: Borrar" : "F3: Find | F8: Delete" );
+                VIDEO::vga.print(Config::lang ? "F3:B\xA3sq F8:Borr" : "F3:Find F8:Del" );
             }
 
             vTaskDelay(5 / portTICK_PERIOD_MS);

@@ -65,6 +65,9 @@ using namespace std;
 #define DLG_YES 1
 #define DLG_NO 2
 
+
+#define SLOTNAME_LEN 23
+
 // OSD Interface
 class OSD {
 
@@ -106,7 +109,7 @@ public:
     static void menuPrintRow(uint8_t virtual_row_num, uint8_t line_type);
     static void menuRedraw();
     static void WindowDraw();
-    static unsigned short menuRun(string new_menu);
+    static unsigned short menuRun(string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr );
     static unsigned short simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy, uint8_t max_rows, uint8_t max_cols);
     static string fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows);
     static int menuTape(string title);    
@@ -118,6 +121,13 @@ public:
     static void menuAt(short int row, short int col);
     static void menuScrollBar(unsigned short br);
     static void click();
+    static void statusbarDraw(const string& statusbar);
+    
+    // menu callbacks
+    static int menuProcessSnapshot(fabgl::VirtualKeyItem Menukey); 
+    static int menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey); 
+
+
     static uint8_t menu_level;
     static bool menu_saverect;    
     static unsigned short menu_curopt;    
@@ -135,11 +145,12 @@ public:
     static void joyDialog(uint8_t joynum);
     static void pokeDialog();
 
-    static string input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color);
-
+    static string input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", uint8_t *return_flags = nullptr);
+ 
     // Rows
     static unsigned short rowCount(string menu);
     static string rowGet(string menu, unsigned short row_number);
+    static string rowReplace(string menu, unsigned short row, const string& newRowContent);
 
     static void esp_hard_reset();
 

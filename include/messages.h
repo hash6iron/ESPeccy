@@ -211,12 +211,16 @@ static const char *MENU_TAP_TITLE[2] = { MENU_TAP_TITLE_EN,MENU_TAP_TITLE_ES };
 #define MENU_DSK_TITLE_ES "Elija disco"
 static const char *MENU_DSK_TITLE[2] = { MENU_DSK_TITLE_EN,MENU_DSK_TITLE_ES };
 
-#define MENU_DELETE_TAP_BLOCKS_EN "The selected blocks will be deleted"
-#define MENU_DELETE_TAP_BLOCKS_ES "Se borrar\xA0n los bloques seleccionados"
+//#define MENU_DELETE_TAP_BLOCKS_EN "The selected blocks will be deleted"
+//#define MENU_DELETE_TAP_BLOCKS_ES "Se borrar\xA0n los bloques seleccionados"
+#define MENU_DELETE_TAP_BLOCKS_EN "Delete selected" // "blocks" // no hay espacio
+#define MENU_DELETE_TAP_BLOCKS_ES "Borrar bloques" // "seleccionados" // no hay espacio
 static const char *MENU_DELETE_TAP_BLOCKS[2] = { MENU_DELETE_TAP_BLOCKS_EN,MENU_DELETE_TAP_BLOCKS_ES };
 
-#define MENU_DELETE_CURRENT_TAP_BLOCK_EN "The current block will be deleted"
-#define MENU_DELETE_CURRENT_TAP_BLOCK_ES "Se borrar\xA0 el bloque actual"
+//#define MENU_DELETE_CURRENT_TAP_BLOCK_EN "The current block will be deleted"
+//#define MENU_DELETE_CURRENT_TAP_BLOCK_ES "Se borrar\xA0 el bloque actual"
+#define MENU_DELETE_CURRENT_TAP_BLOCK_EN "Delete block"
+#define MENU_DELETE_CURRENT_TAP_BLOCK_ES "Borrar bloque"
 static const char *MENU_DELETE_CURRENT_TAP_BLOCK[2] = { MENU_DELETE_CURRENT_TAP_BLOCK_EN,MENU_DELETE_CURRENT_TAP_BLOCK_ES };
 
 #define OSD_BLOCK_SELECT_ERR_EN "No blocks selected"
@@ -227,13 +231,19 @@ static const char *OSD_BLOCK_SELECT_ERR[2] = { OSD_BLOCK_SELECT_ERR_EN,OSD_BLOCK
 #define OSD_BLOCK_TYPE_ERR_ES "Tipo de bloque inv\xA0lido"
 static const char *OSD_BLOCK_TYPE_ERR[2] = { OSD_BLOCK_TYPE_ERR_EN,OSD_BLOCK_TYPE_ERR_ES };
 
-#define MENU_DELETE_CURRENT_FILE_EN "The current file will be deleted"
-#define MENU_DELETE_CURRENT_FILE_ES "Se borrar\xA0 el archivo actual"
+//#define MENU_DELETE_CURRENT_FILE_EN "The current file will be deleted"
+//#define MENU_DELETE_CURRENT_FILE_ES "Se borrar\xA0 el archivo actual"
+#define MENU_DELETE_CURRENT_FILE_EN "File delete"
+#define MENU_DELETE_CURRENT_FILE_ES "Borrar archivo"
 static const char *MENU_DELETE_CURRENT_FILE[2] = { MENU_DELETE_CURRENT_FILE_EN,MENU_DELETE_CURRENT_FILE_ES };
 
 #define OSD_TAPE_EJECT_EN "Tape ejected"
 #define OSD_TAPE_EJECT_ES "Cinta expulsada"
 static const char *OSD_TAPE_EJECT[2] = { OSD_TAPE_EJECT_EN,OSD_TAPE_EJECT_ES };
+
+#define MENU_DELETE_SNA_EN "Shapshot delete"
+#define MENU_DELETE_SNA_ES "Borrar snapshot"
+static const char *MENU_DELETE_SNA[2] = { MENU_DELETE_SNA_EN,MENU_DELETE_SNA_ES };
 
 #define MENU_SNA_EN \
     "Snapshot menu\n"\
@@ -296,6 +306,7 @@ static const char *MENU_BETADRIVE[2] = { MENU_BETADRIVE_EN,MENU_BETADRIVE_ES };
 	"Machine\t>\n"\
     "Reset\t>\n"\
     "Options\t>\n"\
+    "Update\t>\n"\
     "Help\n"\
     "About\n"
 #define MENU_MAIN_ES \
@@ -305,6 +316,7 @@ static const char *MENU_BETADRIVE[2] = { MENU_BETADRIVE_EN,MENU_BETADRIVE_ES };
     "Modelo\t>\n"\
     "Resetear\t>\n"\
     "Opciones\t>\n"\
+    "Actualizar\t>\n"\
     "Ayuda\n"\
     "Acerca de\n"
 static const char *MENU_MAIN[2] = { MENU_MAIN_EN,MENU_MAIN_ES };
@@ -318,8 +330,7 @@ static const char *MENU_MAIN[2] = { MENU_MAIN_EN,MENU_MAIN_ES };
     "Joystick emulation\t>\n"\
     "Video\t>\n"\
     "Other\t>\n"\
-    "Language\t>\n"\
-	"Update\t>\n"
+    "Language\t>\n"
 #define MENU_OPTIONS_ES \
     "Men\xA3 opciones\n"\
     "Almacenamiento\t>\n"\
@@ -329,8 +340,7 @@ static const char *MENU_MAIN[2] = { MENU_MAIN_EN,MENU_MAIN_ES };
     "Emulaci\xA2n joystick\t>\n"\
     "Video\t>\n"\
     "Otros\t>\n"\
-    "Idioma\t>\n"\
-	"Actualizar\t>\n"
+    "Idioma\t>\n"
 static const char *MENU_OPTIONS[2] = { MENU_OPTIONS_EN,MENU_OPTIONS_ES };
 
 #define MENU_UPDATE_EN \

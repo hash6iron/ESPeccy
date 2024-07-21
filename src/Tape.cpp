@@ -586,7 +586,8 @@ string Tape::tapeBlockReadData(int Blocknum) {
 
     }
 
-    snprintf(buf, sizeof(buf), "%04d %s  %10s           % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
+    // buf offset 20: block name
+    snprintf(buf, sizeof(buf), "%04d %s%10s % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
 
     return buf;
 

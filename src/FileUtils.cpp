@@ -690,6 +690,12 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
 
 }
 
+bool FileUtils::hasExtension(string filename, string extension)
+{
+    return ( getLCaseExt(filename) == toLower(extension) );
+
+}
+
 bool FileUtils::hasSNAextension(string filename)
 {
     return ( getLCaseExt(filename) == "sna" );
