@@ -124,6 +124,58 @@ void OSD::WindowDraw() {
 
 }
 
+static void renameSlot(int slot, string new_name) {
+    char buffer[SLOTNAME_LEN+1] = {0};  // Buffer to store each line, extra char for null-terminator
+    const string catalogPath = FileUtils::MountPoint + DISK_PSNA_DIR + "/" + "catalog";
+
+    FILE *catalogFile = fopen(catalogPath.c_str(), "rb+");
+    if ( !catalogFile ) {
+        catalogFile = fopen(catalogPath.c_str(), "wb+");
+    }
+    if ( !catalogFile ) {
+        OSD::osdCenteredMsg(ERR_FS_EXT_FAIL[Config::lang], LEVEL_WARN, 1000);
+    } else {
+        if ( catalogFile ) {
+            fseek(catalogFile, 0, SEEK_END);
+            long catalogSize = ftell( catalogFile );
+
+            long pos = ( slot - 1 ) * SLOTNAME_LEN;
+
+            // write missing items if it happen
+            while ( pos > catalogSize ) {
+                uint8_t clean_buffer[ SLOTNAME_LEN + 1 ] = { 0 };
+                if ( ( pos % SLOTNAME_LEN ) != 0 ) {
+                    fwrite( clean_buffer, pos % SLOTNAME_LEN, 1, catalogFile );
+                    catalogSize += pos % SLOTNAME_LEN;
+
+                } else {
+                    fwrite( clean_buffer, SLOTNAME_LEN, 1, catalogFile );
+                    catalogSize += SLOTNAME_LEN;
+                }
+            }
+
+            if (fseek(catalogFile, pos, SEEK_SET) == 0) {
+                strcpy( buffer, new_name.c_str());
+                fwrite( buffer, sizeof(uint8_t), SLOTNAME_LEN, catalogFile);
+
+                if ( new_name == "" ) {
+                    const string fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/persist" + to_string( slot );
+                    struct stat stat_buf;
+                    int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
+                    if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
+                        new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(slot) + ">";
+                    } else {
+                        new_name = "Snapshot " + to_string(slot);
+                    }
+                }
+                OSD::menu = OSD::rowReplace(OSD::menu, slot, new_name);
+            }
+        }
+        fclose(catalogFile);
+    }
+
+}
+
 int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
     int idx = menuRealRowFor( focus );
 
@@ -133,54 +185,7 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
 
         string new_name = input(1, focus, "", SLOTNAME_LEN, zxColor(0,0), zxColor(7,0), rowGet(menu, idx), &flags);
         if ( !( flags & 1 ) ) { // if not canceled
-            char buffer[SLOTNAME_LEN+1] = {0};  // Buffer to store each line, extra char for null-terminator
-            const string catalogPath = FileUtils::MountPoint + DISK_PSNA_DIR + "/" + "catalog";
-
-            FILE *catalogFile = fopen(catalogPath.c_str(), "rb+");
-            if ( !catalogFile ) {
-                FILE *catalogFile = fopen(catalogPath.c_str(), "wb+");
-            }
-            if ( !catalogFile ) {
-                osdCenteredMsg(ERR_FS_EXT_FAIL[Config::lang], LEVEL_WARN, 1000);
-            } else {
-                if ( catalogFile ) {
-                    fseek(catalogFile, 0, SEEK_END);
-                    long catalogSize = ftell( catalogFile );
-
-                    long pos = ( idx - 1 ) * SLOTNAME_LEN;
-
-                    // write missing items if it happen
-                    while ( pos > catalogSize ) {
-                        uint8_t clean_buffer[ SLOTNAME_LEN + 1 ] = { 0 };
-                        if ( ( pos % SLOTNAME_LEN ) != 0 ) {
-                            fwrite( clean_buffer, pos % SLOTNAME_LEN, 1, catalogFile );
-                            catalogSize += pos % SLOTNAME_LEN;
-
-                        } else {
-                            fwrite( clean_buffer, SLOTNAME_LEN, 1, catalogFile );
-                            catalogSize += SLOTNAME_LEN;
-                        }
-                    }
-
-                    if (fseek(catalogFile, pos, SEEK_SET) == 0) {
-                        strcpy( buffer, new_name.c_str());
-                        fwrite( buffer, sizeof(uint8_t), SLOTNAME_LEN, catalogFile);
-
-                        if ( new_name == "" ) {
-                            const string fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/persist" + to_string( idx );
-                            struct stat stat_buf;
-                            int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
-                            if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
-                                new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(idx) + ">";
-                            } else {
-                                new_name = "Snapshot " + to_string(idx);
-                            }
-                        }
-                        menu = rowReplace(menu, idx, new_name);
-                    }
-                }
-                fclose(catalogFile);
-            }
+            renameSlot(idx, new_name);
         }
 
         last_focus = focus - 1; // force redraw
@@ -207,6 +212,8 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
 
                 remove( ( fname + ".sna" ).c_str() );
                 remove( ( fname + ".esp" ).c_str() );
+
+                renameSlot(idx, "");
 
                 string new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(idx) + ">";
                 menu = rowReplace(menu, idx, new_name);
@@ -292,7 +299,7 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
 
     if ( statusbar != "" && cols < statusbar.length() ) cols = statusbar.length() + 2;
 
-    cols += 8;
+    cols += 8; // <- Why? (Juanjo)
     cols = (cols > 28 ? 28 : cols);
 
     // Size

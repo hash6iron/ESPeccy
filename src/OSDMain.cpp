@@ -324,6 +324,8 @@ static string getStringPersistCatalog()
     string cat[100] = {""};
     string catalog = "";
 
+    mkdir((FileUtils::MountPoint + DISK_PSNA_DIR).c_str(), 0755);
+
     const string catalogPath = FileUtils::MountPoint + DISK_PSNA_DIR + "/" + "catalog";
     FILE *catalogFile = fopen(catalogPath.c_str(), "rb"); // rb+
 
@@ -534,8 +536,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
             if ( FileUtils::SDReady ) {
                 // Persist Load
                 string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
-
-                uint8_t opt2 = menuRun(menuload, Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del", menuProcessSnapshot);
+                string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
+                statusbar += std::string(24 - statusbar.size(), ' ');
+                uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                 if (opt2) {
                     FileUtils::remountSDCardIfNeeded();
 
@@ -553,8 +556,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
             if ( FileUtils::SDReady ) {
                 string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
-
-                uint8_t opt2 = menuRun(menusave, Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del", menuProcessSnapshotSave);
+                string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
+                statusbar += std::string(24 - statusbar.size(), ' ');
+                uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     FileUtils::remountSDCardIfNeeded();
 
@@ -818,8 +822,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                                 menu_saverect = true;
                                 while (1) {
                                     string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
-
-                                    uint8_t opt2 = menuRun(menuload, Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del", menuProcessSnapshot);
+                                    string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
+                                    statusbar += std::string(24 - statusbar.size(), ' ');
+                                    uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                                     if (opt2) {
                                         if (persistLoad(opt2)) return;
                                         menu_saverect = false;
@@ -837,8 +842,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                                 menu_saverect = true;
                                 while (1) {
                                     string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
-
-                                    uint8_t opt2 = menuRun(menusave, Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del", menuProcessSnapshotSave);
+                                    string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
+                                    statusbar += std::string(24 - statusbar.size(), ' ');
+                                    uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                                     if (opt2) {
                                         if (persistSave(opt2)) return;
                                         menu_saverect = false;
@@ -2181,7 +2187,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                         }
 
                     } else {
-                        menu_curopt = 1;
+                        menu_curopt = 7;
                         break;
                     }
                 }
