@@ -863,7 +863,7 @@ void OSD::fd_Redraw(string title, string fdir, uint8_t ftype) {
         }
 
         if (real_rows > virtual_rows) {        
-            menuScrollBar(FileUtils::fileTypes[ftype].begin_row);
+            menuScrollBar(FileUtils::fileTypes[ftype].begin_row - 1);
         } else {
             for (; row < mf_rows; row++) {
                 VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
