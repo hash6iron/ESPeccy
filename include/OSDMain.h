@@ -152,6 +152,7 @@ public:
     static void joyDialog(uint8_t joynum);
     static void pokeDialog();
 
+    static int VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E);
     static string input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", uint8_t *return_flags = nullptr);
  
     // Rows

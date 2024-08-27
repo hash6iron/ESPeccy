@@ -324,6 +324,7 @@ static const char *MENU_BETADRIVE[2] = { MENU_BETADRIVE_EN,MENU_BETADRIVE_ES };
     "Modelo\t>\n"\
     "Reiniciar\t>\n"\
     "Op\x87\x94" "es\t>\n"\
+    "Atualizar\t>\n"\
     "Ajuda\n"\
     "Sobre\n"
 static const char *MENU_MAIN[3] = { MENU_MAIN_EN,MENU_MAIN_ES,MENU_MAIN_PT };

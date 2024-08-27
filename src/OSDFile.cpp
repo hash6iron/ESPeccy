@@ -418,6 +418,8 @@ reset:
         timeStartScroll = 0;
         timeScroll = 0;
 
+        bool mode_E = false;
+
         fabgl::VirtualKeyItem Menukey;
         while (1) {
 
@@ -456,7 +458,9 @@ reset:
                     // Search first ocurrence of letter if we're not on that letter yet
                     if (((Menukey.vk >= fabgl::VK_a) && (Menukey.vk <= fabgl::VK_Z)) || Menukey.vk == fabgl::VK_SPACE || ((Menukey.vk >= fabgl::VK_0) && (Menukey.vk <= fabgl::VK_9))) {
 
-                        int fsearch;
+                        int fsearch = VirtualKey2ASCII(Menukey, &mode_E);
+
+                        /*
                         if (Menukey.vk==fabgl::VK_SPACE && FileUtils::fileTypes[ftype].fdMode)
                             fsearch = ASCII_SPC;
                         else if (Menukey.vk<=fabgl::VK_9)
@@ -465,12 +469,14 @@ reset:
                             fsearch = Menukey.vk + 75;
                         else if (Menukey.vk<=fabgl::VK_Z)
                             fsearch = Menukey.vk + 17;
+                        */
 
                         if (FileUtils::fileTypes[ftype].fdMode) {
 
-                            if (FileUtils::fileTypes[ftype].fileSearch.length() < MAXSEARCHLEN) {
+                            if (fsearch && FileUtils::fileTypes[ftype].fileSearch.length() < FILENAMELEN /*MAXSEARCHLEN*/) {
                                 FileUtils::fileTypes[ftype].fileSearch += char(fsearch);
                                 fdSearchRefresh = true;
+                                mode_E = false;
                                 click();
                             }
 
@@ -760,14 +766,14 @@ reset:
                     menuAt(mfrows + (Config::aspect_16_9 ? 0 : 1), 1);
                     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
                     VIDEO::vga.print(Config::lang ? "B\xA3sq: " : "Find: ");
-                    VIDEO::vga.print(FileUtils::fileTypes[ftype].fileSearch.c_str());
+                    VIDEO::vga.print( FileUtils::fileTypes[ftype].fileSearch.size() > MAXSEARCHLEN ? FileUtils::fileTypes[ftype].fileSearch.substr( FileUtils::fileTypes[ftype].fileSearch.size() - MAXSEARCHLEN).c_str() : FileUtils::fileTypes[ftype].fileSearch.c_str());
                     if (fdCursorFlash > 63) {
                         VIDEO::vga.setTextColor(zxColor(5, 0), zxColor(7, 1));
                         if (fdCursorFlash == 128) fdCursorFlash = 0;
                     }
                     VIDEO::vga.print("L");
                     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                    VIDEO::vga.print(std::string(MAXSEARCHLEN - FileUtils::fileTypes[ftype].fileSearch.size(), ' ').c_str());
+                    VIDEO::vga.print(std::string(FileUtils::fileTypes[ftype].fileSearch.size() > MAXSEARCHLEN ? MAXSEARCHLEN : MAXSEARCHLEN - FileUtils::fileTypes[ftype].fileSearch.size(), ' ').c_str());
                 }
 
                 if (fdSearchRefresh) {
@@ -785,8 +791,8 @@ reset:
                         fgets(buf, sizeof(buf), dirfile);
                         if (feof(dirfile)) break;
                         if (buf[0] == ASCII_SPC) {
-                                foundcount++;
-                                // printf("%s",buf);
+                            foundcount++;
+                            // printf("%s",buf);
                         }else {
                             char *p = buf; while(*p) *p++ = toupper(*p);
                             char *pch = strstr(buf, search.c_str());

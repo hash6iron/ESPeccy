@@ -1023,7 +1023,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
             if ( FileUtils::SDReady ) {
                 // ESPectrum::showMemInfo("Before F2 file dialog");
-                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,22);
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,16);
                 // ESPectrum::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
@@ -1046,8 +1046,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
             if ( FileUtils::SDReady ) {
                 // Persist Load
                 string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
-                string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
-                statusbar += std::string(24 - statusbar.size(), ' ');
+                string statusbar = ( Config::lang ? " F2 Renombrar | F8 Borrar" : " F2 Rename | F8 Delete" );
+                statusbar += std::string(28 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                 if (opt2) {
                     FileUtils::remountSDCardIfNeeded();
@@ -1066,8 +1066,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
 
             if ( FileUtils::SDReady ) {
                 string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
-                string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
-                statusbar += std::string(24 - statusbar.size(), ' ');
+                string statusbar = ( Config::lang ? " F2 Renombrar | F8 Borrar" : " F2 Rename | F8 Delete" );
+                statusbar += std::string(28 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     FileUtils::remountSDCardIfNeeded();
@@ -1084,7 +1084,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
             FileUtils::remountSDCardIfNeeded();
 
             if ( FileUtils::SDReady ) {
-                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang],DISK_TAPFILE,51,22);
+                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang],DISK_TAPFILE,51,16);
 
                 FileUtils::remountSDCardIfNeeded();
 
@@ -1346,8 +1346,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                                 menu_saverect = true;
                                 while (1) {
                                     string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
-                                    string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
-                                    statusbar += std::string(24 - statusbar.size(), ' ');
+                                    string statusbar = ( Config::lang ? " F2 Renombrar | F8 Borrar" : " F2 Rename | F8 Delete" );
+                                    statusbar += std::string(28 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                                     if (opt2) {
                                         if (persistLoad(opt2)) return;
@@ -1366,8 +1366,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                                 menu_saverect = true;
                                 while (1) {
                                     string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
-                                    string statusbar = ( Config::lang ? " F2:Ren F8:Bor" : " F2:Ren F8:Del" );
-                                    statusbar += std::string(24 - statusbar.size(), ' ');
+                                    string statusbar = ( Config::lang ? " F2 Renombrar | F8 Borrar" : " F2 Rename | F8 Delete" );
+                                    statusbar += std::string(28 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                                     if (opt2) {
                                         if (persistSave(opt2)) return;
@@ -2909,146 +2909,145 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL) {
                                 break;
                             }
                         }
-                    } else if (options_num == 9) {
-                        menu_level = 2;
-                        menu_curopt = 1;
-                        menu_saverect = true;
-                        while (1) {
-                            // Update
-                            string Mnustr = MENU_UPDATE_FW[Config::lang];
-                            uint8_t opt2 = menuRun(Mnustr);
-                            if (opt2) {
-                                // Update
-                                if (opt2 == 1) {
-
-                                    string title = OSD_FIRMW_UPDATE[Config::lang];
-                                    string msg = OSD_DLG_SURE[Config::lang];
-                                    uint8_t res = msgDialog(title,msg);
-
-                                    if (res == DLG_YES) {
-
-                                        // Open firmware file
-                                        FILE *firmware = fopen("/sd/firmware.upg", "rb");
-                                        if (firmware == NULL) {
-                                            osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
-                                        } else {
-                                            esp_err_t res = updateFirmware(firmware);
-                                            fclose(firmware);
-                                            string errMsg = OSD_FIRMW_ERR[Config::lang];
-                                            errMsg += " Code = " + to_string(res);
-                                            osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
-                                        }
-                                    
-                                    }
-
-                                    menu_curopt = 1;
-                                    menu_level = 2;                                       
-                                    menu_saverect = false;
-
-                                } else if (opt2 == 2) {
-
-                                    FileUtils::remountSDCardIfNeeded();
-
-                                    if ( FileUtils::SDReady ) {
-
-                                        menu_saverect = true;
-
-                                        string tt = MENU_ROM_TITLE[Config::lang];
-                                        tt += " (48K)";
-                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 26, 15);
-
-                                        if (mFile != "") {
-                                            mFile.erase(0, 1);
-                                            string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
-
-                                            menu_saverect = false;
-
-                                            string title = OSD_ROM[Config::lang];
-                                            title += " 48K   ";
-                                            string msg = OSD_DLG_SURE[Config::lang];
-                                            uint8_t res = msgDialog(title,msg);
-
-                                            if (res == DLG_YES) {
-
-                                                // Flash custom ROM 48K
-                                                FILE *customrom = fopen(fname.c_str() /*"/sd/48custom.rom"*/, "rb");
-                                                if (customrom == NULL) {
-                                                    osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
-                                                } else {
-                                                    esp_err_t res = updateROM(customrom, 1);
-                                                    fclose(customrom);
-                                                    string errMsg = OSD_ROM_ERR[Config::lang];
-                                                    errMsg += " Code = " + to_string(res);
-                                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
-                                                }
-
-                                            }
-                                        }
-                                    }
-
-                                    menu_curopt = 2;
-                                    menu_level = 2;                                       
-                                    menu_saverect = false;
-
-                                } else if (opt2 == 3) {                                    
-
-                                    FileUtils::remountSDCardIfNeeded();
-
-                                    if ( FileUtils::SDReady ) {
-                                        menu_saverect = true;
-
-                                        string tt = MENU_ROM_TITLE[Config::lang];
-                                        tt += " (128K)";
-                                        string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 46, 12);
-
-                                        if (mFile != "") {
-                                            mFile.erase(0, 1);
-                                            string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
-
-                                            menu_saverect = false;
-
-                                            string title = OSD_ROM[Config::lang];
-                                            title += " 128K  ";
-                                            string msg = OSD_DLG_SURE[Config::lang];
-                                            uint8_t res = msgDialog(title,msg);
-
-                                            if (res == DLG_YES) {
-
-                                                // Flash custom ROM 128K
-                                                FILE *customrom = fopen(fname.c_str() /*"/sd/128custom.rom"*/, "rb");
-                                                if (customrom == NULL) {
-                                                    osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
-                                                } else {
-                                                    esp_err_t res = updateROM(customrom, 2);
-                                                    fclose(customrom);
-                                                    string errMsg = OSD_ROM_ERR[Config::lang];
-                                                    errMsg += " Code = " + to_string(res);
-                                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
-                                                }
-
-                                            }
-                                        }
-                                    }
-
-                                    menu_curopt = 3;
-                                    menu_level = 2;                                       
-                                    menu_saverect = false;
-
-                                }
-
-                            } else {
-                                menu_curopt = 9;
-                                break;
-                            }
-                        }
-
                     } else {
                         menu_curopt = 6;
                         break;
                     }
                 }
+            } else if (opt == 7) {
+                menu_level = 1;
+                menu_curopt = 1;
+                menu_saverect = true;
+                while (1) {
+                    // Update
+                    string Mnustr = MENU_UPDATE_FW[Config::lang];
+                    uint8_t opt2 = menuRun(Mnustr);
+                    if (opt2) {
+                        // Update
+                        if (opt2 == 1) {
+
+                            string title = OSD_FIRMW_UPDATE[Config::lang];
+                            string msg = OSD_DLG_SURE[Config::lang];
+                            uint8_t res = msgDialog(title,msg);
+
+                            if (res == DLG_YES) {
+
+                                // Open firmware file
+                                FILE *firmware = fopen("/sd/firmware.upg", "rb");
+                                if (firmware == NULL) {
+                                    osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
+                                } else {
+                                    esp_err_t res = updateFirmware(firmware);
+                                    fclose(firmware);
+                                    string errMsg = OSD_FIRMW_ERR[Config::lang];
+                                    errMsg += " Code = " + to_string(res);
+                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                }
+                            
+                            }
+
+                            menu_curopt = 1;
+                            menu_level = 1;
+                            menu_saverect = false;
+
+                        } else if (opt2 == 2) {
+
+                            FileUtils::remountSDCardIfNeeded();
+
+                            if ( FileUtils::SDReady ) {
+
+                                menu_saverect = true;
+
+                                string tt = MENU_ROM_TITLE[Config::lang];
+                                tt += " (48K)";
+                                string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 42, 10);
+
+                                if (mFile != "") {
+                                    mFile.erase(0, 1);
+                                    string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+
+                                    menu_saverect = false;
+
+                                    string title = OSD_ROM[Config::lang];
+                                    title += " 48K   ";
+                                    string msg = OSD_DLG_SURE[Config::lang];
+                                    uint8_t res = msgDialog(title,msg);
+
+                                    if (res == DLG_YES) {
+
+                                        // Flash custom ROM 48K
+                                        FILE *customrom = fopen(fname.c_str() /*"/sd/48custom.rom"*/, "rb");
+                                        if (customrom == NULL) {
+                                            osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
+                                        } else {
+                                            esp_err_t res = updateROM(customrom, 1);
+                                            fclose(customrom);
+                                            string errMsg = OSD_ROM_ERR[Config::lang];
+                                            errMsg += " Code = " + to_string(res);
+                                            osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                        }
+
+                                    }
+                                }
+                            }
+
+                            menu_curopt = 2;
+                            menu_level = 1;
+                            menu_saverect = false;
+
+                        } else if (opt2 == 3) {                                    
+
+                            FileUtils::remountSDCardIfNeeded();
+
+                            if ( FileUtils::SDReady ) {
+                                menu_saverect = true;
+
+                                string tt = MENU_ROM_TITLE[Config::lang];
+                                tt += " (128K)";
+                                string mFile = fileDialog( FileUtils::ROM_Path, tt, DISK_ROMFILE, 42, 10);
+
+                                if (mFile != "") {
+                                    mFile.erase(0, 1);
+                                    string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+
+                                    menu_saverect = false;
+
+                                    string title = OSD_ROM[Config::lang];
+                                    title += " 128K  ";
+                                    string msg = OSD_DLG_SURE[Config::lang];
+                                    uint8_t res = msgDialog(title,msg);
+
+                                    if (res == DLG_YES) {
+
+                                        // Flash custom ROM 128K
+                                        FILE *customrom = fopen(fname.c_str() /*"/sd/128custom.rom"*/, "rb");
+                                        if (customrom == NULL) {
+                                            osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
+                                        } else {
+                                            esp_err_t res = updateROM(customrom, 2);
+                                            fclose(customrom);
+                                            string errMsg = OSD_ROM_ERR[Config::lang];
+                                            errMsg += " Code = " + to_string(res);
+                                            osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                        }
+
+                                    }
+                                }
+                            }
+
+                            menu_curopt = 3;
+                            menu_level = 1;
+                            menu_saverect = false;
+
+                        }
+
+                    } else {
+                        menu_curopt = 7;
+                        break;
+                    }
+                }
             }
-            else if (opt == 7) { // Help
+            else if (opt == 8) { // Help
 
                 OSD::drawKbdLayout(ZXKeyb::Exists ? 3 : 2);
 
@@ -5426,6 +5425,117 @@ void OSD::pokeDialog() {
 
 }
 
+int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
+    int ascii = 0;
+    if ( ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) &&
+         ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LSHIFT) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RSHIFT) )
+       ) {
+        *mode_E = !*mode_E;
+    }
+
+    if ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
+        if ( !*mode_E ) {
+            switch (Nextkey.vk) {
+                case fabgl::VK_1        : ascii = '!'; break; /**< Exclamation mark: ! */
+                case fabgl::VK_2        : ascii = '@'; break; /**< At: @ */
+                case fabgl::VK_3        : ascii = '#'; break; /**< Hash: # */
+                case fabgl::VK_4        : ascii = '$'; break; /**< Dollar: $ */
+                case fabgl::VK_5        : ascii = '%'; break; /**< Percent: % */
+                case fabgl::VK_6        : ascii = '&'; break; /**< Ampersand: & */
+                case fabgl::VK_7        : ascii = '\''; break; /**< Quote: ' */
+                case fabgl::VK_8        : ascii = '('; break; /**< Left parenthesis: ( */
+                case fabgl::VK_9        : ascii = ')'; break; /**< Right parenthesis: ) */
+                case fabgl::VK_0        : ascii = '_'; break; /**< Underscore: _ */
+
+                case fabgl::VK_r        :
+                case fabgl::VK_R        : ascii = '<'; break; /**< Less: < */
+
+                case fabgl::VK_t        :
+                case fabgl::VK_T        : ascii = '>'; break; /**< Greater: > */
+
+                case fabgl::VK_o        :
+                case fabgl::VK_O        : ascii = ';'; break; /**< Semicolon: ; */
+
+                case fabgl::VK_p        :
+                case fabgl::VK_P        : ascii = '"'; break; /**< Double quote: " */
+
+                case fabgl::VK_h        :
+                case fabgl::VK_H        : ascii = '^'; break; /**< Caret: ^ */
+
+                case fabgl::VK_j        :
+                case fabgl::VK_J        : ascii = '-'; break; /**< Minus: - */
+
+                case fabgl::VK_k        :
+                case fabgl::VK_K        : ascii = '+'; break; /**< Plus: + */
+
+                case fabgl::VK_l        :
+                case fabgl::VK_L        : ascii = '='; break; /**< Equals: = */
+
+
+                case fabgl::VK_z        :
+                case fabgl::VK_Z        : ascii = ':'; break; /**< Colon: : */
+
+                // que codigo sera la libra???!!!
+//                        case fabgl::VK_x        :
+//                        case fabgl::VK_X        : ascii = 0xc9; break; /**< Pound: £ */
+
+                case fabgl::VK_c        :
+                case fabgl::VK_C        : ascii = '?'; break; /**< Question mark: ? */
+
+                case fabgl::VK_v        :
+                case fabgl::VK_V        : ascii = '/'; break; /**< Slash: / */
+
+                case fabgl::VK_b        :
+                case fabgl::VK_B        : ascii = '*'; break; /**< Asterisk: * */
+
+                case fabgl::VK_n        :
+                case fabgl::VK_N        : ascii = ','; break; /**< Comma: , */
+
+                case fabgl::VK_m        :
+                case fabgl::VK_M        : ascii = '.'; break; /**< Period: . */
+
+            }
+        } else {
+            switch (Nextkey.vk) {
+                case fabgl::VK_a        :
+                case fabgl::VK_A        : ascii = '~'; break; /**< Tilde: ~ */
+
+                case fabgl::VK_s        :
+                case fabgl::VK_S        : ascii = '|'; break; /**< Vertical bar: | */
+
+                case fabgl::VK_d        :
+                case fabgl::VK_D        : ascii = '\\'; break; /**< Backslash: \ */
+
+                case fabgl::VK_f        :
+                case fabgl::VK_F        : ascii = '{'; break; /**< Left brace: { */
+
+                case fabgl::VK_g        :
+                case fabgl::VK_G        : ascii = '}'; break; /**< Right brace: } */
+
+                case fabgl::VK_y        :
+                case fabgl::VK_Y        : ascii = '['; break; /**< Left bracket: [ */
+
+                case fabgl::VK_u        :
+                case fabgl::VK_U        : ascii = ']'; break; /**< Right bracket: ] */
+
+            }
+        }
+    } else {
+        if (Nextkey.vk >= fabgl::VK_0 && Nextkey.vk <= fabgl::VK_9)
+            ascii = Nextkey.vk + 46;
+        else if (Nextkey.vk >= fabgl::VK_a && Nextkey.vk <= fabgl::VK_z)
+            ascii = Nextkey.vk + 75;
+        else if (Nextkey.vk >= fabgl::VK_A && Nextkey.vk <= fabgl::VK_Z)
+            ascii = Nextkey.vk + 17;
+    }
+
+    if ( !ascii && Nextkey.vk == fabgl::VK_SPACE ) {
+        ascii = ASCII_SPC;
+    }
+
+    return ascii;
+}
+
 string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value, uint8_t * flags ) {
 
     int curObject = 0;
@@ -5456,113 +5566,7 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
 
             if(!Nextkey.down) continue;
 
-            int ascii = 0;
-
-            if ( ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) &&
-                 ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LSHIFT) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RSHIFT) )
-               ) {
-                mode_E = !mode_E;
-            }
-
-            if ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
-                if ( !mode_E ) {
-                    switch (Nextkey.vk) {
-                        case fabgl::VK_1        : ascii = '!'; break; /**< Exclamation mark: ! */
-                        case fabgl::VK_2        : ascii = '@'; break; /**< At: @ */
-                        case fabgl::VK_3        : ascii = '#'; break; /**< Hash: # */
-                        case fabgl::VK_4        : ascii = '$'; break; /**< Dollar: $ */
-                        case fabgl::VK_5        : ascii = '%'; break; /**< Percent: % */
-                        case fabgl::VK_6        : ascii = '&'; break; /**< Ampersand: & */
-                        case fabgl::VK_7        : ascii = '\''; break; /**< Quote: ' */
-                        case fabgl::VK_8        : ascii = '('; break; /**< Left parenthesis: ( */
-                        case fabgl::VK_9        : ascii = ')'; break; /**< Right parenthesis: ) */
-                        case fabgl::VK_0        : ascii = '_'; break; /**< Underscore: _ */
-
-                        case fabgl::VK_r        :
-                        case fabgl::VK_R        : ascii = '<'; break; /**< Less: < */
-
-                        case fabgl::VK_t        :
-                        case fabgl::VK_T        : ascii = '>'; break; /**< Greater: > */
-
-                        case fabgl::VK_o        :
-                        case fabgl::VK_O        : ascii = ';'; break; /**< Semicolon: ; */
-
-                        case fabgl::VK_p        :
-                        case fabgl::VK_P        : ascii = '"'; break; /**< Double quote: " */
-
-                        case fabgl::VK_h        :
-                        case fabgl::VK_H        : ascii = '^'; break; /**< Caret: ^ */
-
-                        case fabgl::VK_j        :
-                        case fabgl::VK_J        : ascii = '-'; break; /**< Minus: - */
-
-                        case fabgl::VK_k        :
-                        case fabgl::VK_K        : ascii = '+'; break; /**< Plus: + */
-
-                        case fabgl::VK_l        :
-                        case fabgl::VK_L        : ascii = '='; break; /**< Equals: = */
-
-
-                        case fabgl::VK_z        :
-                        case fabgl::VK_Z        : ascii = ':'; break; /**< Colon: : */
-
-                        // que codigo sera la libra???!!!
-//                        case fabgl::VK_x        :
-//                        case fabgl::VK_X        : ascii = 0xc9; break; /**< Pound: £ */
-
-                        case fabgl::VK_c        :
-                        case fabgl::VK_C        : ascii = '?'; break; /**< Question mark: ? */
-
-                        case fabgl::VK_v        :
-                        case fabgl::VK_V        : ascii = '/'; break; /**< Slash: / */
-
-                        case fabgl::VK_b        :
-                        case fabgl::VK_B        : ascii = '*'; break; /**< Asterisk: * */
-
-                        case fabgl::VK_n        :
-                        case fabgl::VK_N        : ascii = ','; break; /**< Comma: , */
-
-                        case fabgl::VK_m        :
-                        case fabgl::VK_M        : ascii = '.'; break; /**< Period: . */
-
-                    }
-                } else {
-                    switch (Nextkey.vk) {
-                        case fabgl::VK_a        :
-                        case fabgl::VK_A        : ascii = '~'; break; /**< Tilde: ~ */
-
-                        case fabgl::VK_s        :
-                        case fabgl::VK_S        : ascii = '|'; break; /**< Vertical bar: | */
-
-                        case fabgl::VK_d        :
-                        case fabgl::VK_D        : ascii = '\\'; break; /**< Backslash: \ */
-
-                        case fabgl::VK_f        :
-                        case fabgl::VK_F        : ascii = '{'; break; /**< Left brace: { */
-
-                        case fabgl::VK_g        :
-                        case fabgl::VK_G        : ascii = '}'; break; /**< Right brace: } */
-
-                        case fabgl::VK_y        :
-                        case fabgl::VK_Y        : ascii = '['; break; /**< Left bracket: [ */
-
-                        case fabgl::VK_u        :
-                        case fabgl::VK_U        : ascii = ']'; break; /**< Right bracket: ] */
-
-                    }
-                }
-            } else {
-                if (Nextkey.vk >= fabgl::VK_0 && Nextkey.vk <= fabgl::VK_9)
-                    ascii = Nextkey.vk + 46;
-                else if (Nextkey.vk >= fabgl::VK_a && Nextkey.vk <= fabgl::VK_z)
-                    ascii = Nextkey.vk + 75;
-                else if (Nextkey.vk >= fabgl::VK_A && Nextkey.vk <= fabgl::VK_Z)
-                    ascii = Nextkey.vk + 17;
-            }
-
-            if ( !ascii && Nextkey.vk == fabgl::VK_SPACE ) {
-                ascii = ASCII_SPC;
-            }
+            int ascii = VirtualKey2ASCII(Nextkey, &mode_E);
 
             if ( ascii && inputValue.length() < maxSize ) {
                 inputValue += char(ascii);

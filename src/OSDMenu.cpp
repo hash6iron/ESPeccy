@@ -774,13 +774,13 @@ int OSD::menuTape(string title) {
     Tape::selectedBlocks.clear();
 
     real_rows = Tape::tapeNumBlocks + 1;
-    virtual_rows = (real_rows > 14 ? 14 : real_rows) + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
+    virtual_rows = (real_rows > 8 ? 8 : real_rows) + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 ); // previous max real_rows 14
     // begin_row = last_begin_row = last_focus = focus = 1;
 
 
     // ATENCION: NO ALCANZA LA MEMORIA. PARA LOS DIALOGOS DE CONFIRMACION.
     // Se necesita recargar una vez que se borra un bloque, porque el tamaño de la ventana puede cambiar
-    if ( menu_level > 0 && virtual_rows > 10 ) virtual_rows = 10;
+    if ( menu_level > 0 && virtual_rows > 8 ) virtual_rows = 8;
 
 
     if ( !Tape::tapeNumBlocks ) virtual_rows++;
@@ -815,8 +815,8 @@ int OSD::menuTape(string title) {
 //    }
 
     // Columns
-    cols = 38; // 35 for block info + 2 pre and post space + 1 for scrollbar
-//    cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
+//    cols = 39; // 35 for block info + 2 pre and post space + 1 for scrollbar
+    cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
