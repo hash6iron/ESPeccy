@@ -5607,7 +5607,6 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
                 if (CursorFlash == 128) CursorFlash = 0;
             }
             VIDEO::vga.print(mode_E?"E":"L");
-
             VIDEO::vga.setTextColor(ink_color/*zxColor(7, 1)*/, paper_color/*zxColor(5, 0)*/);
             VIDEO::vga.print(string(maxSize - inputValue.size(), ' ').c_str());
         }

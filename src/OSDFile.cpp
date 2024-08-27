@@ -455,10 +455,10 @@ reset:
 
                     if (!Menukey.down) continue;
 
-                    // Search first ocurrence of letter if we're not on that letter yet
-                    if (((Menukey.vk >= fabgl::VK_a) && (Menukey.vk <= fabgl::VK_Z)) || Menukey.vk == fabgl::VK_SPACE || ((Menukey.vk >= fabgl::VK_0) && (Menukey.vk <= fabgl::VK_9))) {
+                    int fsearch = VirtualKey2ASCII(Menukey, &mode_E);
 
-                        int fsearch = VirtualKey2ASCII(Menukey, &mode_E);
+                    // Search first ocurrence of letter if we're not on that letter yet
+                    if ( fsearch /*((Menukey.vk >= fabgl::VK_a) && (Menukey.vk <= fabgl::VK_Z)) || Menukey.vk == fabgl::VK_SPACE || ((Menukey.vk >= fabgl::VK_0) && (Menukey.vk <= fabgl::VK_9))*/) {
 
                         /*
                         if (Menukey.vk==fabgl::VK_SPACE && FileUtils::fileTypes[ftype].fdMode)
@@ -771,7 +771,7 @@ reset:
                         VIDEO::vga.setTextColor(zxColor(5, 0), zxColor(7, 1));
                         if (fdCursorFlash == 128) fdCursorFlash = 0;
                     }
-                    VIDEO::vga.print("L");
+                    VIDEO::vga.print(mode_E?"E":"L");
                     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
                     VIDEO::vga.print(std::string(FileUtils::fileTypes[ftype].fileSearch.size() > MAXSEARCHLEN ? MAXSEARCHLEN : MAXSEARCHLEN - FileUtils::fileTypes[ftype].fileSearch.size(), ' ').c_str());
                 }
