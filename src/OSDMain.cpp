@@ -5525,7 +5525,50 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
         *mode_E = !*mode_E;
     }
 
-    if ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
+    switch (Nextkey.vk) {
+        //case fabgl::VK_GRAVEACCENT:     ascii = '`'; break;     /**< Grave accent: ` */
+        //case fabgl::VK_ACUTEACCENT:     ascii = '´'; break;     /**< Acute accent: ´ */
+        case fabgl::VK_QUOTE:           ascii = '\''; break;    /**< Quote: ' */
+        case fabgl::VK_QUOTEDBL:        ascii = '"'; break;     /**< Double quote: " */
+        case fabgl::VK_EQUALS:          ascii = '='; break;     /**< Equals: = */
+        case fabgl::VK_MINUS:                                   /**< Minus: - */
+        case fabgl::VK_KP_MINUS:        ascii = '-'; break;     /**< Keypad minus: - */
+        case fabgl::VK_PLUS:                                    /**< Plus: + */
+        case fabgl::VK_KP_PLUS:         ascii = '+'; break;     /**< Keypad plus: + */
+        case fabgl::VK_KP_MULTIPLY:                             /**< Keypad multiply: * */
+        case fabgl::VK_ASTERISK:        ascii = '*'; break;     /**< Asterisk: * */
+        case fabgl::VK_BACKSLASH:       ascii = '\\'; break;    /**< Backslash: \ */
+        case fabgl::VK_KP_DIVIDE:                               /**< Keypad divide: / */
+        case fabgl::VK_SLASH:           ascii = '/'; break;     /**< Slash: / */
+        case fabgl::VK_KP_PERIOD:                               /**< Keypad period: . */
+        case fabgl::VK_PERIOD:          ascii = '.'; break;     /**< Period: . */
+        case fabgl::VK_COLON:           ascii = ':'; break;     /**< Colon: : */
+        case fabgl::VK_COMMA:           ascii = ','; break;     /**< Comma: , */
+        case fabgl::VK_SEMICOLON:       ascii = ';'; break;     /**< Semicolon: ; */
+        case fabgl::VK_AMPERSAND:       ascii = '&'; break;     /**< Ampersand: & */
+        case fabgl::VK_VERTICALBAR:     ascii = '|'; break;     /**< Vertical bar: | */
+        case fabgl::VK_HASH:            ascii = '#'; break;     /**< Hash: # */
+        case fabgl::VK_AT:              ascii = '@'; break;     /**< At: @ */
+        case fabgl::VK_CARET:           ascii = '^'; break;     /**< Caret: ^ */
+        case fabgl::VK_DOLLAR:          ascii = '$'; break;     /**< Dollar: $ */
+        // case fabgl::VK_POUND:           ascii = '£'; break;    /**< Pound: £ */
+        case fabgl::VK_PERCENT:         ascii = '%'; break;     /**< Percent: % */
+        case fabgl::VK_EXCLAIM:         ascii = '!'; break;     /**< Exclamation mark: ! */
+        case fabgl::VK_QUESTION:        ascii = '?'; break;     /**< Question mark: ? */
+        case fabgl::VK_LEFTBRACE:       ascii = '{'; break;     /**< Left brace: { */
+        case fabgl::VK_RIGHTBRACE:      ascii = '}'; break;     /**< Right brace: } */
+        case fabgl::VK_LEFTBRACKET:     ascii = '['; break;     /**< Left bracket: [ */
+        case fabgl::VK_RIGHTBRACKET:    ascii = ']'; break;     /**< Right bracket: ] */
+        case fabgl::VK_LEFTPAREN:       ascii = '('; break;     /**< Left parenthesis: ( */
+        case fabgl::VK_RIGHTPAREN:      ascii = ')'; break;     /**< Right parenthesis: ) */
+        case fabgl::VK_LESS:            ascii = '<'; break;     /**< Less: < */
+        case fabgl::VK_GREATER:         ascii = '>'; break;     /**< Greater: > */
+        case fabgl::VK_UNDERSCORE:      ascii = '_'; break;     /**< Underscore: _ */
+        //case fabgl::VK_DEGREE:          ascii = '°'; break;     /**< Degree: ° */
+        case fabgl::VK_TILDE:           ascii = '~'; break;     /**< Tilde: ~ */
+    }
+
+      if ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
         if ( !*mode_E ) {
             switch (Nextkey.vk) {
                 case fabgl::VK_1        : ascii = '!'; break; /**< Exclamation mark: ! */
