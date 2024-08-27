@@ -93,6 +93,8 @@ int ESPectrum::samplesPerFrame;
 bool ESPectrum::AY_emu = false;
 int ESPectrum::Audio_freq;
 unsigned char ESPectrum::audioSampleDivider;
+unsigned char ESPectrum::audioAYDivider;
+unsigned char ESPectrum::audioOverSampleDivider;
 static int audioBitBuf = 0;
 static unsigned char audioBitbufCount = 0;
 QueueHandle_t audioTaskQueue;
@@ -462,15 +464,21 @@ void ESPectrum::setup()
     
     Config::load();
 
-    // printf("---------------------------------\n");
-    // printf("Ram file: %s\n",Config::ram_file.c_str());
-    // printf("Arch: %s\n",Config::arch.c_str());
-    // printf("pref Arch: %s\n",Config::pref_arch.c_str());
-    // printf("romSet: %s\n",Config::romSet.c_str());
-    // printf("romSet48: %s\n",Config::romSet48.c_str());
-    // printf("romSet128: %s\n",Config::romSet128.c_str());        
-    // printf("pref_romSet_48: %s\n",Config::pref_romSet_48.c_str());
-    // printf("pref_romSet_128: %s\n",Config::pref_romSet_128.c_str());        
+    if (Config::StartMsg) Config::save(); // Firmware updated or reflashed: save all config data
+
+    printf("---------------------------------\n");
+    printf("Ram file: %s\n",Config::ram_file.c_str());
+    printf("Arch: %s\n",Config::arch.c_str());
+    printf("pref Arch: %s\n",Config::pref_arch.c_str());
+    printf("romSet: %s\n",Config::romSet.c_str());
+    printf("romSet48: %s\n",Config::romSet48.c_str());
+    printf("romSet128: %s\n",Config::romSet128.c_str());        
+    printf("romSetTK90X: %s\n",Config::romSetTK90X.c_str());
+    printf("romSetTK95: %s\n",Config::romSetTK95.c_str());        
+    printf("pref_romSet_48: %s\n",Config::pref_romSet_48.c_str());
+    printf("pref_romSet_128: %s\n",Config::pref_romSet_128.c_str());        
+    printf("pref_romSet_TK90X: %s\n",Config::pref_romSet_TK90X.c_str());
+    printf("pref_romSet_TK95: %s\n",Config::pref_romSet_TK95.c_str());        
     
     // Set arch if there's no snapshot to load
     if (Config::ram_file == NO_RAM_FILE) {
@@ -494,7 +502,19 @@ void ESPectrum::setup()
                     Config::romSet = Config::pref_romSet_128;
                 else
                     Config::romSet = Config::romSet128;
+            } else if (Config::arch == "TK90X") {
+                if (Config::pref_romSet_TK90X != "Last")
+                    Config::romSet = Config::pref_romSet_TK90X;
+                else
+                    Config::romSet = Config::romSetTK90X;
+            } else if (Config::arch == "TK95") {
+                if (Config::pref_romSet_TK95 != "Last")
+                    Config::romSet = Config::pref_romSet_TK95;
+                else
+                    Config::romSet = Config::romSetTK95;
             } else Config::romSet = "Pentagon";
+
+            printf("Arch: %s, Romset: %s\n",Config::arch.c_str(), Config::romSet.c_str());
 
         }
 
@@ -590,23 +610,6 @@ void ESPectrum::setup()
 
     MemESP::Reset();
 
-    // MemESP::romInUse = 0;
-    // MemESP::bankLatch = 0;
-    // MemESP::videoLatch = 0;
-    // MemESP::romLatch = 0;
-
-    // MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-    // MemESP::ramCurrent[1] = MemESP::ram[5];
-    // MemESP::ramCurrent[2] = MemESP::ram[2];
-    // MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
-
-    // MemESP::ramContended[0] = false;
-    // MemESP::ramContended[1] = Config::arch == "Pentagon" ? false : true;
-    // MemESP::ramContended[2] = false;
-    // MemESP::ramContended[3] = false;
-
-    // MemESP::pagingLock = Config::arch == "48K" ? 1 : 0;
-
     if (Config::slog_on) showMemInfo("RAM Initialized");
     
     //=======================================================================================
@@ -636,18 +639,51 @@ void ESPectrum::setup()
     if (overSamplebuf == NULL) printf("Can't allocate oversamplebuffer\n");
 
     // Set samples per frame and AY_emu flag depending on arch
-    if (Config::arch == "48K") {
+    if (Config::arch == "48K" /*|| Config::arch == "TK90X" || Config::arch == "TK95"*/) {
         samplesPerFrame=ESP_AUDIO_SAMPLES_48; 
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_48;
+        audioAYDivider = ESP_AUDIO_AY_DIV_48;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_48;
         AY_emu = Config::AY48;
         Audio_freq = ESP_AUDIO_FREQ_48;
+    } else if (Config::arch == "TK90X" || Config::arch == "TK95") {
+
+        switch (Config::ALUTK) {
+        case 0:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_48; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_48;
+            audioAYDivider = ESP_AUDIO_AY_DIV_48;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_48;
+            Audio_freq = ESP_AUDIO_FREQ_48;
+            break;
+        case 1:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_TK_50; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_TK_50;
+            audioAYDivider = ESP_AUDIO_AY_DIV_TK_50;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_TK_50;
+            Audio_freq = ESP_AUDIO_FREQ_TK_50;
+            break;
+        case 2:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_TK_60; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_TK_60;
+            audioAYDivider = ESP_AUDIO_AY_DIV_TK_60;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_TK_60;
+            Audio_freq = ESP_AUDIO_FREQ_TK_60;
+        }
+
+        AY_emu = Config::AY48;
+
     } else if (Config::arch == "128K") {
         samplesPerFrame=ESP_AUDIO_SAMPLES_128;
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_128;
+        audioAYDivider = ESP_AUDIO_AY_DIV_128;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_128;
         AY_emu = true;        
         Audio_freq = ESP_AUDIO_FREQ_128;
     } else if (Config::arch == "Pentagon") {
         samplesPerFrame=ESP_AUDIO_SAMPLES_PENTAGON;
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_PENTAGON;
+        audioAYDivider = ESP_AUDIO_AY_DIV_PENTAGON;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_PENTAGON;
         AY_emu = true;        
         Audio_freq = ESP_AUDIO_FREQ_PENTAGON;
@@ -664,8 +700,6 @@ void ESPectrum::setup()
     // Create Audio task
     audioTaskQueue = xQueueCreate(1, sizeof(uint8_t *));
     // Latest parameter = Core. In ESPIF, main task runs on core 0 by default. In Arduino, loop() runs on core 1.
-    // xTaskCreatePinnedToCore(&ESPectrum::audioTask, "audioTask", 1024 /* 1536 */, NULL, configMAX_PRIORITIES - 1, &audioTaskHandle, 1);
-    
     xTaskCreatePinnedToCore(&ESPectrum::audioTask, "audioTask", 2048 /* 1024 /* 1536 */, NULL, configMAX_PRIORITIES - 1, &audioTaskHandle, 1);
 
     // AY Sound
@@ -680,6 +714,13 @@ void ESPectrum::setup()
     Tape::tapeStatus = TAPE_STOPPED;
     Tape::SaveStatus = SAVE_STOPPED;
     Tape::romLoading = false;
+
+    if (Z80Ops::is128) { // Apply pulse length compensation for 128K
+        Tape::tapeCompensation = FACTOR128K;
+    } else if ((Config::arch=="TK90X" || Config::arch == "TK95") && Config::ALUTK > 0) { // Apply pulse length compensation for Microdigital ALU
+        Tape::tapeCompensation = FACTORALUTK;
+    } else
+        Tape::tapeCompensation = 1;
 
     // Init CPU
     Z80::create();
@@ -720,7 +761,7 @@ void ESPectrum::setup()
         FileUtils::fileTypes[DISK_DSKFILE].fdMode = Config::DSK_fdMode;
         FileUtils::fileTypes[DISK_DSKFILE].fileSearch = Config::DSK_fileSearch;
 
-        LoadSnapshot(Config::ram_file,"","");
+        LoadSnapshot(Config::ram_file,"","",0xff);
 
         Config::last_ram_file = Config::ram_file;
         Config::ram_file = NO_RAM_FILE;
@@ -729,9 +770,6 @@ void ESPectrum::setup()
     }
 
     if (Config::slog_on) showMemInfo("Setup finished.");
-
-    // Create loop function as task: it doesn't seem better than calling from main.cpp and increases RAM consumption (4096 bytes for stack).
-    // xTaskCreatePinnedToCore(&ESPectrum::loop, "loopTask", 4096, NULL, 1, &loopTaskHandle, 0);
 
 }
 
@@ -755,9 +793,11 @@ void ESPectrum::reset()
     VIDEO::Reset();
 
     // Reinit disk controller
-    // Betadisk.ShutDown();
-    // Betadisk.Init();
-    Betadisk.EnterIdle();
+    if (Config::DiskCtrl == 1 || Z80Ops::isPentagon) {
+        // Betadisk.ShutDown();
+        // Betadisk.Init();
+        Betadisk.EnterIdle();
+    }
 
     Tape::tapeFileName = "none";
     if (Tape::tape != NULL) {
@@ -769,6 +809,13 @@ void ESPectrum::reset()
     Tape::SaveStatus = SAVE_STOPPED;
     Tape::romLoading = false;
 
+    if (Z80Ops::is128) { // Apply pulse length compensation for 128K
+        Tape::tapeCompensation = FACTOR128K;
+    } else if ((Config::arch=="TK90X" || Config::arch == "TK95") && Config::ALUTK > 0) { // Apply pulse length compensation for Microdigital ALU
+        Tape::tapeCompensation = FACTORALUTK;
+    } else
+        Tape::tapeCompensation = 1;
+
     // Empty audio buffers
     for (int i=0;i<ESP_AUDIO_SAMPLES_PENTAGON;i++) {
         overSamplebuf[i]=0;
@@ -779,18 +826,51 @@ void ESPectrum::reset()
 
     // Set samples per frame and AY_emu flag depending on arch
     int prevAudio_freq = Audio_freq;
-    if (Config::arch == "48K") {
+    if (Config::arch == "48K"/* || Config::arch == "TK90X" || Config::arch == "TK95"*/) {
         samplesPerFrame=ESP_AUDIO_SAMPLES_48; 
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_48;
+        audioAYDivider = ESP_AUDIO_AY_DIV_48;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_48;
         AY_emu = Config::AY48;
         Audio_freq = ESP_AUDIO_FREQ_48;
+    } else if (Config::arch == "TK90X" || Config::arch == "TK95") {
+
+        switch (Config::ALUTK) {
+        case 0:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_48; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_48;
+            audioAYDivider = ESP_AUDIO_AY_DIV_48;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_48;
+            Audio_freq = ESP_AUDIO_FREQ_48;
+            break;
+        case 1:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_TK_50; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_TK_50;
+            audioAYDivider = ESP_AUDIO_AY_DIV_TK_50;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_TK_50;
+            Audio_freq = ESP_AUDIO_FREQ_TK_50;
+            break;
+        case 2:
+            samplesPerFrame=ESP_AUDIO_SAMPLES_TK_60; 
+            audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_TK_60;
+            audioAYDivider = ESP_AUDIO_AY_DIV_TK_60;
+            audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_TK_60;
+            Audio_freq = ESP_AUDIO_FREQ_TK_60;
+        }
+
+        AY_emu = Config::AY48;
+
     } else if (Config::arch == "128K") {
         samplesPerFrame=ESP_AUDIO_SAMPLES_128;
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_128;
+        audioAYDivider = ESP_AUDIO_AY_DIV_128;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_128;
         AY_emu = true;        
         Audio_freq = ESP_AUDIO_FREQ_128;
     } else if (Config::arch == "Pentagon") {
         samplesPerFrame=ESP_AUDIO_SAMPLES_PENTAGON;
+        audioOverSampleDivider = ESP_AUDIO_OVERSAMPLES_DIV_PENTAGON;
+        audioAYDivider = ESP_AUDIO_AY_DIV_PENTAGON;
         audioSampleDivider = ESP_AUDIO_SAMPLES_DIV_PENTAGON;
         AY_emu = true;        
         Audio_freq = ESP_AUDIO_FREQ_PENTAGON;
@@ -984,7 +1064,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                     // printf("Alt + backSpace!\n");
                     // Soft reset
                     if (Config::last_ram_file != NO_RAM_FILE) {
-                        LoadSnapshot(Config::last_ram_file,"","");
+                        LoadSnapshot(Config::last_ram_file,"","",0xff);
                         Config::ram_file = Config::last_ram_file;
                     } else ESPectrum::reset();
                     return;
@@ -1409,7 +1489,10 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                 OSD::do_OSD(fabgl::VK_PAUSE,0);
             } else
             if (!bitRead(ZXKeyb::ZXcols[5],2)) { // I -> Info
-                OSD::do_OSD(fabgl::VK_F1,true);
+                OSD::do_OSD(fabgl::VK_F3,true);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[2],3)) { // R -> Reset to TR-DOS
+                OSD::do_OSD(fabgl::VK_F11,true);
             } else
             if (!bitRead(ZXKeyb::ZXcols[2],4)) { // T -> Turbo
                 OSD::do_OSD(fabgl::VK_F2,true);
@@ -1422,6 +1505,9 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             } else
             if (!bitRead(ZXKeyb::ZXcols[7],3)) { // N -> NMI
                 Z80::triggerNMI();
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[7],3)) { // K -> Help / Kbd layout
+                OSD::do_OSD(fabgl::VK_F1,true);
             } else
             if (!bitRead(ZXKeyb::ZXcols[0],1)) { // Z -> CenterH
                 if (Config::CenterH > -16) Config::CenterH--;
@@ -1544,7 +1630,8 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
 IRAM_ATTR void ESPectrum::BeeperGetSample() {
 
     // Beeper audiobuffer generation (oversample)
-    uint32_t audbufpos = Z80Ops::is128 ? CPU::tstates / 19 : CPU::tstates >> 4;
+    // uint32_t audbufpos = Z80Ops::is128 ? CPU::tstates / 19 : CPU::tstates >> 4;
+    uint32_t audbufpos = CPU::tstates / audioOverSampleDivider;    
     for (;audbufcnt < audbufpos; audbufcnt++) {
         audioBitBuf += lastaudioBit;
         if(++audioBitbufCount == audioSampleDivider) {
@@ -1558,7 +1645,8 @@ IRAM_ATTR void ESPectrum::BeeperGetSample() {
 
 IRAM_ATTR void ESPectrum::AYGetSample() {
     // AY audiobuffer generation (oversample)
-    uint32_t audbufpos = CPU::tstates / (Z80Ops::is128 ? 114 : 112);
+    // uint32_t audbufpos = CPU::tstates / (Z80Ops::is128 ? 114 : 112);
+    uint32_t audbufpos = CPU::tstates / audioAYDivider;
     if (audbufpos > audbufcntAY) {
         AySound::gen_sound(audbufpos - audbufcntAY, audbufcntAY);
         audbufcntAY = audbufpos;
@@ -1721,6 +1809,7 @@ for(;;) {
     }
 
     totalseconds += esp_timer_get_time() - ts_start;
+    // printf("Totalsecond: %f\n",double(esp_timer_get_time() - ts_start));
 
 }
 
