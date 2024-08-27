@@ -52,6 +52,7 @@ visit https://zxespectrum.speccy.org/contacto
 #include "roms/romTK90X_v3PT.h"
 #include "roms/romTK90X_v3EN.h"
 #include "roms/romTK95ES.h"
+#include "roms/romTKcustom.h"
 #include "roms/trdos.h"
 // #include "roms/romCBI95.h"
 

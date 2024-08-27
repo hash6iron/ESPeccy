@@ -56,7 +56,7 @@ using namespace std;
 #include "Z80_JLS/z80.h"
 #include "Tape.h"
 
-#define MENU_MAX_ROWS 15
+#define MENU_MAX_ROWS 13
 
 // Scroll
 #define UP true
@@ -187,7 +187,9 @@ static void renameSlot(int slot, string new_name) {
                     struct stat stat_buf;
                     int status = stat( (fname + ".sna" ).c_str(), &stat_buf);
                     if ( status == -1 || ! ( stat_buf.st_mode & S_IFREG ) ) {
-                        new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(slot) + ">";
+                        new_name =  ( Config::lang == 0 ? "<Free Slot " : 
+                                      Config::lang == 1 ? "<Ranura Libre " :
+                                                          "<Slot Livre ") + to_string(slot) + ">";
                     } else {
                         new_name = "Snapshot " + to_string(slot);
                     }
@@ -239,7 +241,9 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
 
                 renameSlot(idx, "");
 
-                string new_name = (Config::lang ? "<Ranura Libre " : "<Free Slot ") + to_string(idx) + ">";
+                string new_name =  ( Config::lang == 0 ? "<Free Slot " : 
+                                     Config::lang == 1 ? "<Ranura Libre " :
+                                                         "<Slot Livre ") + to_string(idx) + ">";
                 menu = rowReplace(menu, idx, new_name);
                 last_focus = focus - 1; // force redraw
                 menuRedraw();
@@ -284,15 +288,30 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
 
     menu = new_menu;
 
+    // CRT Overscan compensation
+    if (Config::videomode == 2) {
+        x = 18;
+        if (menu_level == 0) {
+            if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
+                y = 4;
+            } else {
+                y = 12;
+            }
+        }
+    } else {
+        x = 0;
+        if (menu_level == 0) y = 0;
+    }
+
     // Position
     if (menu_level == 0) {
-        x = (Config::aspect_16_9 ? 24 : 8);
-        y = 8;
+        x += (Config::aspect_16_9 ? 24 : 8);
+        y += 8;
         prev_y[0] = 0;
     } else {
-        x = (Config::aspect_16_9 ? 24 : 8) + (60 * menu_level);
+        x += (Config::aspect_16_9 ? 24 : 8) + (60 * menu_level);
         if (menu_saverect && !prev_y[menu_level]) {
-            y += (8 + (8 * menu_prevopt));
+            y += (4 + (8 * menu_prevopt));
             prev_y[menu_level] = y;
         } else {
             y = prev_y[menu_level];
@@ -319,18 +338,22 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
         }
         col_count++;
     }
+
     // printf("Cols: %d\n",cols);
 
     if ( statusbar != "" && cols < statusbar.length() ) cols = statusbar.length() + 2;
 
     cols += 8; // <- Why? (Juanjo)
-    cols = (cols > 28 ? 28 : cols);
+    cols = (cols > 31 ? 31 : cols); //    cols = (cols > 28 ? 28 : cols);    
+
+    // printf("Cols final: %d\n",cols);
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
     h = ((virtual_rows + (statusbar!=""?1:0) ) * OSD_FONT_H) + 2;
 
-    if ( x + cols * OSD_FONT_W > 52 * OSD_FONT_W ) x = ( 52 - cols ) * OSD_FONT_W;
+    int rmax = scrW == 320 ? 52 : 55;
+    if ( x + cols * OSD_FONT_W > rmax * OSD_FONT_W ) x = ( rmax - cols ) * OSD_FONT_W;
 
     WindowDraw(); // Draw menu outline
 
@@ -689,7 +712,7 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
     }
 
     if (line.find(ASCII_TAB) != line.npos) {
-        line = line.substr(0,line.find(ASCII_TAB)) + string(cols - margin - line.length(),' ') + line.substr(line.find(ASCII_TAB)+1);
+        line = line.substr(0,line.find(ASCII_TAB)) + string(cols - margin - line.length(),' ') + line.substr(line.find(ASCII_TAB) + 1);
     }
 
     menuAt(virtual_row_num, 0);
@@ -733,7 +756,9 @@ void OSD::tapemenuRedraw(string title, bool force) {
             }
             if ( Tape::tapeFileType == TAPE_FTYPE_TAP && begin_row - 1 + virtual_rows >= real_rows ) menu += "\n";
         } else {
-            menu += ( Config::lang ? "<Vacio>\n" : "<Empty>\n" );
+            menu += Config::lang == 0 ? "<Empty>\n" :
+                    Config::lang == 1 ? "<Vacio>\n" :
+                                        "<Vazio>\n";
         }
 
         for (uint8_t row = 1; row < virtual_rows - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 ); row++) {
@@ -745,8 +770,9 @@ void OSD::tapemenuRedraw(string title, bool force) {
         }
 
         if ( Tape::tapeFileType == TAPE_FTYPE_TAP ) {
-            string options = Config::lang ? " ESP Selec. | F2 Renombrar | F6 Mover | F8 Borrar" : 
-                                            " SPC Select | F2 Rename | F6 Move | F8 Delete";
+            string options = Config::lang == 0 ? " SPC Select | F2 Rename | F6 Move | F8 Delete" :
+                             Config::lang == 1 ? " ESP Selec. | F2 Renombrar | F6 Mover | F8 Borrar" :
+                                                 " ESP Selec. | F2 Renomear | F6 Mover | F8 Excluir";
             menuAt(-1, 0);
             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
             VIDEO::vga.print((options + std::string(cols - options.size(), ' ')).c_str());
@@ -807,8 +833,23 @@ int OSD::menuTape(string title) {
 
     // Position
 //    if (menu_level == 0) {
-        x = (Config::aspect_16_9 ? 24 : 8);
-        y = 8;
+
+    // CRT Overscan compensation
+    if (Config::videomode == 2) {
+        x = 18;
+        if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
+            y = 4;
+        } else {
+            y = 12;
+        }
+    } else {
+        x = 0;
+        y = 0;
+    }
+
+    x += (Config::aspect_16_9 ? 24 : 8);
+    y += 8;
+
 //    } else {
 //        x = (Config::aspect_16_9 ? 24 : 8) + (60 * menu_level);
 //        y = 8 + (16 * menu_level);
