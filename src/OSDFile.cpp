@@ -224,8 +224,8 @@ reset:
                      Config::lang == 1 ? "F2 Nuevo | " : 
                                          "F2 Novo | " ;
 
-    StatusBar += Config::lang == 0 ? "F3 Buscar | F8 Delete" :
-                 Config::lang == 1 ? "F3 Renombrar | F8 Borrar" :
+    StatusBar += Config::lang == 0 ? "F3 Search | F8 Delete" :
+                 Config::lang == 1 ? "F3 Buscar | F8 Borrar" :
                                      "F3 Procurar | F8 Excluir";
 
     if (cols > (StatusBar.length() + 11 + 2)) { // 11 from elements counter + 2 from borders
