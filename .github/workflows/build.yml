@@ -31,16 +31,22 @@ jobs:
     - name: Build ESPectrum firmware
       run: platformio run -e ${{ matrix.env }}
 
+<<<<<<< master
     - name: List build directory
       run: ls -R .pio/build/${{ matrix.env }}
 
+=======
+>>>>>>> master
     - name: Upload ESPectrum firmware artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ESPectrum-firmware-${{ matrix.env }}
         path: |
           .pio/build/${{ matrix.env }}/firmware.bin
+<<<<<<< master
           .pio/build/${{ matrix.env }}/firmware.elf
+=======
+>>>>>>> master
 
   create-release:
     needs: build
@@ -51,6 +57,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+<<<<<<< master
+=======
+    - name: Download Build Artifacts (psram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-psram
+        path: ./firmwares/psram
+
+    - name: Download Build Artifacts (nopsram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-nopsram
+        path: ./firmwares/nopsram
+
+>>>>>>> master
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -66,14 +87,30 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
+<<<<<<< master
         asset_path: .pio/build/psram/firmware.bin
         asset_name: firmware-psram.bin
         asset_content_type: application/octet-stream
+=======
+        asset_path: ./firmwares/psram/firmware.bin
+        asset_name: firmware-psram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> master
 
     - name: Upload Release Assets (nopsram)
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
+<<<<<<< master
         asset_path: .pio/build/nopsram/firmware.bin
         asset_name: firmware-nopsram.bin
         asset_content_type: application/octet-stream
+=======
+        asset_path: ./firmwares/nopsram/firmware.bin
+        asset_name: firmware-nopsram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> master
