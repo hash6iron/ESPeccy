@@ -44,6 +44,8 @@ visit https://zxespectrum.speccy.org/contacto
 #define POKE_ERR_ADDR2_ES "Direcci\xA2n debe ser menor que 16384"
 #define POKE_ERR_VALUE_ES "Valor debe ser menor que 256"
 
+#define OSD_INVALIDCHAR_ES "Car\xA0cter no v\xA0lido"
+
 #define OSD_TAPE_SAVE_ES "Comando SAVE"
 
 #define OSD_TAPE_SAVE_EXIST_ES "El fichero ya existe \xA8Sobreescribir?"
@@ -109,6 +111,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_DELETE_CURRENT_FILE_ES "Borrar archivo"
 
+#define OSD_TAPE_FLASHLOAD_ES "Carga r\xA0pida de cinta"
+#define OSD_TAPE_INSERT_ES "Cinta insertada"
 #define OSD_TAPE_EJECT_ES "Cinta expulsada"
 
 #define MENU_DELETE_SNA_ES "Borrar snapshot"
@@ -125,7 +129,7 @@ visit https://zxespectrum.speccy.org/contacto
     "Casete\n"\
     "Elegir (TAP,TZX) \t(F5) >\n"\
     "Play/Stop\t(F6)  \n"\
-    "Expulsar cinta\n"\
+    "Expulsar cinta\t(SF6) \n"\
     "Navegador cinta\t(F7)  \n"\
 	"Modo reproductor\t>\n"
 

@@ -227,11 +227,11 @@ void OSD::drawKbdLayout(uint8_t layout) {
     string vmode;
 
     string bottom[5]={
-        " T TK | P PS/2 | Z ZX | 8 ZX81  ", // ZX Spectrum 48K layout
+        " P PS/2 | T TK |  Z ZX | 8 ZX81 ", // ZX Spectrum 48K layout
         " 4 48K | P PS/2 | Z ZX | 8 ZX81 ", // TK 90x layout
         " 4 48K | T TK | Z ZX | 8 ZX81   ", // PS/2 kbd help          
-        " 4 48K | T TK | P PS/2 | 8 ZX81 ",  // ZX kbd help      
-        " 4 48K | T TK | P PS/2 | Z ZX   "  // ZX81+ layout
+        " 4 48K | T TK | P PS/2 | 8 ZX81 ", // ZX kbd help      
+        " 4 48K | T TK | Z ZX | P PS/2   "  // ZX81+ layout
     };
 
     switch(Config::videomode) {
@@ -579,114 +579,6 @@ static string getStringPersistCatalog()
     return catalog;
 }
 
-// const unsigned char trdos_sysvars[] = {
-//     0xFF, 0x00, 0x00, 0x00, 0x0D, 0x05, 0x22, 0x0D, 0x0D, 0x23, 0x05, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x06, 0x00, 0x0B, 0x00, 0x01, 0x00, 
-//     0x01, 0x00, 0x06, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3C, 0x40, 0x00, 0xFF, 0xCC, 
-//     0x01, 0x54, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFE, 0xFF, 0x01, 
-//     0x38, 0x00, 0x00, 0xCB, 0x5C, 0x00, 0x00, 0xB6, 0x5C, 0xB6, 0x5C, 0xCB, 
-//     0x5C, 0xDA, 0x5C, 0xCA, 0x5C, 0xCC, 0x5C, 0xD3, 0x5C, 0xD9, 0x5C, 0x00, 
-//     0x00, 0xDB, 0x5C, 0xDB, 0x5C, 0xDB, 0x5C, 0x2D, 0x92, 0x5C, 0x10, 0x02, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB6, 0x1A, 0x00, 0x00, 
-//     0xD2, 0x01, 0x00, 0x58, 0xFF, 0x00, 0x00, 0x21, 0x00, 0x5B, 0x21, 0x17, 
-//     0x00, 0x40, 0xE0, 0x50, 0x21, 0x18, 0x21, 0x17, 0x01, 0x38, 0x00, 0x38, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x57, 0xFF, 
-//     0xFF, 0xFF, 0xF4, 0x09, 0xA8, 0x10, 0x4B, 0xF4, 0x09, 0xC4, 0x15, 0x53, 
-//     0x81, 0x0F, 0xC4, 0x15, 0x52, 0xF4, 0x09, 0xC4, 0x15, 0x50, 0x80, 0x80, 
-//     0xF9, 0xC0, 0x31, 0x35, 0x36, 0x31, 0x36, 0x0E, 0x00, 0x00, 0x00, 0x3D, 
-//     0x00, 0x0D, 0x80, 0x00, 0x00, 0x00, 0x3D, 0x00, 0x00, 0x0A
-// };
-
-// const unsigned char trdos_stack[] = {
-// 	0x00, 0x3D, 0x2B, 0x2D, 0x65, 0x33, 0xFF, 0xFF, 0xED, 0x10,
-// 	0x0D, 0x00, 0x09, 0x00, 0x85, 0x1C, 0x10, 0x1C, 0x52, 0x1B, 0x76, 0x1B,
-// 	0x03, 0x13, 0x00, 0x3E, 0x00, 0x3C, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x00,
-// 	0x00, 0x7C, 0x42, 0x7C, 0x42, 0x42, 0x7C, 0x00, 0x00, 0x3C, 0x42, 0x40,
-// 	0x40, 0x42, 0x3C, 0x00, 0x00, 0x78, 0x44, 0x42, 0x42, 0x44, 0x78, 0x00,
-// 	0x00, 0x7E, 0x40, 0x7C, 0x40, 0x40, 0x7E, 0x00, 0x00, 0x7E, 0x40, 0x7C,
-// 	0x40, 0x40, 0x40, 0x00, 0x00, 0x3C, 0x42, 0x40, 0x4E, 0x42, 0x3C, 0x00,
-// 	0x00, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x42, 0x00, 0x00, 0x3E, 0x08, 0x08,
-// 	0x08, 0x08, 0x3E, 0x00, 0x00, 0x02, 0x02, 0x02, 0x42, 0x42, 0x3C, 0x00,
-// 	0x00, 0x44, 0x48, 0x70, 0x48, 0x44, 0x42, 0x00, 0x00, 0x40, 0x40, 0x40,
-// 	0x40, 0x40, 0x7E, 0x00, 0x00, 0x42, 0x66, 0x5A, 0x42, 0x42, 0x42, 0x00,
-// 	0x00, 0x42, 0x62, 0x52, 0x4A, 0x46, 0x42, 0x00, 0x00, 0x3C, 0x42, 0x42,
-// 	0x42, 0x42, 0x3C, 0x00, 0x00, 0x7C, 0x42, 0x42, 0x7C, 0x40, 0x40, 0x00,
-// 	0x00, 0x3C, 0x42, 0x42, 0x52, 0x4A, 0x3C, 0x00, 0x00, 0x7C, 0x42, 0x42,
-// 	0x7C, 0x44, 0x42, 0x00, 0x00, 0x3C, 0x40, 0x3C, 0x02, 0x42, 0x3C, 0x00,
-// 	0x00, 0xFE, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00, 0x00, 0x42, 0x42, 0x42,
-// 	0x42, 0x42, 0x3C, 0x00
-// };
-
-// const unsigned char trdos128_sysvars[482] = {
-// 	0xF5, 0xC5, 0x01, 0xFD, 0x7F, 0x3A, 0x5C, 0x5B, 0xEE, 0x10, 0xF3, 0x32,
-// 	0x5C, 0x5B, 0xED, 0x79, 0xFB, 0xC1, 0xF1, 0xC9, 0xCD, 0x00, 0x5B, 0xE5,
-// 	0x2A, 0x5A, 0x5B, 0xE3, 0xC9, 0xF3, 0x3A, 0x5C, 0x5B, 0xE6, 0xEF, 0x32,
-// 	0x5C, 0x5B, 0x01, 0xFD, 0x7F, 0xED, 0x79, 0xFB, 0xC3, 0xC3, 0x00, 0x21,
-// 	0xD8, 0x06, 0x18, 0x03, 0x21, 0xCA, 0x07, 0x08, 0x01, 0xFD, 0x7F, 0x3A,
-// 	0x5C, 0x5B, 0xF5, 0xE6, 0xEF, 0xF3, 0x32, 0x5C, 0x5B, 0xED, 0x79, 0xC3,
-// 	0xE6, 0x05, 0x08, 0xF1, 0x01, 0xFD, 0x7F, 0xF3, 0x32, 0x5C, 0x5B, 0xED,
-// 	0x79, 0xFB, 0x08, 0xC9, 0xDE, 0x1C, 0xD9, 0x18, 0x10, 0xCF, 0x00, 0x0B,
-// 	0x00, 0x00, 0x00, 0x00, 0x50, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF1, 0x5B, 0xEC,
-// 	0xEB, 0xEC, 0x2B, 0x01, 0x01, 0x04, 0x00, 0x21, 0x03, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x01, 0x03, 0x07, 0x0F,
-// 	0x1F, 0x3F, 0x7F, 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0x39, 0xA3,
-// 	0x39, 0xDB, 0x02, 0x7C, 0x38, 0x45, 0x39, 0x45, 0x39, 0xA3, 0x39, 0xDB,
-// 	0x02, 0x7C, 0x38, 0x6C, 0xFD, 0x4D, 0x00, 0xDB, 0x02, 0x7C, 0x38, 0x6C,
-// 	0xFD, 0x4D, 0x00, 0x00, 0x16, 0x06, 0x0D, 0x38, 0x00, 0x06, 0x0D, 0x00,
-// 	0x20, 0x00, 0x04, 0x00, 0x04, 0x00, 0x5B, 0x00, 0x00, 0x27, 0x1F, 0xF7,
-// 	0x02, 0x6C, 0xFD, 0x68, 0x29, 0x4A, 0x13, 0xE7, 0x3F, 0x7A, 0x26, 0x75,
-// 	0x0D, 0x67, 0x26, 0x00, 0xFF, 0x00, 0x22, 0x73, 0x0D, 0x05, 0x20, 0x0D,
-// 	0x0D, 0x23, 0x02, 0x00, 0x00, 0x00, 0x16, 0x00, 0x01, 0x00, 0x06, 0x00,
-// 	0x0B, 0x00, 0x01, 0x00, 0x01, 0x00, 0x06, 0x00, 0x10, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3C,
-// 	0x40, 0x00, 0xFF, 0xDD, 0x01, 0x52, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0xFF, 0xFE, 0xFF, 0x01, 0x38, 0x00, 0x00, 0xCB, 0x5C, 0x00, 0x00, 0xB6,
-// 	0x5C, 0xB6, 0x5C, 0xCB, 0x5C, 0xDA, 0x5C, 0xCA, 0x5C, 0xCC, 0x5C, 0xCC,
-// 	0x5C, 0xD9, 0x5C, 0x00, 0x00, 0xDB, 0x5C, 0xDB, 0x5C, 0xDB, 0x5C, 0x2D,
-// 	0x92, 0x5C, 0x10, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x4A, 0x17, 0x00, 0x00, 0x61, 0x02, 0x00, 0x58, 0xFF, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x21, 0x17, 0x20, 0x40, 0xE0, 0x50, 0x01, 0x18, 0x21, 0x17,
-// 	0x01, 0x38, 0x00, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 	0x00, 0x00, 0x57, 0xFF, 0xFF, 0xFF, 0xF4, 0x09, 0xA8, 0x10, 0x4B, 0xF4,
-// 	0x09, 0xC4, 0x15, 0x53, 0x81, 0x0F, 0xC4, 0x15, 0x52, 0x34, 0x5B, 0x2F,
-// 	0x5B, 0x50, 0x80, 0x80, 0xF9, 0xC0, 0x31, 0x35, 0x36, 0x31, 0x36, 0x0E,
-// 	0x00, 0x00, 0x00, 0x3D, 0x00, 0x0D, 0x80, 0x00, 0x00, 0x00, 0x3D, 0x00,
-// 	0x00, 0x0A
-// };
-
-// const unsigned char trdos128_stack[] = {
-// 	/*0x00, 0x00, 0x00, 0x00, 0x00, 0xEC, 0x00, 0x00, 0x00, 0x00, 0x45, 0x39,
-// 	0xA3, 0x39, 0xB1, 0x33, 0xDF, 0x5C, 0x05, 0x00, 0xB1, 0x33, 0xB7, 0x2D,
-// 	0xDB, 0x5C, 0xD6, 0x5C, */0x00, 0x3D, 0x2B, 0x2D, 0x65, 0x33, 0x38, 0x00,
-// 	0xED, 0x10, 0x0D, 0x00, 0x1E, 0x00, 0x85, 0x1C, 0x14, 0x5B, 0xFD, 0x17,
-// 	0x21, 0x18, 0x1D, 0x5B, 0x00, 0x3E, 0xCC, 0x2C, 0x00, 0x3C, 0x42, 0x42,
-// 	0x7E, 0x42, 0x42, 0x00, 0x00, 0x7C, 0x42, 0x7C, 0x42, 0x42, 0x7C, 0x00,
-// 	0x00, 0x3C, 0x42, 0x40, 0x40, 0x42, 0x3C, 0x00, 0x00, 0x78, 0x44, 0x42,
-// 	0x42, 0x44, 0x78, 0x00, 0x00, 0x7E, 0x40, 0x7C, 0x40, 0x40, 0x7E, 0x00,
-// 	0x00, 0x7E, 0x40, 0x7C, 0x40, 0x40, 0x40, 0x00, 0x00, 0x3C, 0x42, 0x40,
-// 	0x4E, 0x42, 0x3C, 0x00, 0x00, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x42, 0x00,
-// 	0x00, 0x3E, 0x08, 0x08, 0x08, 0x08, 0x3E, 0x00, 0x00, 0x02, 0x02, 0x02,
-// 	0x42, 0x42, 0x3C, 0x00, 0x00, 0x44, 0x48, 0x70, 0x48, 0x44, 0x42, 0x00,
-// 	0x00, 0x40, 0x40, 0x40, 0x40, 0x40, 0x7E, 0x00, 0x00, 0x42, 0x66, 0x5A,
-// 	0x42, 0x42, 0x42, 0x00, 0x00, 0x42, 0x62, 0x52, 0x4A, 0x46, 0x42, 0x00,
-// 	0x00, 0x3C, 0x42, 0x42, 0x42, 0x42, 0x3C, 0x00, 0x00, 0x7C, 0x42, 0x42,
-// 	0x7C, 0x40, 0x40, 0x00, 0x00, 0x3C, 0x42, 0x42, 0x52, 0x4A, 0x3C, 0x00,
-// 	0x00, 0x7C, 0x42, 0x42, 0x7C, 0x44, 0x42, 0x00, 0x00, 0x3C, 0x40, 0x3C,
-// 	0x02, 0x42, 0x3C, 0x00, 0x00, 0xFE, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00,
-// 	0x00, 0x42, 0x42, 0x42, 0x42, 0x42, 0x3C, 0x00
-// };
-
 // *******************************************************************************************************
 // PREFERRED ROM MENU
 // *******************************************************************************************************
@@ -817,6 +709,17 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
     if (SHIFT && !CTRL) {
         if (KeytoESP == fabgl::VK_F1) { // Show H/W info
             OSD::HWInfo();
+        } else
+        if (KeytoESP == fabgl::VK_F6) { // Eject tape
+            // Eject Tape
+            click();
+            if (Tape::tapeFileName=="none") {
+                OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+                menu_saverect = false;
+            } else {
+                Tape::tapeEject();
+                osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
+            }
         }
     } else if (CTRL && !SHIFT) {
 
@@ -857,136 +760,25 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         } else 
         if (KeytoESP == fabgl::VK_F11) { // Reset to TR-DOS (48K only)
 
-            // if (!ESPectrum::trdos) {
+            if (Config::DiskCtrl || Z80Ops::isPentagon) {
 
-                // if (Z80Ops::is48 || (Z80Ops::is128 && MemESP::romInUse == 1 && MemESP::pagingLock == 1)) {
-
-                if (Config::DiskCtrl || Z80Ops::isPentagon) {
-
-                    if (Config::ram_file != NO_RAM_FILE) {
-                        Config::ram_file = NO_RAM_FILE;
-                    }
-                    Config::last_ram_file = NO_RAM_FILE;
-
-                    ESPectrum::reset();
-
-                    if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
-                    MemESP::romInUse = 4;
-                    MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                    ESPectrum::trdos = true;
-
-                } else {
-
-                    OSD::osdCenteredMsg(TRDOS_RESET_ERR[Config::lang], LEVEL_ERROR, 1500 );
-
+                if (Config::ram_file != NO_RAM_FILE) {
+                    Config::ram_file = NO_RAM_FILE;
                 }
+                Config::last_ram_file = NO_RAM_FILE;
 
-                    // return;
+                ESPectrum::reset();
 
-                //     // Restore Z80 state
-                //     Z80::setRegI(0x3f);
-                //     Z80::setRegHLx(0x2758);
-                //     Z80::setRegDEx(0x369b);
-                //     Z80::setRegBCx(0x1721);
-                //     Z80::setRegAFx(0x0044);
-                //     Z80::setRegHL(0x2d2b);
-                //     Z80::setRegDE(0x5cdb);
-                //     Z80::setRegBC(0x3d00);
-                //     Z80::setRegIY(0x5c3a);
-                //     Z80::setRegIX(0x03d4);
-                //     Z80::setRegR(0x0f); // Z80::setRegR(0x67); // In 128k snapshot R == 0x67 but it shouldn't mind to use same value as 48k snapshot
-                //     Z80::setRegAF(0x0054);
-                //     Z80::setRegSP(0xff3e);
-                //     Z80::setRegPC(0x34bb);
-                //     Z80::setIFF2(true);
-                //     Z80::setIFF1(true);
-                //     Z80::setIM((Z80::IntMode)0x01);
+                if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
+                MemESP::romInUse = 4;
+                MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
+                ESPectrum::trdos = true;
 
-                //     // Set border white
-                //     VIDEO::borderColor = 0x07;
-                //     VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
+            } else {
 
-                //     if (Z80Ops::is128) {
-                //         // Decode tmp_port
-                //         // MemESP::videoLatch = 0;
-                //         MemESP::romLatch = 1;
-                //         MemESP::pagingLock = 1;
-                //         // MemESP::bankLatch = 0;
-                //         MemESP::romInUse = 1;
-                //         // ESPectrum::trdos = false;
+                OSD::osdCenteredMsg(TRDOS_RESET_ERR[Config::lang], LEVEL_ERROR, 1500 );
 
-                //         MemESP::ramCurrent[0] = MemESP::rom[1];
-                //         // MemESP::ramCurrent[3] = MemESP::ram[0];
-                //         // MemESP::ramContended[3] = false;
-                //         // VIDEO::grmem = MemESP::ram[5];
-                //     }
-
-                //     // Restore SYSVARS
-                //     for(int i=0;i<sizeof(trdos_sysvars);i++)
-                //         MemESP::writebyte(0x5c00 + i, trdos_sysvars[i]);
-
-                //     // Restore Stack
-                //     for(int i=0; i < (Z80Ops::is48 ? 26 : sizeof(trdos_stack)); i++)
-                //         MemESP::writebyte(0xff3e + i, trdos_stack[i]);
-
-                // } else if (Z80Ops::is128/* && MemESP::romInUse == 1 && MemESP::pagingLock == 0*/) {
-
-                //     if (Config::ram_file != NO_RAM_FILE) {
-                //         Config::ram_file = NO_RAM_FILE;
-                //     }
-                //     Config::last_ram_file = NO_RAM_FILE;
-
-                //     ESPectrum::reset();
-
-                //     // Restore Z80 state
-                //     Z80::setRegI(0x0);
-                //     Z80::setRegHLx(0x2758);
-                //     Z80::setRegDEx(0x369b);
-                //     Z80::setRegBCx(0x1801);
-                //     Z80::setRegAFx(0x02f7);
-                //     Z80::setRegHL(0x2d2b);
-                //     Z80::setRegDE(0x5cdb);
-                //     Z80::setRegBC(0x3d00);
-                //     Z80::setRegIY(0x5c3a);
-                //     Z80::setRegIX(0xfd6c);
-                //     Z80::setRegR(0x14);
-                //     Z80::setRegAF(0x0054);
-                //     Z80::setRegSP(0xff3c);
-                //     Z80::setRegPC(0x34bb);
-                //     Z80::setIFF2(true);
-                //     Z80::setIFF1(true);
-                //     Z80::setIM((Z80::IntMode)0x01);
-
-                //     // Set border white
-                //     VIDEO::borderColor = 0x07;
-                //     VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
-
-                //     if (Z80Ops::is128) {
-                //         // Decode tmp_port
-                //         // MemESP::videoLatch = 0;
-                //         MemESP::romLatch = 1;
-                //         MemESP::pagingLock = 0;
-                //         // MemESP::bankLatch = 0;
-                //         MemESP::romInUse = 1;
-                //         // ESPectrum::trdos = false;
-
-                //         MemESP::ramCurrent[0] = MemESP::rom[1];
-                //         // MemESP::ramCurrent[3] = MemESP::ram[0];
-                //         // MemESP::ramContended[3] = false;
-                //         // VIDEO::grmem = MemESP::ram[5];
-                //     }
-
-                //     // Restore SYSVARS
-                //     for(int i=0;i<sizeof(trdos128_sysvars);i++)
-                //         MemESP::writebyte(0x5b00 + i, trdos128_sysvars[i]);
-
-                //     // Restore Stack
-                //     for(int i=0; i < sizeof(trdos_stack); i++)
-                //         MemESP::writebyte(0xff3c + i, trdos_stack[i]);
-
-                // }
-
-            // }
+            }
 
         } else 
         // if (KeytoESP == fabgl::VK_F3) { 
@@ -1606,8 +1398,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if (Config::tape_player != prev_opt) {
                                         if (Config::tape_player) {
                                             ESPectrum::aud_volume = ESP_VOLUME_MAX;
-                                            pwm_audio_set_volume(ESPectrum::aud_volume);
+                                        } else {
+                                            ESPectrum::aud_volume = Config::volume;                                            
                                         }
+                                        pwm_audio_set_volume(ESPectrum::aud_volume);
                                         Config::save("tape_player");
                                     }
                                     menu_curopt = opt2;
@@ -1878,12 +1672,17 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                 if (arch != Config::arch) {
 
+                                    bool vreset = Config::videomode;
+
+                                    // If switching between TK models there's no need to reset in vidmodes > 0
+                                    if (arch[0] == 'T' && Config::arch[0] == 'T') vreset = false;
+
                                     if (Config::pref_arch == "Last") {
                                         Config::arch = arch;
                                         Config::save("arch");
                                     }
 
-                                    if (Config::videomode) {
+                                    if (vreset) {
 
                                         Config::pref_arch += "R";
                                         Config::save("pref_arch");
@@ -2090,6 +1889,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                             if (Config::tape_timing_rg != prev_opt) {
                                                 Config::save("tape_timing_rg");
+
+                                                if (Tape::tape != NULL && Tape::tapeFileType == TAPE_FTYPE_TAP) {
+                                                    Tape::TAP_setBlockTimings();
+                                                }
                                             }
                                             menu_curopt = opt2;
                                             menu_saverect = false;
@@ -3002,8 +2805,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 // About
                 drawOSD(false);
 
-// <<<<<                VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40,Config::aspect_16_9 ? 12 : 32,240,50,zxColor(0, 0));
-
                 // Decode Logo in EBF8 format
                 uint8_t *logo = (uint8_t *)ESPectrum_logo;
 
@@ -3032,10 +2833,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         VIDEO::vga.dotFast(pos_x + n,pos_y + i,logo[n+(i*logo_w)]);
 
                 VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
-                // VIDEO::vga.print(Config::lang ? OSD_ABOUT1_ES : OSD_ABOUT1_EN);
-
-// <<<<                pos_x = Config::aspect_16_9 ? 66 : 46;
-// <<<<                pos_y = Config::aspect_16_9 ? 68 : 88;
                 
                 if (Config::videomode == 2) {
                     pos_x = 62;
@@ -5074,16 +4871,6 @@ const dlgObject dlg_Objects[5] = {
 
 const string BankCombo[9] = { "   -   ", "   0   ", "   1   ", "   2   ", "   3   ", "   4   ", "   5   ", "   6   ", "   7   " };
 
-// #define BANKCOMBO "   -   \n"\
-//                   "   0   \n"\
-//                   "   1   \n"\
-//                   "   2   \n"\
-//                   "   3   \n"\
-//                   "   4   \n"\
-//                   "   5   \n"\
-//                   "   6   \n"\
-//                   "   7   \n"
-
 void OSD::pokeDialog() {
 
     string dlgValues[5]={
@@ -5093,10 +4880,6 @@ void OSD::pokeDialog() {
         "",
         ""
     };
-
-    // string Bankmenu = (Config::lang ? " Banco \n" : " Bank  \n");
-    // int i=0;
-    // for (;i<9;i++) Bankmenu += BankCombo[i] + "\n";
 
     string Bankmenu = POKE_BANK_MENU[Config::lang];
     for (int i=0;i<9;i++) Bankmenu += BankCombo[i] + "\n";
@@ -5518,7 +5301,7 @@ void OSD::pokeDialog() {
 
 }
 
-int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
+int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
     int ascii = 0;
     if ( ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) &&
          ( ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LSHIFT) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RSHIFT) )
@@ -5550,7 +5333,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
         case fabgl::VK_VERTICALBAR:     ascii = '|'; break;     /**< Vertical bar: | */
         case fabgl::VK_HASH:            ascii = '#'; break;     /**< Hash: # */
         case fabgl::VK_AT:              ascii = '@'; break;     /**< At: @ */
-        case fabgl::VK_CARET:           ascii = '^'; break;     /**< Caret: ^ */
+        case fabgl::VK_CARET:           ascii = '^'; break;     /**< ↑ > */
         case fabgl::VK_DOLLAR:          ascii = '$'; break;     /**< Dollar: $ */
         // case fabgl::VK_POUND:           ascii = '£'; break;    /**< Pound: £ */
         case fabgl::VK_PERCENT:         ascii = '%'; break;     /**< Percent: % */
@@ -5596,7 +5379,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
                 case fabgl::VK_P        : ascii = '"'; break; /**< Double quote: " */
 
                 case fabgl::VK_h        :
-                case fabgl::VK_H        : ascii = '^'; break; /**< Caret: ^ */
+                case fabgl::VK_H        : ascii = '^'; break; /**< ↑ > */
 
                 case fabgl::VK_j        :
                 case fabgl::VK_J        : ascii = '-'; break; /**< Minus: - */
@@ -5611,9 +5394,8 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
                 case fabgl::VK_z        :
                 case fabgl::VK_Z        : ascii = ':'; break; /**< Colon: : */
 
-                // que codigo sera la libra???!!!
-//                        case fabgl::VK_x        :
-//                        case fabgl::VK_X        : ascii = 0xc9; break; /**< Pound: £ */
+                case fabgl::VK_x        :
+                case fabgl::VK_X        : ascii = '`'; break; /**< Pound: £ */
 
                 case fabgl::VK_c        :
                 case fabgl::VK_C        : ascii = '?'; break; /**< Question mark: ? */
@@ -5631,6 +5413,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
                 case fabgl::VK_M        : ascii = '.'; break; /**< Period: . */
 
             }
+
         } else {
             switch (Nextkey.vk) {
                 case fabgl::VK_a        :
@@ -5654,6 +5437,9 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
                 case fabgl::VK_u        :
                 case fabgl::VK_U        : ascii = ']'; break; /**< Right bracket: ] */
 
+                case fabgl::VK_p        : 
+                case fabgl::VK_P        : ascii = 0x7f; break; /**< copyright symbol > */
+
             }
         }
     } else {
@@ -5672,7 +5458,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E) {
     return ascii;
 }
 
-string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value, uint8_t * flags ) {
+string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value, const string& forbiddenchars, uint8_t * flags ) {
 
     int curObject = 0;
 
@@ -5704,6 +5490,11 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
 
             int ascii = VirtualKey2ASCII(Nextkey, &mode_E);
 
+            if ( ascii && forbiddenchars.find(ascii) != std::string::npos ) {
+//                OSD::osdCenteredMsg(OSD_INVALIDCHAR[Config::lang], LEVEL_WARN);
+                ascii = 0;
+            }
+
             if ( ascii && inputValue.length() < maxSize ) {
                 inputValue += char(ascii);
                 click();
@@ -5722,6 +5513,8 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
                     if ( flags ) *flags = 1;
                     return "";
                 }
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
                 return inputValue;
 
             } else
@@ -5735,15 +5528,15 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
 
         if ((++CursorFlash & 0xF) == 0) {
             menuAt(y, x);
-            VIDEO::vga.setTextColor(ink_color/*zxColor(7, 1)*/, paper_color/*zxColor(5, 0)*/);
+            VIDEO::vga.setTextColor(ink_color, paper_color);
             VIDEO::vga.print((inputLabel + inputValue).c_str());
 
             if (CursorFlash > 63) {
-                VIDEO::vga.setTextColor(paper_color/*zxColor(5, 0)*/, ink_color/*zxColor(7, 1)*/);
+                VIDEO::vga.setTextColor(paper_color, ink_color);
                 if (CursorFlash == 128) CursorFlash = 0;
             }
             VIDEO::vga.print(mode_E?"E":"L");
-            VIDEO::vga.setTextColor(ink_color/*zxColor(7, 1)*/, paper_color/*zxColor(5, 0)*/);
+            VIDEO::vga.setTextColor(ink_color, paper_color);
             VIDEO::vga.print(string(maxSize - inputValue.size(), ' ').c_str());
         }
 
@@ -5752,6 +5545,9 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
     }
 
     if ( flags ) *flags = 1;
+
+    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
+    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
 
     return "";
 

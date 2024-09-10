@@ -238,35 +238,39 @@ void Tape::LoadTape(string mFile) {
 
         if ( FileUtils::fileSize( ( FileUtils::MountPoint + FileUtils::TAP_Path + mFile ).c_str() ) > 0 ) {
             // Flashload .tap if needed
-            if ((keySel ==  "R") && (Config::flashload) && (Config::romSet != "ZX81+") && (Config::romSet != "48Kcs") && (Config::romSet != "128Kcs")) {
+            if ((keySel ==  "R") && (Config::flashload) && (Config::romSet != "ZX81+") && (Config::romSet != "48Kcs") && (Config::romSet != "128Kcs") && (Config::romSet != "TKcs")) {
 
-                    OSD::osdCenteredMsg(OSD_TAPE_FLASHLOAD, LEVEL_INFO, 0);
+                OSD::osdCenteredMsg(OSD_TAPE_FLASHLOAD[Config::lang], LEVEL_INFO, 0);
 
-                    uint8_t OSDprev = VIDEO::OSD;
+                uint8_t OSDprev = VIDEO::OSD;
 
-                    if (Z80Ops::is48)
-                        FileZ80::loader48();
+                if (Z80Ops::is48)
+                    FileZ80::loader48();
+                else
+                    FileZ80::loader128();
+
+                // Put something random on FRAMES SYS VAR as recommended by Mark Woodmass
+                // https://skoolkid.github.io/rom/asm/5C78.html
+                MemESP::writebyte(0x5C78,rand() % 256);
+                MemESP::writebyte(0x5C79,rand() % 256);
+
+                if (Config::ram_file != NO_RAM_FILE) {
+                    Config::ram_file = NO_RAM_FILE;
+                }
+                Config::last_ram_file = NO_RAM_FILE;
+
+                if (OSDprev) {
+                    VIDEO::OSD = OSDprev;
+                    if (Config::aspect_16_9)
+                        VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
                     else
-                        FileZ80::loader128();
+                        VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
+                    ESPectrum::TapeNameScroller = 0;
+                }
 
-                    // Put something random on FRAMES SYS VAR as recommended by Mark Woodmass
-                    // https://skoolkid.github.io/rom/asm/5C78.html
-                    MemESP::writebyte(0x5C78,rand() % 256);
-                    MemESP::writebyte(0x5C79,rand() % 256);
+            } else {
 
-                    if (Config::ram_file != NO_RAM_FILE) {
-                        Config::ram_file = NO_RAM_FILE;
-                    }
-                    Config::last_ram_file = NO_RAM_FILE;
-
-                    if (OSDprev) {
-                        VIDEO::OSD = OSDprev;
-                        if (Config::aspect_16_9)
-                            VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
-                        else
-                            VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
-                        ESPectrum::TapeNameScroller = 0;
-                    }
+                OSD::osdCenteredMsg(OSD_TAPE_INSERT[Config::lang], LEVEL_INFO);
 
             }
         }
@@ -304,6 +308,7 @@ void Tape::Init() {
 }
 
 void Tape::tapeEject() {
+
     Tape::Stop();
 
     if (tape != NULL) {
@@ -315,6 +320,42 @@ void Tape::tapeEject() {
 
     tapeFileName = "none";
     tapeSaveName = "none";
+
+}
+
+void Tape::TAP_setBlockTimings() {
+
+    // Set tape timing values
+    if (Config::tape_timing_rg) {
+
+        tapeSyncLen = TAPE_SYNC_LEN_RG;
+        tapeSync1Len = TAPE_SYNC1_LEN_RG;
+        tapeSync2Len = TAPE_SYNC2_LEN_RG;
+        tapeBit0PulseLen = TAPE_BIT0_PULSELEN_RG;
+        tapeBit1PulseLen = TAPE_BIT1_PULSELEN_RG;
+        tapeHdrLong = TAPE_HDR_LONG_RG;
+        tapeHdrShort = TAPE_HDR_SHORT_RG;
+        tapeBlkPauseLen = TAPE_BLK_PAUSELEN_RG;
+
+    } else {
+
+        tapeSyncLen = TAPE_SYNC_LEN;
+        tapeSync1Len = TAPE_SYNC1_LEN;
+        tapeSync2Len = TAPE_SYNC2_LEN;
+        tapeBit0PulseLen = TAPE_BIT0_PULSELEN;
+        tapeBit1PulseLen = TAPE_BIT1_PULSELEN;
+        tapeHdrLong = TAPE_HDR_LONG;
+        tapeHdrShort = TAPE_HDR_SHORT;
+        tapeBlkPauseLen = TAPE_BLK_PAUSELEN;
+
+    }
+
+    tapeSyncLen *= tapeCompensation;
+    tapeSync1Len *= tapeCompensation;
+    tapeSync2Len *= tapeCompensation;
+    tapeBit0PulseLen *= tapeCompensation;
+    tapeBit1PulseLen *= tapeCompensation;
+    tapeBlkPauseLen *= tapeCompensation;
 
 }
 
@@ -455,37 +496,7 @@ void Tape::TAP_Open(string name) {
 
     tapeFileType = TAPE_FTYPE_TAP;
 
-    // Set tape timing values
-    if (Config::tape_timing_rg) {
-
-        tapeSyncLen = TAPE_SYNC_LEN_RG;
-        tapeSync1Len = TAPE_SYNC1_LEN_RG;
-        tapeSync2Len = TAPE_SYNC2_LEN_RG;
-        tapeBit0PulseLen = TAPE_BIT0_PULSELEN_RG;
-        tapeBit1PulseLen = TAPE_BIT1_PULSELEN_RG;
-        tapeHdrLong = TAPE_HDR_LONG_RG;
-        tapeHdrShort = TAPE_HDR_SHORT_RG;
-        tapeBlkPauseLen = TAPE_BLK_PAUSELEN_RG;
-
-    } else {
-
-        tapeSyncLen = TAPE_SYNC_LEN;
-        tapeSync1Len = TAPE_SYNC1_LEN;
-        tapeSync2Len = TAPE_SYNC2_LEN;
-        tapeBit0PulseLen = TAPE_BIT0_PULSELEN;
-        tapeBit1PulseLen = TAPE_BIT1_PULSELEN;
-        tapeHdrLong = TAPE_HDR_LONG;
-        tapeHdrShort = TAPE_HDR_SHORT;
-        tapeBlkPauseLen = TAPE_BLK_PAUSELEN;
-
-    }
-
-    tapeSyncLen *= tapeCompensation;
-    tapeSync1Len *= tapeCompensation;
-    tapeSync2Len *= tapeCompensation;
-    tapeBit0PulseLen *= tapeCompensation;
-    tapeBit1PulseLen *= tapeCompensation;
-    tapeBlkPauseLen *= tapeCompensation;
+    TAP_setBlockTimings();
 
 }
 
@@ -587,6 +598,7 @@ string Tape::tapeBlockReadData(int Blocknum) {
 
     // buf offset 20: block name
     snprintf(buf, sizeof(buf), "%04d %s%10s % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
+//    snprintf(buf, sizeof(buf), "%04d %s  %10s           % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
 
     return buf;
 

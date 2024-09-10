@@ -67,14 +67,17 @@ string FileUtils::SNA_Path = "/"; // DISK_SNA_DIR; // Current path on the SD (fo
 string FileUtils::TAP_Path = "/"; // DISK_TAP_DIR; // Current path on the SD (for future folder support)
 string FileUtils::DSK_Path = "/"; // DISK_DSK_DIR; // Current path on the SD (for future folder support)
 string FileUtils::ROM_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
-DISK_FTYPE FileUtils::fileTypes[4] = {
+string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
+
+DISK_FTYPE FileUtils::fileTypes[5] = {
 //    {".sna,.SNA,.z80,.Z80,.p,.P",".s",2,2,0,""},
 //    {".tap,.TAP,.tzx,.TZX",".t",2,2,0,""},
 //    {".trd,.TRD,.scl,.SCL",".d",2,2,0,""}
     {"sna,z80,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
-    {"rom",".r",2,2,0,""}
+    {"rom",".r",2,2,0,""},
+    {"esp",".e",2,2,0,""}
 };
 
 string toLower(const std::string& str) {

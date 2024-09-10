@@ -458,6 +458,8 @@ reset:
         bool mode_E = false;
 
         fabgl::VirtualKeyItem Menukey;
+        const string fat32forbidden="\\/:*?\"<>|\x7F"; // Characters not valid for FAT32 filenames
+
         while (1) {
 
             if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
@@ -496,6 +498,9 @@ reset:
 
                     // Search first ocurrence of letter if we're not on that letter yet
                     if ( fsearch /*((Menukey.vk >= fabgl::VK_a) && (Menukey.vk <= fabgl::VK_Z)) || Menukey.vk == fabgl::VK_SPACE || ((Menukey.vk >= fabgl::VK_0) && (Menukey.vk <= fabgl::VK_9))*/) {
+
+                        // fat32 filter
+                        if (fat32forbidden.find(fsearch) != std::string::npos) continue;
 
                         /*
                         if (Menukey.vk==fabgl::VK_SPACE && FileUtils::fileTypes[ftype].fdMode)
@@ -564,7 +569,9 @@ reset:
                         string new_tap = OSD::input( 1, mf_rows, Config::lang == 0 ? "Name: " : 
                                                                  Config::lang == 1 ? "Nomb: " :
                                                                                      "Nome: " 
-                                                                , 30, zxColor(7,1), zxColor(5,0) );
+                                                                , 30, zxColor(7,1), zxColor(5,0)
+                                                                , ""
+                                                                , fat32forbidden );
 
                         if ( new_tap != "" ) {
 
