@@ -1,0 +1,91 @@
+name: Build and Release ESPectrum Firmware
+
+on:
+  create:
+    tags:
+      - '*'
+  workflow_dispatch:  # Permite la ejecución manual del workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        env: [psram, nopsram]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install PlatformIO Core
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio setuptools
+
+    - name: Build ESPectrum firmware
+      run: platformio run -e ${{ matrix.env }}
+
+    - name: Upload ESPectrum firmware artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ESPectrum-firmware-${{ matrix.env }}
+        path: |
+          .pio/build/${{ matrix.env }}/firmware.bin
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()  # Solo crea el release si el build es exitoso
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Download Build Artifacts (psram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-psram
+        path: ./firmwares/psram
+
+    - name: Download Build Artifacts (nopsram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-nopsram
+        path: ./firmwares/nopsram
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ github.ref }}  # Usa el nombre del tag que desencadenó el workflow
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Assets (psram)
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./firmwares/psram/firmware.bin
+        asset_name: firmware-psram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Assets (nopsram)
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./firmwares/nopsram/firmware.bin
+        asset_name: firmware-nopsram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
