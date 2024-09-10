@@ -30,13 +30,16 @@ jobs:
     - name: Build ESPectrum firmware
       run: platformio run -e ${{ matrix.env }}
 
+    - name: List build directory
+      run: ls -R .pio/build/${{ matrix.env }}  # Lista el contenido del directorio de construcción
+
     - name: Upload ESPectrum firmware artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ESPectrum-firmware-${{ matrix.env }}
         path: |
-          .pio/build/${{ matrix.env }}/*.bin
-          .pio/build/${{ matrix.env }}/*.elf
+          .pio/build/${{ matrix.env }}/firmware.bin  # Ruta específica del archivo binario
+          .pio/build/${{ matrix.env }}/firmware.elf  # Ruta específica del archivo ELF
 
   create-release:
     needs: build
