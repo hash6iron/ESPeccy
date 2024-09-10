@@ -1,0 +1,116 @@
+name: Build and Release ESPectrum Firmware
+
+on:
+  create:
+    tags:
+      - '*'
+  workflow_dispatch:  # Permite la ejecución manual del workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        env: [psram, nopsram]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install PlatformIO Core
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio setuptools
+
+    - name: Build ESPectrum firmware
+      run: platformio run -e ${{ matrix.env }}
+
+    - name: Upload ESPectrum firmware artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ESPectrum-firmware-${{ matrix.env }}
+        path: |
+          .pio/build/${{ matrix.env }}/firmware.bin
+          .pio/build/${{ matrix.env }}/bootloader.bin
+          .pio/build/${{ matrix.env }}/partitions.bin
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Download Build Artifacts (psram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-psram
+        path: ./firmwares/psram
+
+    - name: Download Build Artifacts (nopsram)
+      uses: actions/download-artifact@v3
+      with:
+        name: ESPectrum-firmware-nopsram
+        path: ./firmwares/nopsram
+
+    - name: Install esptool
+      run: python -m pip install esptool
+
+    - name: Merge firmware binaries into one image (psram)
+      run: |
+        esptool.py --chip esp32 merge_bin -o ./firmwares/complete_firmware-psram.bin \
+          --flash_mode dio \
+          --flash_freq 40m \
+          --flash_size 4MB \
+          0x1000 ./firmwares/psram/bootloader.bin \
+          0x8000 ./firmwares/psram/partitions.bin \
+          0x40000 ./firmwares/psram/firmware.bin
+
+    - name: Merge firmware binaries into one image (nopsram)
+      run: |
+        esptool.py --chip esp32 merge_bin -o ./firmwares/complete_firmware-nopsram.bin \
+          --flash_mode dio \
+          --flash_freq 40m \
+          --flash_size 4MB \
+          0x1000 ./firmwares/nopsram/bootloader.bin \
+          0x8000 ./firmwares/nopsram/partitions.bin \
+          0x40000 ./firmwares/nopsram/firmware.bin
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Complete Firmware (psram) to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./firmwares/complete_firmware-psram.bin
+        asset_name: complete_firmware-psram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Complete Firmware (nopsram) to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./firmwares/complete_firmware-nopsram.bin
+        asset_name: complete_firmware-nopsram.bin
+        asset_content_type: application/octet-stream
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
