@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        env: [psram, nopsram]
+        env: [psram, nopsram]  # Los entornos definidos en platformio.ini
 
     steps:
     - name: Checkout code
@@ -31,7 +31,7 @@ jobs:
         pip install platformio
 
     - name: Build ESPectrum firmware
-      run: platformio run -e ${{ matrix.env }}
+      run: platformio run -e ${{ matrix.env }}  # Usando los entornos correctos
 
     - name: Upload ESPectrum firmware artifacts
       uses: actions/upload-artifact@v3
@@ -47,4 +47,4 @@ jobs:
     if: failure()
     steps:
     - name: Notify on Failure
-      run: echo "Build failed for ESPectrum environment ${{ matrix.env }}"  # Personaliza este paso con la acción de notificación deseada
+      run: echo "Build failed for ESPectrum environment ${{ matrix.env }}"  # Ajusta la acción de notificación según lo necesites
