@@ -168,7 +168,8 @@ visit https://zxespectrum.speccy.org/contacto
     "Joystick emulation\t>\n"\
     "Video\t>\n"\
     "Other\t>\n"\
-    "Language\t>\n"
+    "Language\t>\n"\
+    "OSD\t>\n"
 
 #define MENU_UPDATE_EN \
     "Update\n"\
@@ -293,5 +294,9 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_JOYPS2_EN "Joystick emulation\n" "Joy type\t>\n" "Cursor Keys as Joy\t>\n" "TAB as fire 1\t>\n"
 
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
+
+#define MENU_OSD_EN "OSD settings\n"\
+    "LEFT/RIGHT menu enter\t>\n"\
+    "Alternate text rotation\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_EN_h

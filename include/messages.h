@@ -312,6 +312,13 @@ static const char *DLG_TITLE_INPUTPOK[NLANGS] = { DLG_TITLE_INPUTPOK_EN, DLG_TIT
 
 static const char *POKE_BANK_MENU[NLANGS] = { " Bank  \n" , " Banco \n" , " Banco \n"};
 
+static const char *MENU_OSD[NLANGS] = { MENU_OSD_EN, MENU_OSD_ES, MENU_OSD_PT };
+
+static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opção \n"};
+
+static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opção \n"};
+
+
 #define DEDICATORIA "\nF1Dedicado especialmente a:\r"\
 	"\nB1      _       _ _\r"\
 	"\nB1     | |     | (_)          \nA1d88b d88b\r"\
