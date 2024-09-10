@@ -29,7 +29,7 @@ jobs:
     - name: Install PlatformIO Core
       run: |
         python -m pip install --upgrade pip
-        pip install platformio setuptools  # Asegúrate de instalar setuptools
+        pip install platformio setuptools
 
     - name: Build ESPectrum firmware
       run: platformio run -e ${{ matrix.env }}
@@ -42,10 +42,27 @@ jobs:
           .pio/build/${{ matrix.env }}/*.bin
           .pio/build/${{ matrix.env }}/*.elf
 
-  notify:
+  release:
     needs: build
     runs-on: ubuntu-latest
-    if: failure()
+    if: success()  # Solo crea el release si el build es exitoso
     steps:
-    - name: Notify on Failure
-      run: echo "Build failed for ESPectrum environment ${{ matrix.env }}"
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ github.ref }}  # Usa la referencia del commit como tag, puede ser 'refs/tags/v1.0.0'
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: .pio/build/${{ matrix.env }}/firmware.bin
+        asset_name: firmware-${{ matrix.env }}.bin
+        asset_content_type: application/octet-stream
+
