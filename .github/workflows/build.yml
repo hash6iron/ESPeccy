@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # Permite la ejecución manual del workflow
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        env: [psram, nopsram]  # Los entornos definidos en platformio.ini
+        env: [psram, nopsram]
 
     steps:
     - name: Checkout code
@@ -29,10 +29,10 @@ jobs:
     - name: Install PlatformIO Core
       run: |
         python -m pip install --upgrade pip
-        pip install platformio
+        pip install platformio setuptools  # Asegúrate de instalar setuptools
 
     - name: Build ESPectrum firmware
-      run: platformio run -e ${{ matrix.env }}  # Usando los entornos correctos
+      run: platformio run -e ${{ matrix.env }}
 
     - name: Upload ESPectrum firmware artifacts
       uses: actions/upload-artifact@v3
@@ -48,4 +48,4 @@ jobs:
     if: failure()
     steps:
     - name: Notify on Failure
-      run: echo "Build failed for ESPectrum environment ${{ matrix.env }}"  # Ajusta la acción de notificación según lo necesites
+      run: echo "Build failed for ESPectrum environment ${{ matrix.env }}"
