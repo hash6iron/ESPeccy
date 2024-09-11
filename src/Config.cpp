@@ -72,11 +72,8 @@ bool     Config::aspect_16_9 = false;
 uint8_t  Config::videomode = 0; // 0 -> SAFE VGA, 1 -> 50HZ VGA, 2 -> 50HZ CRT
 uint8_t  Config::esp32rev = 0;
 uint8_t  Config::lang = 0;
-uint8_t  Config::osdOpt1 = 0;
-uint8_t  Config::osdOpt2 = 0;
-uint8_t  Config::osdOpt3 = 0;
-uint8_t  Config::osdOpt4 = 0;
-uint8_t  Config::osdOpt5 = 0;
+uint8_t  Config::osd_LRNav = 0;
+uint8_t  Config::osd_AltRot = 0;
 bool     Config::AY48 = true;
 bool     Config::Issue2 = true;
 bool     Config::flashload = true;
@@ -611,14 +608,14 @@ void Config::load() {
             // printf("volume:%d\n",Config::volume);
         }
 
-        err = nvs_get_u8(handle, "osdOpt1", &Config::osdOpt1);
+        err = nvs_get_u8(handle, "osd_LRNav", &Config::osd_LRNav);
         if (err == ESP_OK) {
-            // printf("language:%u\n",Config::osdOpt1);
+            // printf("language:%u\n",Config::osd_LRNav);
         }
 
-        err = nvs_get_u8(handle, "osdOpt2", &Config::osdOpt2);
+        err = nvs_get_u8(handle, "osd_AltRot", &Config::osd_AltRot);
         if (err == ESP_OK) {
-            // printf("language:%u\n",Config::osdOpt2);
+            // printf("language:%u\n",Config::osd_AltRot);
         }
 
         // Close
@@ -820,11 +817,11 @@ void Config::save(string value) {
         if((value=="volume") || (value=="all"))
             nvs_set_i8(handle,"volume",Config::volume);
 
-        if((value=="osdOpt1") || (value=="all"))
-            nvs_set_u8(handle,"osdOpt1",Config::osdOpt1);
+        if((value=="osd_LRNav") || (value=="all"))
+            nvs_set_u8(handle,"osd_LRNav",Config::osd_LRNav);
 
-        if((value=="osdOpt2") || (value=="all"))
-            nvs_set_u8(handle,"osdOpt2",Config::osdOpt2);
+        if((value=="osd_AltRot") || (value=="all"))
+            nvs_set_u8(handle,"osd_AltRot",Config::osd_AltRot);
 
         // printf("Committing updates in NVS ... ");
 

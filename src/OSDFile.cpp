@@ -688,7 +688,7 @@ reset:
                             // printf("Focus: %d, Lastfocus: %d\n",FileUtils::fileTypes[ftype].focus,(int) last_focus);
                         }
                         click();
-                    } else if (Menukey.vk == fabgl::VK_PAGEUP || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osdOpt1 == 0)) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
+                    } else if (Menukey.vk == fabgl::VK_PAGEUP || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
                         if (FileUtils::fileTypes[ftype].begin_row > virtual_rows) {
                             FileUtils::fileTypes[ftype].focus = 2;
                             FileUtils::fileTypes[ftype].begin_row -= virtual_rows - 2;
@@ -698,7 +698,7 @@ reset:
                         }
                         fd_Redraw(title, fdir, ftype);
                         click();
-                    } else if (Menukey.vk == fabgl::VK_PAGEDOWN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osdOpt1 == 0)) || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
+                    } else if (Menukey.vk == fabgl::VK_PAGEDOWN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
                         if (real_rows - FileUtils::fileTypes[ftype].begin_row  - virtual_rows > virtual_rows) {
                             FileUtils::fileTypes[ftype].focus = 2;
                             FileUtils::fileTypes[ftype].begin_row += virtual_rows - 2;
@@ -748,7 +748,7 @@ reset:
 
                             }       
                         }                  
-                    } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osdOpt1 == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) {
+                    } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) {
 
                         fclose(dirfile);
                         dirfile = NULL;
@@ -783,7 +783,7 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osdOpt1 == 1)) || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
+                    } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
 
                         OSD::restoreBackbufferData();
 
@@ -804,15 +804,10 @@ reset:
             if (timeStartScroll == 200) {
                 timeScroll++;
                 if (timeScroll == 50) {  
-                    if (fdScrollStatus==0) {
-                        fdScrollPos++;
-                        fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                        timeScroll = 0;
-                    } else {
-                        fdScrollPos--;
-                        fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                        timeScroll = 0;
-                    }
+                    if (fdScrollStatus==0) fdScrollPos++;
+                    else                   fdScrollPos--;
+                    fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
+                    timeScroll = 0;
                 }
             }
 
@@ -1008,25 +1003,42 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
 
     VIDEO::vga.print(" ");
 
-    if (isDir) {
+    const string extra_line = isDir ? " <DIR>" : "";
+    size_t extra_margin = extra_line.length();
 
-        // Directory
-        if (line.length() <= cols - margin - 6)
-            line = line + std::string(cols - margin - line.length(), ' ');
-        else
+    if (line.length() <= cols - margin - extra_margin) {
+        line = line + std::string(cols - margin - extra_margin - line.length(), ' ');
+    } else {
+        if ( !isDir && line_type == IS_INFO ) {
+            line = ".." + line.substr(line.length() - (cols - margin) + 2);
+        } else {
             if (line_type == IS_FOCUSED) {
-                line = line.substr(fdScrollPos);
+                string full_line = line;
+
+                if ( fdScrollPos >= (int) line.length() ) {
+                    fdScrollPos = -5;
+                    line = " *** " + line;
+                } else if ( fdScrollPos < 0 ) {
+                    line = ((string)" *** ").substr(5 + fdScrollPos) + line;
+                } else {
+                    line = line.substr(fdScrollPos);
+                    if (!Config::osd_AltRot && line.length() <= cols - margin - extra_margin && full_line.length() > cols - margin - extra_margin) {
+                        line += " *** " + full_line;
+                    }
+                }
+
                 if (fdScrollStatus==0)
                 {
-                    if (line.length() <= cols - margin - 6) {
-                        timeStartScroll = 0;
-                        if (Config::osdOpt2 == 1) {
-                            fdScrollStatus = 1;
-                        } else {
-                            fdScrollPos = -1;
+                    if (fdScrollPos >= 0 && line.length() <= cols - margin - extra_margin) {
+                        if (Config::osd_AltRot == 1) {
                             timeStartScroll = 0;
-                            fdScrollStatus = 0;
-                        }                        
+                            fdScrollStatus = 1;
+                        }
+//                        else {
+//                            fdScrollPos = -1;
+//                            timeStartScroll = 0;
+//                            fdScrollStatus = 0;
+//                        }                        
                     }
                 }
                 else
@@ -1038,51 +1050,11 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
                     }
                 }
             }
-
-        line = line.substr(0,cols - margin - 6) + " <DIR>";
-
-    } else {
-
-        if (line.length() <= cols - margin) {
-            line = line + std::string(cols - margin - line.length(), ' ');
-            line = line.substr(0, cols - margin);
-        } else {
-            if (line_type == IS_INFO) {
-                // printf("%s %d\n",line.c_str(),line.length() - (cols - margin));
-                line = ".." + line.substr(line.length() - (cols - margin) + 2);
-                // printf("%s\n",line.c_str());                
-            } else {
-                if (line_type == IS_FOCUSED) {
-                    line = line.substr(fdScrollPos);
-                    if (fdScrollStatus==0)
-                    {
-                        if (line.length() <= cols - margin) {
-                            timeStartScroll = 0;
-
-                            if (Config::osdOpt2 == 1) {
-                                fdScrollStatus = 1;
-                            } else {
-                                fdScrollPos = -1;
-                                timeStartScroll = 0;
-                                fdScrollStatus = 0;
-                            }                            
-                        }
-                    }
-                    else
-                    {
-                        if (fdScrollPos == 0) {
-                            fdScrollPos = -1;
-                            timeStartScroll = 0;
-                            fdScrollStatus = 0;
-                        }
-                    }
-                }                   
-                line = line.substr(0, cols - margin);
-            }
         }
-
     }
-    
+
+    line = line.substr(0,cols - margin - extra_margin) + extra_line;
+
     VIDEO::vga.print(line.c_str());
 
     VIDEO::vga.print(" ");

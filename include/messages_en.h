@@ -296,7 +296,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
 
 #define MENU_OSD_EN "OSD settings\n"\
-    "LEFT/RIGHT menu enter\t>\n"\
-    "Alternate text rotation\t>\n"
+    "LEFT/RIGHT navigate menu\t>\n"\
+    "Text rotation alternative\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_EN_h

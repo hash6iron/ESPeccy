@@ -2614,7 +2614,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     while (1){
                                         string opt_menu = MENU_OSD_OPT1[Config::lang];
                                         opt_menu += MENU_YESNO[Config::lang];
-                                        bool prev_opt = Config::osdOpt1;
+                                        bool prev_opt = Config::osd_LRNav;
                                         if (prev_opt) {
                                             menu_curopt = 1;
                                             opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
@@ -2628,12 +2628,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         uint8_t opt2 = menuRun(opt_menu);
                                         if (opt2) {
                                             if (opt2 == 1)
-                                                Config::osdOpt1 = 1;
+                                                Config::osd_LRNav = 1;
                                             else
-                                                Config::osdOpt1 = 0;
+                                                Config::osd_LRNav = 0;
 
-                                            if (Config::osdOpt1 != prev_opt) {
-                                                Config::save("osdOpt1");
+                                            if (Config::osd_LRNav != prev_opt) {
+                                                Config::save("osd_LRNav");
                                             }
                                             menu_curopt = opt2;
                                             menu_saverect = false;
@@ -2653,7 +2653,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     while (1){
                                         string opt_menu = MENU_OSD_OPT2[Config::lang];
                                         opt_menu += MENU_YESNO[Config::lang];
-                                        bool prev_opt = Config::osdOpt2;
+                                        bool prev_opt = Config::osd_AltRot;
                                         if (prev_opt) {
                                             menu_curopt = 1;
                                             opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
@@ -2667,12 +2667,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         uint8_t opt2 = menuRun(opt_menu);
                                         if (opt2) {
                                             if (opt2 == 1)
-                                                Config::osdOpt2 = 1;
+                                                Config::osd_AltRot = 1;
                                             else
-                                                Config::osdOpt2 = 0;
+                                                Config::osd_AltRot = 0;
 
-                                            if (Config::osdOpt2 != prev_opt) {
-                                                Config::save("osdOpt2");
+                                            if (Config::osd_AltRot != prev_opt) {
+                                                Config::save("osd_AltRot");
                                             }
                                             menu_curopt = opt2;
                                             menu_saverect = false;
@@ -2686,10 +2686,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 menu_curopt = opt2;
                                 menu_saverect = false;                                
                             } else {
-                                menu_curopt = 1;
+                                menu_curopt = 9;
                                 break;
                             }                          
-
 
                         }
                         

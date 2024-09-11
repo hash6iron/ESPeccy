@@ -294,7 +294,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define DLG_TITLE_INPUTPOK_ES "A\xA4" "adir Poke"
 
 #define MENU_OSD_ES "Config. OSD\n"\
-    "IZQ/DRCH entrar MENU\t>\n"\
-    "Rota. txt largo alter.\t>\n"
+    "IZQ/DRCH navegar menu\t>\n"\
+    "Rotaci\xA2n texto alterativa\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_ES_h
