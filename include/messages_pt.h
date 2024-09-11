@@ -297,8 +297,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
 
-#define MENU_OSD_PT "OSD settings\n"\
-    "ESQUERDA/DIREITA a entrar menu\t>\n"\
-    "Rotação alternativa de texto\t>\n"
+#define MENU_OSD_PT "OSD op\n"\
+    "ESQUERDA-DIREITA entrar menu\t>\n"\
+    "Rota. altern. texto\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_PT_h

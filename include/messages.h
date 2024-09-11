@@ -314,9 +314,9 @@ static const char *POKE_BANK_MENU[NLANGS] = { " Bank  \n" , " Banco \n" , " Banc
 
 static const char *MENU_OSD[NLANGS] = { MENU_OSD_EN, MENU_OSD_ES, MENU_OSD_PT };
 
-static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opção \n"};
+static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
-static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opção \n"};
+static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
 
 #define DEDICATORIA "\nF1Dedicado especialmente a:\r"\

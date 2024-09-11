@@ -611,6 +611,16 @@ void Config::load() {
             // printf("volume:%d\n",Config::volume);
         }
 
+        err = nvs_get_u8(handle, "osdOpt1", &Config::osdOpt1);
+        if (err == ESP_OK) {
+            // printf("language:%u\n",Config::osdOpt1);
+        }
+
+        err = nvs_get_u8(handle, "osdOpt2", &Config::osdOpt2);
+        if (err == ESP_OK) {
+            // printf("language:%u\n",Config::osdOpt2);
+        }
+
         // Close
         nvs_close(handle);
     }
@@ -643,7 +653,6 @@ void Config::save(string value) {
         printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
     } else {
         // printf("Done\n");
-
 
         if((value=="arch") || (value=="all"))
             nvs_set_str(handle,"arch",arch.c_str());
@@ -715,7 +724,7 @@ void Config::save(string value) {
             nvs_set_u8(handle,"joystick1",Config::joystick1);
 
         if((value=="joystick2") || (value=="all"))
-            nvs_set_u8(handle,"joystick2",Config::joystick2);
+            nvs_set_u8(handle,"joystick2",Config::joystick2);      
 
         // Write joystick definition
         for (int n=0; n < 24; n++) {
@@ -810,6 +819,12 @@ void Config::save(string value) {
 
         if((value=="volume") || (value=="all"))
             nvs_set_i8(handle,"volume",Config::volume);
+
+        if((value=="osdOpt1") || (value=="all"))
+            nvs_set_u8(handle,"osdOpt1",Config::osdOpt1);
+
+        if((value=="osdOpt2") || (value=="all"))
+            nvs_set_u8(handle,"osdOpt2",Config::osdOpt2);
 
         // printf("Committing updates in NVS ... ");
 
