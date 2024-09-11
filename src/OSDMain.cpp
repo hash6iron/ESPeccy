@@ -2596,6 +2596,104 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
                         }
                     }
+                    else if (options_num == 9) {
+                        menu_level = 2;
+                        menu_curopt = 1;
+                        menu_saverect = true;
+                        while (1) {
+                            // options for OSD
+                            string opt_menu = MENU_OSD[Config::lang];
+                            uint8_t opt2 = menuRun(opt_menu);                            
+                            if (opt2) {
+                                if (opt2 == 1)
+                                {
+                                    menu_level = 3;
+                                    menu_curopt = 1;
+                                    menu_saverect = true;
+
+                                    while (1){
+                                        string opt_menu = MENU_OSD_OPT1[Config::lang];
+                                        opt_menu += MENU_YESNO[Config::lang];
+                                        bool prev_opt = Config::osdOpt1;
+                                        if (prev_opt) {
+                                            menu_curopt = 1;
+                                            opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
+                                            opt_menu.replace(opt_menu.find("[N",0),2,"[ ");                        
+                                        } else {
+                                            menu_curopt = 2;
+                                            opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
+                                            opt_menu.replace(opt_menu.find("[N",0),2,"[*");                        
+                                        }
+
+                                        uint8_t opt2 = menuRun(opt_menu);
+                                        if (opt2) {
+                                            if (opt2 == 1)
+                                                Config::osdOpt1 = 1;
+                                            else
+                                                Config::osdOpt1 = 0;
+
+                                            if (Config::osdOpt1 != prev_opt) {
+                                                Config::save("osdOpt1");
+                                            }
+                                            menu_curopt = opt2;
+                                            menu_saverect = false;
+                                        } else {
+                                            menu_curopt = 1;
+                                            menu_level = 2;                                       
+                                            break;
+                                        }
+                                    }
+                                }
+                                else if (opt2==2)
+                                {
+                                    menu_level = 3;
+                                    menu_curopt = 1;
+                                    menu_saverect = true;
+
+                                    while (1){
+                                        string opt_menu = MENU_OSD_OPT2[Config::lang];
+                                        opt_menu += MENU_YESNO[Config::lang];
+                                        bool prev_opt = Config::osdOpt2;
+                                        if (prev_opt) {
+                                            menu_curopt = 1;
+                                            opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
+                                            opt_menu.replace(opt_menu.find("[N",0),2,"[ ");                        
+                                        } else {
+                                            menu_curopt = 2;
+                                            opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
+                                            opt_menu.replace(opt_menu.find("[N",0),2,"[*");                        
+                                        }
+
+                                        uint8_t opt2 = menuRun(opt_menu);
+                                        if (opt2) {
+                                            if (opt2 == 1)
+                                                Config::osdOpt2 = 1;
+                                            else
+                                                Config::osdOpt2 = 0;
+
+                                            if (Config::osdOpt2 != prev_opt) {
+                                                Config::save("osdOpt2");
+                                            }
+                                            menu_curopt = opt2;
+                                            menu_saverect = false;
+                                        } else {
+                                            menu_curopt = 1;
+                                            menu_level = 2;                                       
+                                            break;
+                                        }
+                                    }                                    
+                                }
+                                menu_curopt = opt2;
+                                menu_saverect = false;                                
+                            } else {
+                                menu_curopt = 1;
+                                break;
+                            }                          
+
+
+                        }
+                        
+                    }                    
                     else {
                         menu_curopt = 6;
                         break;

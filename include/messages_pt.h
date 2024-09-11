@@ -170,7 +170,8 @@ visit https://zxespectrum.speccy.org/contacto
     "Emula\x87\x84o do joystick\t>\n"\
     "Video\t>\n"\
     "Outros\t>\n"\
-    "Idioma\t>\n"
+    "Idioma\t>\n"\
+    "OSD\t>\n"
 
 #define MENU_UPDATE_PT \
     "Atualizar\n"\
@@ -295,5 +296,9 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_JOYPS2_PT "Emula\x87\x84o Joystick\n" "Tipo joystick\t>\n" "Joy nas teclas do cursor\t>\n" "TAB como fire 1\t>\n"
 
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
+
+#define MENU_OSD_PT "OSD op\n"\
+    "ESQUERDA-DIREITA entrar menu\t>\n"\
+    "Rota. altern. texto\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_PT_h

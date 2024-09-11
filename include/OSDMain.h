@@ -141,6 +141,7 @@ public:
     static unsigned int SaveRectpos;    
 
     static int8_t fdScrollPos;
+    static int8_t fdScrollStatus;
     static int timeStartScroll;
     static int timeScroll;
     static unsigned int elements;

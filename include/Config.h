@@ -86,6 +86,11 @@ public:
     static bool     slog_on;
     static bool     aspect_16_9;
     static uint8_t  lang;
+    static uint8_t  osdOpt1;
+    static uint8_t  osdOpt2;
+    static uint8_t  osdOpt3;
+    static uint8_t  osdOpt4;
+    static uint8_t  osdOpt5;    
     static bool     AY48;
     static bool     Issue2;    
     static bool     flashload;    

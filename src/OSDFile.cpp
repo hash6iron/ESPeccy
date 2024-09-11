@@ -61,6 +61,7 @@ unsigned int OSD::elements;
 unsigned int OSD::fdSearchElements;
 unsigned int OSD::ndirs;
 int8_t OSD::fdScrollPos;
+int8_t OSD::fdScrollStatus;
 int OSD::timeStartScroll;
 int OSD::timeScroll;
 uint8_t OSD::fdCursorFlash;
@@ -454,6 +455,7 @@ reset:
         fdScrollPos = 0;
         timeStartScroll = 0;
         timeScroll = 0;
+        fdScrollStatus = 0;
 
         bool mode_E = false;
 
@@ -472,6 +474,7 @@ reset:
                 timeStartScroll = 0;
                 timeScroll = 0;
                 fdScrollPos = 0;
+                fdScrollStatus = 0;
 
                 // Print elements
                 VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
@@ -685,7 +688,7 @@ reset:
                             // printf("Focus: %d, Lastfocus: %d\n",FileUtils::fileTypes[ftype].focus,(int) last_focus);
                         }
                         click();
-                    } else if (Menukey.vk == fabgl::VK_PAGEUP || Menukey.vk == fabgl::VK_LEFT || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
+                    } else if (Menukey.vk == fabgl::VK_PAGEUP || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osdOpt1 == 0)) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
                         if (FileUtils::fileTypes[ftype].begin_row > virtual_rows) {
                             FileUtils::fileTypes[ftype].focus = 2;
                             FileUtils::fileTypes[ftype].begin_row -= virtual_rows - 2;
@@ -695,7 +698,7 @@ reset:
                         }
                         fd_Redraw(title, fdir, ftype);
                         click();
-                    } else if (Menukey.vk == fabgl::VK_PAGEDOWN || Menukey.vk == fabgl::VK_RIGHT || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
+                    } else if (Menukey.vk == fabgl::VK_PAGEDOWN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osdOpt1 == 0)) || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
                         if (real_rows - FileUtils::fileTypes[ftype].begin_row  - virtual_rows > virtual_rows) {
                             FileUtils::fileTypes[ftype].focus = 2;
                             FileUtils::fileTypes[ftype].begin_row += virtual_rows - 2;
@@ -745,7 +748,7 @@ reset:
 
                             }       
                         }                  
-                    } else if (Menukey.vk == fabgl::VK_RETURN /*|| Menukey.vk == fabgl::VK_SPACE*/ || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) {
+                    } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osdOpt1 == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) {
 
                         fclose(dirfile);
                         dirfile = NULL;
@@ -780,7 +783,7 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_ESCAPE || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
+                    } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osdOpt1 == 1)) || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
 
                         OSD::restoreBackbufferData();
 
@@ -801,9 +804,15 @@ reset:
             if (timeStartScroll == 200) {
                 timeScroll++;
                 if (timeScroll == 50) {  
-                    fdScrollPos++;
-                    fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                    timeScroll = 0;
+                    if (fdScrollStatus==0) {
+                        fdScrollPos++;
+                        fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
+                        timeScroll = 0;
+                    } else {
+                        fdScrollPos--;
+                        fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
+                        timeScroll = 0;
+                    }
                 }
             }
 
@@ -1007,9 +1016,26 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
         else
             if (line_type == IS_FOCUSED) {
                 line = line.substr(fdScrollPos);
-                if (line.length() <= cols - margin - 6) {
-                    fdScrollPos = -1;
-                    timeStartScroll = 0; 
+                if (fdScrollStatus==0)
+                {
+                    if (line.length() <= cols - margin - 6) {
+                        timeStartScroll = 0;
+                        if (Config::osdOpt2 == 1) {
+                            fdScrollStatus = 1;
+                        } else {
+                            fdScrollPos = -1;
+                            timeStartScroll = 0;
+                            fdScrollStatus = 0;
+                        }                        
+                    }
+                }
+                else
+                {
+                    if (fdScrollPos == 0) {
+                        fdScrollPos = -1;
+                        timeStartScroll = 0;
+                        fdScrollStatus = 0;
+                    }
                 }
             }
 
@@ -1028,9 +1054,27 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
             } else {
                 if (line_type == IS_FOCUSED) {
                     line = line.substr(fdScrollPos);
-                    if (line.length() <= cols - margin) {
-                        fdScrollPos = -1;
-                        timeStartScroll = 0;                    
+                    if (fdScrollStatus==0)
+                    {
+                        if (line.length() <= cols - margin) {
+                            timeStartScroll = 0;
+
+                            if (Config::osdOpt2 == 1) {
+                                fdScrollStatus = 1;
+                            } else {
+                                fdScrollPos = -1;
+                                timeStartScroll = 0;
+                                fdScrollStatus = 0;
+                            }                            
+                        }
+                    }
+                    else
+                    {
+                        if (fdScrollPos == 0) {
+                            fdScrollPos = -1;
+                            timeStartScroll = 0;
+                            fdScrollStatus = 0;
+                        }
                     }
                 }                   
                 line = line.substr(0, cols - margin);
