@@ -220,16 +220,25 @@ reset:
 
     // Draw shortcut help
     string StatusBar = " ";
-    if ( ftype == DISK_TAPFILE ) // Dirty hack
+    if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) // Dirty hack
         StatusBar += Config::lang == 0 ? "F2 New | " :
                      Config::lang == 1 ? "F2 Nuevo | " : 
                                          "F2 Novo | " ;
 
     StatusBar += Config::lang == 0 ? "F3 Search | F8 Delete" :
                  Config::lang == 1 ? "F3 Buscar | F8 Borrar" :
-                                     "F3 Procurar | F8 Excluir";
+                                     "F3 Procurar | F8 Excluir" ;
 
-    if (cols > (StatusBar.length() + 11 + 2)) { // 11 from elements counter + 2 from borders
+    if ( cols <= StatusBar.length() + 11 + 2 ) {
+        StatusBar = " ";
+        if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) // Dirty hack
+            StatusBar += "F2 | ";
+
+        StatusBar += "F3 | F8";
+    }
+
+
+    if (cols > StatusBar.length() + 11 + 2 ) { // 11 from elements counter + 2 from borders
         StatusBar += std::string(cols - StatusBar.length() - 12, ' ');
     } else {
         StatusBar = std::string(cols - 12, ' ');
@@ -567,12 +576,14 @@ reset:
                             }
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_F2 && ftype == DISK_TAPFILE) {  // Dirty hack
+                    } else if (Menukey.vk == fabgl::VK_F2 && ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) ) {  // Dirty hack
 
                         string new_tap = OSD::input( 1, mf_rows, Config::lang == 0 ? "Name: " : 
                                                                  Config::lang == 1 ? "Nomb: " :
                                                                                      "Nome: " 
-                                                                , 30, zxColor(7,1), zxColor(5,0)
+                                                                , 30
+                                                                , cols - 3
+                                                                , zxColor(7,1), zxColor(5,0)
                                                                 , ""
                                                                 , fat32forbidden );
 
@@ -583,13 +594,14 @@ reset:
 
                             FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
 
-                            return "S" + new_tap + ".tap";
+                            return "S" + new_tap + ( ftype == DISK_TAPFILE ? ".tap" : ".sna" );
 
                         } else {
 
                             menuAt(mf_rows, 1);
                             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            VIDEO::vga.print("      " "                               ");
+//                            VIDEO::vga.print("      " "                               ");
+                            VIDEO::vga.print(string(cols-2, ' ').c_str());
 
                         }
 

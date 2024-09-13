@@ -710,6 +710,37 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         if (KeytoESP == fabgl::VK_F1) { // Show H/W info
             OSD::HWInfo();
         } else
+        if (KeytoESP == fabgl::VK_F2) {
+
+            FileUtils::remountSDCardIfNeeded();
+
+            if ( FileUtils::SDReady ) {
+                uint8_t res = DLG_YES;
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 51, 13);
+                if (mFile != "") {
+                    mFile.erase(0, 1);
+                    string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
+                    FileUtils::remountSDCardIfNeeded();
+                    if ( FileUtils::SDReady ) {
+                        struct stat stat_buf;
+                        if (stat(fname.c_str(), &stat_buf) == 0) {
+                            string title = OSD_TAPE_SAVE_EXIST[Config::lang];
+                            string msg = OSD_DLG_SURE[Config::lang];
+                            res = msgDialog(title,msg);
+                        }
+
+                        if (res == DLG_YES) {
+                            if (!FileSNA::save(fname) ) {
+                                OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+                            } else {
+                                Config::ram_file = fname;
+                                Config::last_ram_file = fname;
+                            }
+                        }
+                    }
+                }
+            }
+        } else
         if (KeytoESP == fabgl::VK_F6) { // Eject tape
             // Eject Tape
             click();
@@ -877,9 +908,24 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     if (fprefix == "S") FileZ80::keepArch = true;
                     mFile.erase(0, 1);
                     string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
-                    LoadSnapshot(fname,"","",0xff);
-                    Config::ram_file = fname;
-                    Config::last_ram_file = fname;
+
+                    FileUtils::remountSDCardIfNeeded();
+
+                    if ( FileUtils::SDReady ) {
+                        struct stat stat_buf;
+                        if (stat(fname.c_str(), &stat_buf) == 0) {
+                            LoadSnapshot(fname,"","",0xff);
+                            Config::ram_file = fname;
+                            Config::last_ram_file = fname;
+                        } else {
+                            if (!FileSNA::save(fname) ) {
+                                OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+                            } else {
+                                Config::ram_file = fname;
+                                Config::last_ram_file = fname;
+                            }
+                        }
+                    }
                 }
             }
             if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
@@ -1205,15 +1251,31 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             FileUtils::remountSDCardIfNeeded();
 
                             if ( FileUtils::SDReady ) {
+                                // ESPectrum::showMemInfo("Before F2 file dialog");
                                 string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, 28, 13);
+                                // ESPectrum::showMemInfo("After F2 file dialog");
                                 if (mFile != "") {
                                     mFile.erase(0, 1);
                                     string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
-                                    LoadSnapshot(fname,"","",0xff);
-                                    Config::ram_file = fname;
-                                    Config::last_ram_file = fname;
+                                    FileUtils::remountSDCardIfNeeded();
+                                    if ( FileUtils::SDReady ) {
+                                        struct stat stat_buf;
+                                        if (stat(fname.c_str(), &stat_buf) == 0) {
+                                            LoadSnapshot(fname,"","",0xff);
+                                            Config::ram_file = fname;
+                                            Config::last_ram_file = fname;
+                                        } else {
+                                            if (!FileSNA::save(fname) ) {
+                                                OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+                                            } else {
+                                                Config::ram_file = fname;
+                                                Config::last_ram_file = fname;
+                                            }
+                                        }
+                                    }
                                     return;
                                 }
+
                             } else {
                                 menu_saverect = false;
                                 menu_curopt = sna_mnu;
@@ -1221,6 +1283,41 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         }
                         else if (sna_mnu == 2) {
+                            FileUtils::remountSDCardIfNeeded();
+
+                            if ( FileUtils::SDReady ) {
+                                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 28, 13);
+                                if (mFile != "") {
+                                    mFile.erase(0, 1);
+                                    string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
+                                    FileUtils::remountSDCardIfNeeded();
+                                    if ( FileUtils::SDReady ) {
+                                        struct stat stat_buf;
+                                        if (stat(fname.c_str(), &stat_buf) == 0) {
+                                            string title = OSD_TAPE_SAVE_EXIST[Config::lang];
+                                            string msg = OSD_DLG_SURE[Config::lang];
+                                            uint8_t res = msgDialog(title,msg);
+
+                                            if (res != DLG_YES) return;
+                                        }
+
+                                        if (!FileSNA::save(fname) ) {
+                                            OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+                                        } else {
+                                            Config::ram_file = fname;
+                                            Config::last_ram_file = fname;
+                                        }
+                                    }
+                                    return;
+                                }
+
+                            } else {
+                                menu_saverect = false;
+                                menu_curopt = sna_mnu;
+                            }
+
+                        }
+                        else if (sna_mnu == 3) {
                             // Persist Load
                             FileUtils::remountSDCardIfNeeded();
 
@@ -1242,7 +1339,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 }
                             }
                         }
-                        else if (sna_mnu == 3) {
+                        else if (sna_mnu == 4) {
                             // Persist Save
                             FileUtils::remountSDCardIfNeeded();
 
@@ -4135,24 +4232,24 @@ static const char *MENU_JOYSELKEY[NLANGS] = { MENU_JOYSELKEY_EN, MENU_JOYSELKEY_
     "B\n"\
     "C\n"\
     "D\n"\
-    "E\n"\				
+    "E\n"\
     "F\n"\
     "G\n"\
-	"H\n"\			
-	"I\n"\				
-	"J\n"\					
-	"K\n"\						
+	"H\n"\
+	"I\n"\
+	"J\n"\
+	"K\n"\
     "L\n"\
     "M\n"\
     "N\n"\
     "O\n"\
-    "P\n"\				
+    "P\n"\
     "Q\n"\
     "R\n"\
-	"S\n"\			
-	"T\n"\				
-	"U\n"\					
-	"V\n"\						
+	"S\n"\
+	"T\n"\
+	"U\n"\
+	"V\n"\
     "W\n"\
     "X\n"\
     "Y\n"\
@@ -5555,7 +5652,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
     return ascii;
 }
 
-string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value, const string& forbiddenchars, uint8_t * flags ) {
+string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value, const string& forbiddenchars, uint8_t * flags ) {
 
     int curObject = 0;
 
@@ -5572,6 +5669,8 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
     string inputValue = default_value;
 
     bool mode_E = false;
+
+    int displayeLimit = maxSize > maxDisplaySize ? maxDisplaySize : maxSize;
 
     while (1) {
 
@@ -5626,7 +5725,8 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
         if ((++CursorFlash & 0xF) == 0) {
             menuAt(y, x);
             VIDEO::vga.setTextColor(ink_color, paper_color);
-            VIDEO::vga.print((inputLabel + inputValue).c_str());
+//            VIDEO::vga.print((inputLabel + inputValue).c_str());
+            VIDEO::vga.print( ( inputValue.size() > displayeLimit ? inputValue.substr( inputValue.size() - displayeLimit).c_str() : inputValue.c_str() ) );
 
             if (CursorFlash > 63) {
                 VIDEO::vga.setTextColor(paper_color, ink_color);
@@ -5634,7 +5734,9 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, uint16_t ink_col
             }
             VIDEO::vga.print(mode_E?"E":"L");
             VIDEO::vga.setTextColor(ink_color, paper_color);
-            VIDEO::vga.print(string(maxSize - inputValue.size(), ' ').c_str());
+//            VIDEO::vga.print(string(maxSize - inputValue.size(), ' ').c_str());
+            if ( inputValue.size() < displayeLimit ) VIDEO::vga.print(string( displayeLimit - inputValue.size() , ' ').c_str());
+
         }
 
         vTaskDelay(5 / portTICK_PERIOD_MS);

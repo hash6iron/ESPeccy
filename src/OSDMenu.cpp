@@ -209,7 +209,7 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
         click();
         uint8_t flags = 0;
 
-        string new_name = input(1, focus, "", SLOTNAME_LEN, zxColor(0,0), zxColor(7,0), rowGet(menu, idx), "", &flags);
+        string new_name = input(1, focus, "", SLOTNAME_LEN, SLOTNAME_LEN, zxColor(0,0), zxColor(7,0), rowGet(menu, idx), "", &flags);
         if ( !( flags & 1 ) ) { // if not canceled
             renameSlot(idx, new_name);
         }
@@ -992,7 +992,7 @@ int OSD::menuTape(string title) {
 
                             string current_name = rtrim_copy(rowGet( menu, menuRealRowFor( focus ) ).substr(18,10));
 
-                            string new_name = input(19, focus, "", 10, zxColor(0,0), zxColor(7,0), current_name);
+                            string new_name = input(19, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), current_name);
                             if ( new_name != "" ) {
                                 Tape::renameBlock( begin_row - 2 + focus, new_name );
                             }

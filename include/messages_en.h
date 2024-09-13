@@ -100,6 +100,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_TITLE_EN "Select Snapshot"
 
+#define MENU_SAVE_SNA_TITLE_EN "Save Snapshot"
+
 #define MENU_TAP_TITLE_EN "Select tape file"
 
 #define MENU_DSK_TITLE_EN "Select disk"
@@ -125,6 +127,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_SNA_EN \
     "Snapshot menu\n"\
     "Load (SNA,Z80,P) \t(F2) >\n"\
+    "Save (SNA) \t(SF2) >\n"\
     "Load snapshot\t(F3) >\n"\
     "Save snapshot\t(F4) >\n"
 

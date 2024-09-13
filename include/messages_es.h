@@ -97,6 +97,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_TITLE_ES "Elija snapshot"
 
+#define MENU_SAVE_SNA_TITLE_ES "Guardar snapshot"
+
 #define MENU_TAP_TITLE_ES "Elija fichero de cinta"
 
 #define MENU_DSK_TITLE_ES "Elija disco"
@@ -122,6 +124,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_SNA_ES \
     "Men\xA3 snapshots\n"\
     "Cargar (SNA,Z80,P) \t(F2) >\n"\
+    "Guardar (SNA) \t(SF2) >\n"\
     "Cargar snapshot\t(F3) >\n"\
     "Guardar snapshot\t(F4) >\n"
 

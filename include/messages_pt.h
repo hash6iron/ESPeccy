@@ -102,6 +102,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_TITLE_PT "Escolha o snapshot"
 
+#define MENU_SAVE_SNA_TITLE_PT "Salvar snapshot"
+
 #define MENU_TAP_TITLE_PT "Escolha o arq. de Fita"
 
 #define MENU_DSK_TITLE_PT "Escolha o disco"
@@ -127,6 +129,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_SNA_PT \
     "Menu snapshots\n"\
     "Carregar (SNA,Z80,P) \t(F2) >\n"\
+    "Salvar (SNA) \t(SF2) >\n"\
     "Carregar snapshot\t(F3) >\n"\
     "Salvar snapshot\t(F4) >\n"
 
