@@ -1486,3 +1486,359 @@ bool FileP::load(string p_fn) {
     return true;
 
 }
+
+
+size_t FileZ80::saveCompressedMemData(FILE *f, uint16_t memoff, uint16_t memlen, bool onlygetsize) {
+    size_t size = 0;
+    uint16_t memidx = 0;
+
+    while(memidx < memlen) {
+        uint8_t byte = MemESP::readbyte(memoff + memidx);
+        uint16_t repcnt = 1;
+
+        // Contar repeticiones del mismo byte para aplicar RLE
+        while ((memidx + repcnt < memlen) && (repcnt < 255) && (MemESP::readbyte(memoff + memidx + repcnt) == byte)) {
+            repcnt++;
+        }
+
+        if (repcnt > 4 || (byte == 0xED && repcnt >= 2)) {
+            // Aplicar compresión RLE para más de 4 repeticiones o si el byte es 0xED
+            if (!onlygetsize) {
+                writeByteFile(0xED, f);
+                writeByteFile(0xED, f);
+                writeByteFile(repcnt, f);
+                writeByteFile(byte, f);
+            }
+            size+=4;
+        } else {
+            // No aplicar compresión si no hay suficientes repeticiones
+            for (uint16_t i = 0; i < repcnt; i++) {
+                if (!onlygetsize) writeByteFile(byte, f);
+                size++;
+                // Si el byte es 0xED, el siguiente byte no debe estar en un bloque de repetición
+                // En el caso de 0xED, repcnt = 1, asi que este codigo ocupa el caso de 0xED individuales seguidos de un bloque de repeticion (o un 0xED al final del bloque)
+                if (byte == 0xED && memidx + i + 1 < memlen) {
+                    if (!onlygetsize) writeByteFile(MemESP::readbyte(memoff + memidx + i + 1), f);
+                    size++;
+                    memidx++;
+                }
+            }
+        }
+
+        memidx += repcnt;
+    }
+
+    return size;
+}
+
+size_t FileZ80::saveCompressedMemPage(FILE *f, uint8_t* memPage, uint16_t memlen, bool onlygetsize) {
+    size_t size = 0;
+    uint16_t memidx = 0;
+
+    while(memidx < memlen) {
+        uint8_t byte = memPage[memidx];
+        uint16_t repcnt = 1;
+
+        // Contar repeticiones del mismo byte para aplicar RLE
+        while ((memidx + repcnt < memlen) && (repcnt < 255) && (memPage[memidx + repcnt] == byte)) {
+            repcnt++;
+        }
+
+        if (repcnt > 4 || (byte == 0xED && repcnt >= 2)) {
+            // Aplicar compresión RLE para más de 4 repeticiones o si el byte es 0xED
+            if (!onlygetsize) {
+                writeByteFile(0xED, f);
+                writeByteFile(0xED, f);
+                writeByteFile(repcnt, f);
+                writeByteFile(byte, f);
+            }
+            size+=4;
+        } else {
+            // No aplicar compresión si no hay suficientes repeticiones
+            for (uint16_t i = 0; i < repcnt; i++) {
+                if (!onlygetsize) writeByteFile(byte, f);
+                size++;
+                // Si el byte es 0xED, el siguiente byte no debe estar en un bloque de repetición
+                // En el caso de 0xED, repcnt = 1, asi que este codigo ocupa el caso de 0xED individuales seguidos de un bloque de repeticion (o un 0xED al final del bloque)
+                if (byte == 0xED && memidx + i + 1 < memlen) {
+                    if (!onlygetsize) writeByteFile(memPage[memidx + i + 1], f);
+                    size++;
+                    memidx++;
+                }
+            }
+        }
+
+        memidx += repcnt;
+    }
+
+    return size;
+}
+
+
+
+bool FileZ80::save(string z80_fn) {
+
+    FILE *file;
+
+    file = fopen(z80_fn.c_str(), "wb");
+    if (file==NULL)
+    {
+        printf("FileZ80: Error opening %s for writing",z80_fn.c_str());
+        return false;
+    }
+
+    // write registers
+/*
+    Offset  Length  Description
+    ---------------------------
+    0       1       A register
+    1       1       F register
+    2       2       BC register pair (LSB, i.e. C, first)
+    4       2       HL register pair
+    6       2       Program counter
+    8       2       Stack pointer
+    10      1       Interrupt register
+    11      1       Refresh register (Bit 7 is not significant!)
+    12      1       Bit 0  : Bit 7 of the R-register
+                    Bit 1-3: Border colour
+                    Bit 4  : 1=Basic SamRom switched in
+                    Bit 5  : 1=Block of data is compressed
+                    Bit 6-7: No meaning
+    13      2       DE register pair
+    15      2       BC' register pair
+    17      2       DE' register pair
+    19      2       HL' register pair
+    21      1       A' register
+    22      1       F' register
+    23      2       IY register (Again LSB first)
+    25      2       IX register
+    27      1       Interrupt flipflop, 0=DI, otherwise EI
+    28      1       IFF2 (not particularly important...)
+    29      1       Bit 0-1: Interrupt mode (0, 1 or 2)
+                    Bit 2  : 1=Issue 2 emulation
+                    Bit 3  : 1=Double interrupt frequency
+                    Bit 4-5: 1=High video synchronisation
+                             3=Low video synchronisation
+                             0,2=Normal
+                    Bit 6-7: 0=Cursor/Protek/AGF joystick
+                             1=Kempston joystick
+                             2=Sinclair 2 Left joystick (or user
+                               defined, for version 3 .z80 files)
+                             3=Sinclair 2 Right joystick
+*/
+
+    writeByteFile(Z80::getRegA(), file);
+    writeByteFile(Z80::getFlags(), file);
+
+    writeByteFile(Z80::getRegC(), file);
+    writeByteFile(Z80::getRegB(), file);
+
+    writeByteFile(Z80::getRegL(), file);
+    writeByteFile(Z80::getRegH(), file);
+
+    writeWordFileLE(0, file);
+    writeWordFileLE(Z80::getRegSP(), file);
+
+    writeByteFile(Z80::getRegI(), file);
+
+    writeByteFile(Z80::getRegR(), file);
+
+    // Z80::setRegR  (       header[11]);
+    uint8_t b12 = ( Z80::getRegR() & 0x80 ) ? 0x01 : 0;
+    b12 |= ( VIDEO::borderColor & 0x07 ) << 1;
+    writeByteFile(b12, file);
+
+    writeByteFile(Z80::getRegE(), file);
+    writeByteFile(Z80::getRegD(), file);
+
+    writeByteFile(Z80::getRegCx(), file);
+    writeByteFile(Z80::getRegBx(), file);
+
+    writeByteFile(Z80::getRegEx(), file);
+    writeByteFile(Z80::getRegDx(), file);
+
+    writeByteFile(Z80::getRegLx(), file);
+    writeByteFile(Z80::getRegHx(), file);
+
+    writeByteFile(Z80::getRegAx(), file);
+    writeByteFile(Z80::getRegFx(), file);
+
+    writeWordFileLE(Z80::getRegIY(), file);
+    writeWordFileLE(Z80::getRegIX(), file);
+
+    writeByteFile(Z80::isIFF1() ? 1 : 0, file);
+    writeByteFile(Z80::isIFF2() ? 1 : 0, file);
+
+    uint8_t b29 = ( (uint8_t) Z80::getIM() ) & 0x03;
+    b29 |= ((Z80Ops::is48) && (Config::Issue2)) ? 0x04 : 0;
+
+    writeByteFile(b29, file);
+
+    // additional header
+/*
+    Offset  Length  Description
+    ---------------------------
+  * 30      2       Length of additional header block (see below)
+  * 32      2       Program counter
+  * 34      1       Hardware mode (see below)
+  * 35      1       If in SamRam mode, bitwise state of 74ls259.
+                    For example, bit 6=1 after an OUT 31,13 (=2*6+1)
+                    If in 128 mode, contains last OUT to 0x7ffd
+        If in Timex mode, contains last OUT to 0xf4
+  * 36      1       Contains 0xff if Interface I rom paged
+        If in Timex mode, contains last OUT to 0xff
+  * 37      1       Bit 0: 1 if R register emulation on
+                    Bit 1: 1 if LDIR emulation on
+        Bit 2: AY sound in use, even on 48K machines
+        Bit 6: (if bit 2 set) Fuller Audio Box emulation
+        Bit 7: Modify hardware (see below)
+  * 38      1       Last OUT to port 0xfffd (soundchip register number)
+  * 39      16      Contents of the sound chip registers
+    55      2       Low T state counter
+    57      1       Hi T state counter
+    58      1       Flag byte used by Spectator (QL spec. emulator)
+                    Ignored by Z80 when loading, zero when saving
+    59      1       0xff if MGT Rom paged
+    60      1       0xff if Multiface Rom paged. Should always be 0.
+    61      1       0xff if 0-8191 is ROM, 0 if RAM
+    62      1       0xff if 8192-16383 is ROM, 0 if RAM
+    63      10      5 x keyboard mappings for user defined joystick
+    73      10      5 x ASCII word: keys corresponding to mappings above
+    83      1       MGT type: 0=Disciple+Epson,1=Disciple+HP,16=Plus D
+    84      1       Disciple inhibit button status: 0=out, 0ff=in
+    85      1       Disciple inhibit flag: 0=rom pageable, 0ff=not
+ ** 86      1       Last OUT to port 0x1ffd
+*/
+    writeWordFileLE(55, file); // Version 3                                         // off: 30
+
+    writeWordFileLE(Z80::getRegPC(), file);                                         // off: 32
+
+
+    uint8_t mch = 0;
+    if ( Z80Ops::is48 ) {
+        mch = 0 ;
+    } else
+    if ( Z80Ops::is128 ) {
+        if (Config::romSet == "+2" && Config::romSet == "+2es") {
+            mch = 12 ; // Spectrum +2
+        } else {
+            mch = 4 ;
+        }
+    } else
+    if ( Z80Ops::isPentagon ) {
+        mch = 9;
+    }
+    writeByteFile(mch, file);                                                       // off: 34
+    
+    // write memESP bank control port
+    uint8_t tmp_port = 0;
+    if (Z80Ops::is128 || Z80Ops::isPentagon) {
+        tmp_port = MemESP::bankLatch & 0x07;
+        bitWrite(tmp_port, 3, MemESP::videoLatch);
+        bitWrite(tmp_port, 4, MemESP::romLatch);
+        bitWrite(tmp_port, 5, MemESP::pagingLock);
+    }
+    writeByteFile(tmp_port, file);                                                  // off: 35
+
+    writeByteFile(0, file);                                                         // off: 36
+    writeByteFile(0, file);                                                         // off: 37
+    writeByteFile(0, file);                                                         // off: 38
+    writeByteFile(0, file);                                                         // off: 39-54
+        writeByteFile(0, file);                                                     // off: 40
+        writeByteFile(0, file);                                                     // off: 41
+        writeByteFile(0, file);                                                     // off: 42
+        writeByteFile(0, file);                                                     // off: 43
+        writeByteFile(0, file);                                                     // off: 44
+        writeByteFile(0, file);                                                     // off: 45
+        writeByteFile(0, file);                                                     // off: 46
+        writeByteFile(0, file);                                                     // off: 47
+        writeByteFile(0, file);                                                     // off: 48
+        writeByteFile(0, file);                                                     // off: 49
+        writeByteFile(0, file);                                                     // off: 50
+        writeByteFile(0, file);                                                     // off: 51
+        writeByteFile(0, file);                                                     // off: 52
+        writeByteFile(0, file);                                                     // off: 53
+        writeByteFile(0, file);                                                     // off: 54
+    // TODO
+    writeByteFile(0, file);                                                         // off: 55-86
+        writeByteFile(0, file);                                                     // off: 56
+        writeByteFile(0, file);                                                     // off: 57
+        writeByteFile(0, file);                                                     // off: 58
+        writeByteFile(0, file);                                                     // off: 59
+        writeByteFile(0, file);                                                     // off: 60
+        writeByteFile(0, file);                                                     // off: 61
+        writeByteFile(0, file);                                                     // off: 62
+        writeByteFile(0, file);                                                     // off: 63
+        writeByteFile(0, file);                                                     // off: 64
+        writeByteFile(0, file);                                                     // off: 65
+        writeByteFile(0, file);                                                     // off: 66
+        writeByteFile(0, file);                                                     // off: 67
+        writeByteFile(0, file);                                                     // off: 68
+        writeByteFile(0, file);                                                     // off: 69
+        writeByteFile(0, file);                                                     // off: 70
+        writeByteFile(0, file);                                                     // off: 71
+        writeByteFile(0, file);                                                     // off: 72
+        writeByteFile(0, file);                                                     // off: 73
+        writeByteFile(0, file);                                                     // off: 74
+        writeByteFile(0, file);                                                     // off: 75
+        writeByteFile(0, file);                                                     // off: 76
+        writeByteFile(0, file);                                                     // off: 77
+        writeByteFile(0, file);                                                     // off: 78
+        writeByteFile(0, file);                                                     // off: 79
+        writeByteFile(0, file);                                                     // off: 80
+        writeByteFile(0, file);                                                     // off: 81
+        writeByteFile(0, file);                                                     // off: 82
+        writeByteFile(0, file);                                                     // off: 83
+        writeByteFile(0, file);                                                     // off: 84
+        writeByteFile(0, file);                                                     // off: 85
+        writeByteFile(0, file);                                                     // off: 86
+
+    if (Z80Ops::is48) {
+        uint16_t pageStart[12] = {0, 0, 0, 0, 0x8000, 0xC000, 0, 0, 0x4000, 0, 0};
+
+        for (int i = 0; i < sizeof(pageStart)/sizeof(pageStart[0]); ++i) {
+            if ( pageStart[i] ) {
+                size_t dataLen = saveCompressedMemData(NULL, pageStart[i], 0x4000, true);
+                if (dataLen >= 0x4000) {
+                    writeWordFileLE(0xffff, file); // no compress
+                    writeByteFile(i, file); // page
+                    for (int off = 0; off < 0x4000; ++off) {
+                        writeByteFile(MemESP::readbyte(pageStart[i]+off), file);
+                    }
+                } else {
+                    writeWordFileLE(dataLen, file); // compressed size
+                    writeByteFile(i, file); // page
+                    saveCompressedMemData(file, pageStart[i], 0x4000, false);
+                }
+            }
+        }
+    } else {
+        uint8_t* pages[12] = {
+            0, 0, 0,
+            MemESP::ram[0], MemESP::ram[1], MemESP::ram[2], MemESP::ram[3],
+            MemESP::ram[4], MemESP::ram[5], MemESP::ram[6], MemESP::ram[7],
+            0 };
+
+        for (int i = 0; i < sizeof(pages)/sizeof(pages[0]); ++i) {
+            if ( pages[i] ) {
+                size_t dataLen = saveCompressedMemPage(NULL, pages[i], 0x4000, true);
+                if (dataLen >= 0x4000) {
+                    writeWordFileLE(0xffff, file); // no compress
+                    writeByteFile(i, file); // page
+                    for (int off = 0; off < 0x4000; ++off) {
+                        writeByteFile(pages[i][off], file);
+                    }
+                } else {
+                    writeWordFileLE(dataLen, file); // compressed size
+                    writeByteFile(i, file); // page
+                    saveCompressedMemPage(file, pages[i], 0x4000, false);
+                }
+            }
+        }
+    }
+
+    fclose(file);
+
+    return true;
+
+}

@@ -60,9 +60,13 @@ public:
     static void loader48();    
     static void loader128();  
     static bool keepArch;      
+    static bool save(string z80_fn);
+
 private:
     static void loadCompressedMemData(FILE *f, uint16_t dataLen, uint16_t memStart, uint16_t memlen);
     static void loadCompressedMemPage(FILE *f, uint16_t dataLen, uint8_t* memPage, uint16_t memlen);
+    static size_t saveCompressedMemData(FILE *f, uint16_t memoff, uint16_t memlen, bool onlygetsize);
+    static size_t saveCompressedMemPage(FILE *f, uint8_t* memPage, uint16_t memlen, bool onlygetsize);
 };
 
 class FileP

@@ -594,7 +594,14 @@ reset:
 
                             FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
 
-                            return "S" + new_tap + ( ftype == DISK_TAPFILE ? ".tap" : ".sna" );
+                            string ext;
+                            if ( ftype == DISK_TAPFILE ) ext = ".tap";
+                            else if ( FileUtils::hasZ80extension(new_tap) || FileUtils::hasSNAextension(new_tap) ) {
+                                ext = "";
+                            } else
+                                ext = ".sna";
+
+                            return "S" + new_tap + ext;
 
                         } else {
 

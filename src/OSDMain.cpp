@@ -730,7 +730,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         }
 
                         if (res == DLG_YES) {
-                            if (!FileSNA::save(fname) ) {
+                            bool saveres;
+                            if ( FileUtils::hasSNAextension(fname) ) saveres = FileSNA::save(fname);
+                            else saveres = FileZ80::save(fname);
+                            if (!saveres) {
                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                             } else {
                                 Config::ram_file = fname;
@@ -918,7 +921,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = fname;
                             Config::last_ram_file = fname;
                         } else {
-                            if (!FileSNA::save(fname) ) {
+                            bool saveres;
+                            if ( FileUtils::hasSNAextension(fname) ) saveres = FileSNA::save(fname);
+                            else saveres = FileZ80::save(fname);
+                            if (!saveres) {
                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                             } else {
                                 Config::ram_file = fname;
