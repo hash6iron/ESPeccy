@@ -596,7 +596,7 @@ reset:
 
                             string ext;
                             if ( ftype == DISK_TAPFILE ) ext = ".tap";
-                            else if ( FileUtils::hasZ80extension(new_tap) || FileUtils::hasSNAextension(new_tap) ) {
+                            else if ( FileUtils::hasZ80extension(new_tap) || FileUtils::hasSNAextension(new_tap) || FileUtils::hasExtension(new_tap, "sp") ) {
                                 ext = "";
                             } else
                                 ext = ".sna";

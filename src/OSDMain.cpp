@@ -432,7 +432,7 @@ static bool persistSave(uint8_t slotnumber)
         fputs((Config::arch + "\n" + Config::romSet + "\n" + persist_ALUTK + "\n").c_str(),f);    // Put architecture, romset and ALUTK on info file
         fclose(f);    
 
-        if (!FileSNA::save(FileUtils::MountPoint + DISK_PSNA_DIR + "/" + persistfname)) OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+        if (!SaveSnapshot(FileUtils::MountPoint + DISK_PSNA_DIR + "/" + persistfname)) OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
 
     }
 
@@ -730,10 +730,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         }
 
                         if (res == DLG_YES) {
-                            bool saveres;
-                            if ( FileUtils::hasSNAextension(fname) ) saveres = FileSNA::save(fname);
-                            else saveres = FileZ80::save(fname);
-                            if (!saveres) {
+                            if (!SaveSnapshot(fname)) {
                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                             } else {
                                 Config::ram_file = fname;
@@ -921,10 +918,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = fname;
                             Config::last_ram_file = fname;
                         } else {
-                            bool saveres;
-                            if ( FileUtils::hasSNAextension(fname) ) saveres = FileSNA::save(fname);
-                            else saveres = FileZ80::save(fname);
-                            if (!saveres) {
+                            if (!SaveSnapshot(fname)) {
                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                             } else {
                                 Config::ram_file = fname;
@@ -1271,7 +1265,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             Config::ram_file = fname;
                                             Config::last_ram_file = fname;
                                         } else {
-                                            if (!FileSNA::save(fname) ) {
+                                            if (!SaveSnapshot(fname)) {
                                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                                             } else {
                                                 Config::ram_file = fname;
@@ -1307,7 +1301,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             if (res != DLG_YES) return;
                                         }
 
-                                        if (!FileSNA::save(fname) ) {
+                                        if (!SaveSnapshot(fname)) {
                                             OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                                         } else {
                                             Config::ram_file = fname;

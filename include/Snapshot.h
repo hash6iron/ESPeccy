@@ -43,6 +43,7 @@ visit https://zxespectrum.speccy.org/contacto
 using namespace std;
 
 bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8_t force_ALU);
+bool SaveSnapshot(string filename);
 
 class FileSNA
 {
@@ -73,6 +74,13 @@ class FileP
 {
 public:
     static bool load(string p_fn);
+};
+
+class FileSP
+{
+public: 
+    static bool load(string sp_fn);
+    static bool save(string sp_fn);
 };
 
 #endif

@@ -73,7 +73,7 @@ DISK_FTYPE FileUtils::fileTypes[5] = {
 //    {".sna,.SNA,.z80,.Z80,.p,.P",".s",2,2,0,""},
 //    {".tap,.TAP,.tzx,.TZX",".t",2,2,0,""},
 //    {".trd,.TRD,.scl,.SCL",".d",2,2,0,""}
-    {"sna,z80,p",".s",2,2,0,""},
+    {"sna,z80,sp,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
     {"rom",".r",2,2,0,""},
