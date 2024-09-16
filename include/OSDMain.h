@@ -148,7 +148,7 @@ public:
     static unsigned int ndirs;
 
     static uint8_t msgDialog(string title, string msg);
-    static void progressDialog(string title, string msg, int percent, int action);
+    static void progressDialog(string title, string msg, int percent, int action, bool noprogressbar = false);
     string inputBox(int x, int y, string text);
     static void joyDialog(uint8_t joynum);
     static void pokeDialog();

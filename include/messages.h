@@ -71,17 +71,19 @@ static const char *ERR_FS_EXT_FAIL[NLANGS] = { ERR_FS_EXT_FAIL_EN, ERR_FS_EXT_FA
 
 static const char *OSD_PAUSE[NLANGS] = { OSD_PAUSE_EN,OSD_PAUSE_ES,OSD_PAUSE_PT };
 
-#define OSD_PSNA_NOT_AVAIL "No Persist Snapshot Available"
-#define OSD_PSNA_LOADING "Loading Persist Snapshot"
-#define OSD_PSNA_SAVING  "Saving Persist Snapshot"
+#define OSD_PSNA_NOT_AVAIL "No Snapshot Available"
+#define OSD_PSNA_LOADING "Loading Snapshot"
+#define OSD_PSNA_SAVING  "Saving Snapshot"
 #define OSD_PSNA_SAVE_WARN "Disk error. Trying slow mode, be patient"
-#define OSD_PSNA_SAVE_ERR "ERROR Saving Persist Snapshot"
-#define OSD_PSNA_LOADED  "Persist Snapshot Loaded"
-#define OSD_PSNA_LOAD_ERR "ERROR Loading Persist Snapshot"
-#define OSD_PSNA_SAVED  "Persist Snapshot Saved"
+#define OSD_PSNA_SAVE_ERR "ERROR Saving Snapshot"
+#define OSD_PSNA_LOADED  "Snapshot Loaded"
+#define OSD_PSNA_LOAD_ERR "ERROR Loading Snapshot"
+#define OSD_PSNA_SAVED  "Snapshot Saved"
 #define OSD_TAPE_LOAD_ERR "ERROR Loading tape file"
 #define OSD_TAPE_SAVE_ERR "ERROR Saving tape file"
 #define OSD_BETADISK_LOAD_ERR "ERROR Loading Disk file"
+
+#define OSD_PLEASE_WAIT "Please Wait..."
 
 static const char *OSD_TAPE_FLASHLOAD[NLANGS] = { OSD_TAPE_FLASHLOAD_EN, OSD_TAPE_FLASHLOAD_ES, OSD_TAPE_FLASHLOAD_PT };
 

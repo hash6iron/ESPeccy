@@ -4004,7 +4004,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
 
 }
 
-void OSD::progressDialog(string title, string msg, int percent, int action) {
+void OSD::progressDialog(string title, string msg, int percent, int action, bool noprogressbar ) {
 
     static unsigned short h;
     static unsigned short y;
@@ -4018,7 +4018,7 @@ void OSD::progressDialog(string title, string msg, int percent, int action) {
 
     if (action == 0 ) { // SHOW
 
-        h = (OSD_FONT_H * 6) + 2;
+        h = (OSD_FONT_H * (noprogressbar ? 4 : 6)) + 2;
         y = scrAlignCenterY(h);
 
         if (msg.length() > (scrW / 6) - 4) msg = msg.substr(0,(scrW / 6) - 4);
@@ -4062,12 +4062,14 @@ void OSD::progressDialog(string title, string msg, int percent, int action) {
             rb_paint_x += 5;
         }
 
-        // Progress bar frame
-        progress_x = scrAlignCenterX(72);
-        progress_y = y + (OSD_FONT_H * 4);
-        VIDEO::vga.rect(progress_x, progress_y, 72, OSD_FONT_H + 2, zxColor(0, 0));
-        progress_x++;
-        progress_y++;
+        if ( !noprogressbar ) {
+            // Progress bar frame
+            progress_x = scrAlignCenterX(72);
+            progress_y = y + (OSD_FONT_H * 4);
+            VIDEO::vga.rect(progress_x, progress_y, 72, OSD_FONT_H + 2, zxColor(0, 0));
+            progress_x++;
+            progress_y++;
+        }
 
     } else if (action == 1 ) { // UPDATE
 
@@ -4076,10 +4078,12 @@ void OSD::progressDialog(string title, string msg, int percent, int action) {
         VIDEO::vga.setCursor(scrAlignCenterX(msg.length() * OSD_FONT_W), y + 1 + (OSD_FONT_H * 2));
         VIDEO::vga.print(msg.c_str());
 
-        // Progress bar
-        int barsize = (70 * percent) / 100;
-        VIDEO::vga.fillRect(progress_x, progress_y, barsize, OSD_FONT_H, zxColor(5,1));
-        VIDEO::vga.fillRect(progress_x + barsize, progress_y, 70 - barsize, OSD_FONT_H, zxColor(7,1));
+        if ( !noprogressbar ) {
+            // Progress bar
+            int barsize = (70 * percent) / 100;
+            VIDEO::vga.fillRect(progress_x, progress_y, barsize, OSD_FONT_H, zxColor(5,1));
+            VIDEO::vga.fillRect(progress_x + barsize, progress_y, 70 - barsize, OSD_FONT_H, zxColor(7,1));
+        }
 
     } else if (action == 2) { // CLOSE
 

@@ -169,7 +169,7 @@ static inline uint16_t readWordFileBE(FILE *f) {
 }
 
 static inline size_t readBlockFile(FILE *f, uint8_t* dstBuffer, size_t size) {
-    return fread(dstBuffer, 0x4000, 1, f);
+    return fread(dstBuffer, size/*0x4000*/, 1, f) * size;
 }
 
 static inline void writeByteFile(uint8_t value, FILE *f) {
@@ -181,6 +181,10 @@ static inline void writeWordFileLE(uint16_t value, FILE *f) {
     uint8_t hi = (value >> 8) & 0xFF;
     fwrite(&lo,1,1,f);
     fwrite(&hi,1,1,f);
+}
+
+static inline size_t writeBlockFile(FILE *f, uint8_t* srcBuffer, size_t size) {
+    return fwrite(srcBuffer, size/*0x4000*/, 1, f) * size;
 }
 
 // static inline void writeWordFileBE(uint16_t value, File f) {

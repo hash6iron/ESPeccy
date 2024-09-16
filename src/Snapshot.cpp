@@ -569,6 +569,8 @@ bool FileSNA::save(string sna_file, bool blockMode) {
         return false;
     }
 
+    OSD::progressDialog(OSD_PSNA_SAVING,OSD_PLEASE_WAIT,0,0,true);
+
     // write registers: begin with I
     writeByteFile(Z80::getRegI(), file);
 
@@ -645,6 +647,7 @@ bool FileSNA::save(string sna_file, bool blockMode) {
             if (page != MemESP::bankLatch && page != 2 && page != 5) {
                 if (!writeMemPage(page, file, blockMode)) {
                     fclose(file);
+                    OSD::progressDialog("","",0,2,true);
                     return false;
 
                 }
@@ -653,6 +656,8 @@ bool FileSNA::save(string sna_file, bool blockMode) {
     }
 
     fclose(file);
+
+    OSD::progressDialog("","",0,2,true);
 
     return true;
 
@@ -1614,6 +1619,8 @@ bool FileZ80::save(string z80_fn) {
         return false;
     }
 
+    OSD::progressDialog(OSD_PSNA_SAVING,OSD_PLEASE_WAIT,0,0,true);
+
     // write registers
 /*
     Offset  Length  Description
@@ -1740,7 +1747,6 @@ bool FileZ80::save(string z80_fn) {
 
     writeWordFileLE(Z80::getRegPC(), file);                                         // off: 32
 
-
     uint8_t mch = 0;
     if ( Z80Ops::is48 ) {
         mch = 0 ;
@@ -1767,6 +1773,7 @@ bool FileZ80::save(string z80_fn) {
     }
     writeByteFile(tmp_port, file);                                                  // off: 35
 
+    // TODO
     writeByteFile(0, file);                                                         // off: 36
     writeByteFile(0, file);                                                         // off: 37
     writeByteFile(0, file);                                                         // off: 38
@@ -1866,6 +1873,8 @@ bool FileZ80::save(string z80_fn) {
 
     fclose(file);
 
+    OSD::progressDialog("","",0,2, false);
+
     return true;
 
 }
@@ -1946,12 +1955,12 @@ bool FileSP::load(string sp_fn) {
         return false;
     }
 
-    bool vreset = Config::videomode;
-
     // Change arch if needed
-    if ( !Z80Ops::is48 || vreset /*|| Config::arch != "48K" */) {
+    if ( !Z80Ops::is48 /*|| Config::arch != "48K" */) {
         
-        if ( !Z80Ops::is48 ) Config::requestMachine("48K", "");
+        bool vreset = Config::videomode;
+
+        Config::requestMachine("48K", "");
     
         // Condition this to 50hz mode
         if(vreset) {
@@ -2029,7 +2038,6 @@ bool FileSP::load(string sp_fn) {
     MemESP::videoLatch = 0;
 
     // read 48K memory
-    // read 48K memory
     readBlockFile(file, MemESP::ram[5], 0x4000);
     readBlockFile(file, MemESP::ram[2], 0x4000);
     readBlockFile(file, MemESP::ram[0], 0x4000);
@@ -2044,7 +2052,9 @@ bool FileSP::load(string sp_fn) {
 bool FileSP::save(string sp_fn) {
 
     // this format is only for 48k
-    if (Z80Ops::is128) return false;
+    if (Z80Ops::is128 || Z80Ops::isPentagon)
+    // if (Config::arch != "48K" && Config::arch != "TK90X" && Config::arch != "TK95")
+        return false;
 
     FILE *file;
 
@@ -2054,6 +2064,8 @@ bool FileSP::save(string sp_fn) {
         printf("FileSP: Error opening %s for writing",sp_fn.c_str());
         return false;
     }
+
+    OSD::progressDialog(OSD_PSNA_SAVING,OSD_PLEASE_WAIT,0,0,true);
 
     // write signature
     uint8_t sign[2] = { 'S', 'P' };
@@ -2106,11 +2118,14 @@ bool FileSP::save(string sp_fn) {
     bitWrite(tmp_port, 0, Z80::isIFF1());
     writeWordFileLE(tmp_port, file);
 
-    for (int off = 0x4000; off < 0x10000; ++off) {
-        writeByteFile(MemESP::readbyte(off), file);
-    }
+
+    writeBlockFile(file, MemESP::ram[5], 0x4000);
+    writeBlockFile(file, MemESP::ram[2], 0x4000);
+    writeBlockFile(file, MemESP::ram[0], 0x4000);
 
     fclose(file);
+
+    OSD::progressDialog("","",0,2, false);
 
     return true;
 
