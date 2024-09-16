@@ -1948,8 +1948,10 @@ bool FileSP::load(string sp_fn) {
     }
 
     // data size
+    uint16_t dataSize = readWordFileLE(file);
     // start address
-    if ( readWordFileLE(file) != 49152 || readWordFileLE(file) != 16384 ) {
+    uint16_t startAddress = readWordFileLE(file);
+    if ( ( dataSize != 0 && dataSize != 49152 ) || ( startAddress != 0 && startAddress != 16384 ) ) {
         printf("FileSP: invalid format %s\n",sp_fn.c_str());
         fclose(file);
         return false;
@@ -2038,6 +2040,11 @@ bool FileSP::load(string sp_fn) {
     MemESP::videoLatch = 0;
 
     // read 48K memory
+    if (!startAddress && !dataSize) {
+        readBlockFile(file, MemESP::ram[1], 0x4000);
+        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
+    }
+
     readBlockFile(file, MemESP::ram[5], 0x4000);
     readBlockFile(file, MemESP::ram[2], 0x4000);
     readBlockFile(file, MemESP::ram[0], 0x4000);
@@ -2110,14 +2117,12 @@ bool FileSP::save(string sp_fn) {
 
     writeByteFile(0, file);
 
-  
     // write memESP bank control port
     uint16_t tmp_port = 0;
     bitWrite(tmp_port, 2, Z80::isIFF2());
     if ( Z80::getIM() == Z80::IM2 ) bitWrite(tmp_port, 1, 1); // IM0 ???
     bitWrite(tmp_port, 0, Z80::isIFF1());
     writeWordFileLE(tmp_port, file);
-
 
     writeBlockFile(file, MemESP::ram[5], 0x4000);
     writeBlockFile(file, MemESP::ram[2], 0x4000);

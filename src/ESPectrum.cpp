@@ -779,6 +779,9 @@ void ESPectrum::setup()
 void ESPectrum::reset()
 {
 
+    // Load romset
+    Config::requestMachine(Config::arch, Config::romSet);
+
     // Ports
     for (int i = 0; i < 128; i++) Ports::port[i] = 0xBF;
     if (Config::joystick1 == JOY_KEMPSTON || Config::joystick2 == JOY_KEMPSTON || Config::joyPS2 == JOYPS2_KEMPSTON) Ports::port[0x1f] = 0; // Kempston
