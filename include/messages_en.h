@@ -126,10 +126,10 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_EN \
     "Snapshot menu\n"\
-    "Load (SNA,Z80,P) \t(F2) >\n"\
-    "Save (SNA) \t(SF2) >\n"\
-    "Load snapshot\t(F3) >\n"\
-    "Save snapshot\t(F4) >\n"
+    "Load\t(F2) >\n"\
+    "Save\t(SF2) >\n"\
+    "Load in slot \t(F3) >\n"\
+    "Save in slot \t(F4) >\n"
 
 #define MENU_TAPE_EN \
     "Tape menu\n"\

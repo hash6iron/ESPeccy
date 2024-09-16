@@ -252,8 +252,9 @@ reset:
         VIDEO::vga.print(std::string(cols, ' ').c_str());
     else {    
         VIDEO::vga.print(StatusBar.c_str());
-        VIDEO::vga.print(std::string(12, ' ').c_str());        
+        VIDEO::vga.print(std::string(12, ' ').c_str());
     }
+
 
     // fdSearchRefresh = true;
 
@@ -582,7 +583,7 @@ reset:
                                                                  Config::lang == 1 ? "Nomb: " :
                                                                                      "Nome: " 
                                                                 , 30
-                                                                , cols - 3
+                                                                , cols - 3 - 6
                                                                 , zxColor(7,1), zxColor(5,0)
                                                                 , ""
                                                                 , fat32forbidden );
@@ -605,10 +606,14 @@ reset:
 
                         } else {
 
-                            menuAt(mf_rows, 1);
+                            menuAt(mf_rows, 0);
                             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-//                            VIDEO::vga.print("      " "                               ");
-                            VIDEO::vga.print(string(cols-2, ' ').c_str());
+                            if (FileUtils::fileTypes[ftype].fdMode) {
+                                VIDEO::vga.print(string(cols - 1, ' ').c_str());
+                            } else {
+                                VIDEO::vga.print(StatusBar.substr(0,cols - 12).c_str());
+                                if ( StatusBar.size() < cols - 12 ) VIDEO::vga.print(string(cols - 12 - StatusBar.size(), ' ').c_str());
+                            }
 
                         }
 
@@ -618,13 +623,14 @@ reset:
 
                         FileUtils::fileTypes[ftype].fdMode ^= 1;
                             
+                        // status bard position & color
+                        menuAt(mf_rows, 0);
+                        VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+
                         if (FileUtils::fileTypes[ftype].fdMode) {
 
                             // Clean status bar
-                            menuAt(mf_rows, 0);
-                            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            // VIDEO::vga.print( ftype == DISK_TAPFILE ? "            " "                      " : "                      " );
-                            // VIDEO::vga.print(std::string(cols, ' ').c_str());
+
                             VIDEO::vga.print(std::string(StatusBar.length(), ' ').c_str());
 
                             fdCursorFlash = 63;
@@ -643,10 +649,8 @@ reset:
                         } else {
 
                             // Restore status bar
-                            menuAt(mf_rows, 0);
-                            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            // VIDEO::vga.print( ftype == DISK_TAPFILE ? "            " "                      " : "                      " );
-                            VIDEO::vga.print(StatusBar.c_str());
+                            VIDEO::vga.print(StatusBar.substr(0,cols - 12).c_str());
+                            if ( StatusBar.size() < cols - 12 ) VIDEO::vga.print(string(cols - 12 - StatusBar.size(), ' ').c_str());
 
                             if (FileUtils::fileTypes[ftype].fileSearch != "") {
                                 // FileUtils::fileTypes[ftype].fileSearch="";

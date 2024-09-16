@@ -123,10 +123,10 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_ES \
     "Men\xA3 snapshots\n"\
-    "Cargar (SNA,Z80,P) \t(F2) >\n"\
-    "Guardar (SNA) \t(SF2) >\n"\
-    "Cargar snapshot\t(F3) >\n"\
-    "Guardar snapshot\t(F4) >\n"
+    "Cargar\t(F2) >\n"\
+    "Guardar\t(SF2) >\n"\
+    "Cargar en slot \t(F3) >\n"\
+    "Guardar en slot \t(F4) >\n"
 
 #define MENU_TAPE_ES \
     "Casete\n"\

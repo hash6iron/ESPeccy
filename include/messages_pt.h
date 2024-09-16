@@ -128,10 +128,10 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_SNA_PT \
     "Menu snapshots\n"\
-    "Carregar (SNA,Z80,P) \t(F2) >\n"\
-    "Salvar (SNA) \t(SF2) >\n"\
-    "Carregar snapshot\t(F3) >\n"\
-    "Salvar snapshot\t(F4) >\n"
+    "Carregar\t(F2) >\n"\
+    "Salvar\t(SF2) >\n"\
+    "Carregar no slot \t(F3) >\n"\
+    "Salvar no slot \t(F4) >\n"
 
 #define MENU_TAPE_PT \
     "Fita K7\n"\

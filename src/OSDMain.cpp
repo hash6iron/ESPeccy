@@ -5726,7 +5726,7 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
             menuAt(y, x);
             VIDEO::vga.setTextColor(ink_color, paper_color);
 //            VIDEO::vga.print((inputLabel + inputValue).c_str());
-            VIDEO::vga.print( ( inputValue.size() > displayeLimit ? inputValue.substr( inputValue.size() - displayeLimit).c_str() : inputValue.c_str() ) );
+            VIDEO::vga.print( ( inputLabel + ( inputValue.size() > displayeLimit ? inputValue.substr( inputValue.size() - displayeLimit) : inputValue ) ).c_str() );
 
             if (CursorFlash > 63) {
                 VIDEO::vga.setTextColor(paper_color, ink_color);

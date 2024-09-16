@@ -1946,12 +1946,12 @@ bool FileSP::load(string sp_fn) {
         return false;
     }
 
-    // Change arch if needed
-    if ( !Z80Ops::is48 || Config::arch != "48K" ) {
-        
-        bool vreset = Config::videomode;
+    bool vreset = Config::videomode;
 
-        Config::requestMachine("48K", "");
+    // Change arch if needed
+    if ( !Z80Ops::is48 || vreset /*|| Config::arch != "48K" */) {
+        
+        if ( !Z80Ops::is48 ) Config::requestMachine("48K", "");
     
         // Condition this to 50hz mode
         if(vreset) {
@@ -1980,10 +1980,8 @@ bool FileSP::load(string sp_fn) {
         }                           
     
     }
-    
 
     ESPectrum::reset();
-
 
     // Read in the registers
     Z80::setRegBC(readWordFileLE(file));
