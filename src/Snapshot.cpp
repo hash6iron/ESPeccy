@@ -1014,19 +1014,36 @@ bool FileZ80::load(string z80_fn) {
                 
                 uint16_t memoff = pageStart[hdr2];
 
-                if (compDataLen == 0xffff) {                 
+                // z80 with rom
+                if ( !hdr2 ) {
+                    MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
 
-                    // Uncompressed data
+                    if (compDataLen == 0xffff) { 
+                        // load uncompressed data into memory
+                        // printf("Loading uncompressed data\n");
+                        compDataLen = 0x4000;
 
-                    compDataLen = 0x4000;
+                        for (int i = 0; i < compDataLen; i++)
+                            MemESP::ram[1][i] = readByteFile(file);
 
-                    for (int i = 0; i < compDataLen; i++)                    
-                        MemESP::writebyte(memoff + i, readByteFile(file));
+                    } else {
+                        // Block is compressed
+                        loadCompressedMemPage(file, compDataLen, MemESP::ram[1], 0x4000);
+                    }
 
                 } else {
+                    if (compDataLen == 0xffff) {                 
+                        // Uncompressed data
+                        compDataLen = 0x4000;
 
-                    loadCompressedMemData(file, compDataLen, memoff, 0x4000);
+                        for (int i = 0; i < compDataLen; i++)                    
+                            MemESP::writebyte(memoff + i, readByteFile(file));
 
+                    } else {
+
+                        loadCompressedMemData(file, compDataLen, memoff, 0x4000);
+
+                    }
                 }
 
                 dataOffset += compDataLen;
@@ -1830,6 +1847,22 @@ bool FileZ80::save(string z80_fn) {
     if (Z80Ops::is48) {
         uint16_t pageStart[12] = {0, 0, 0, 0, 0x8000, 0xC000, 0, 0, 0x4000, 0, 0};
 
+        // z80 with rom
+        if ( MemESP::rom[0] == MemESP::ram[1] ) {
+            size_t dataLen = saveCompressedMemPage(NULL, MemESP::ram[1], 0x4000, true);
+            if (dataLen >= 0x4000) {
+                writeWordFileLE(0xffff, file); // no compress
+                writeByteFile(0, file); // page
+                for (int off = 0; off < 0x4000; ++off) {
+                    writeByteFile(MemESP::ram[1][off], file);
+                }
+            } else {
+                writeWordFileLE(dataLen, file); // compressed size
+                writeByteFile(0, file); // page
+                saveCompressedMemPage(file, MemESP::ram[1], 0x4000, false);
+            }
+        }
+
         for (int i = 0; i < sizeof(pageStart)/sizeof(pageStart[0]); ++i) {
             if ( pageStart[i] ) {
                 size_t dataLen = saveCompressedMemData(NULL, pageStart[i], 0x4000, true);
@@ -2079,11 +2112,19 @@ bool FileSP::save(string sp_fn) {
     writeByteFile(sign[0], file);
     writeByteFile(sign[1], file);
 
-    // data size
-    writeWordFileLE(49152, file);
+    if ( MemESP::rom[0] == MemESP::ram[1] ) {
+        // data size
+        writeWordFileLE(0, file);
 
-    // start address
-    writeWordFileLE(16384, file);
+        // start address
+        writeWordFileLE(0, file);
+    } else {
+        // data size
+        writeWordFileLE(49152, file);
+
+        // start address
+        writeWordFileLE(16384, file);
+    }
 
     // write registers
 
@@ -2123,6 +2164,10 @@ bool FileSP::save(string sp_fn) {
     if ( Z80::getIM() == Z80::IM2 ) bitWrite(tmp_port, 1, 1); // IM0 ???
     bitWrite(tmp_port, 0, Z80::isIFF1());
     writeWordFileLE(tmp_port, file);
+
+    if ( MemESP::rom[0] == MemESP::ram[1] ) {
+        writeBlockFile(file, MemESP::ram[1], 0x4000);
+    }
 
     writeBlockFile(file, MemESP::ram[5], 0x4000);
     writeBlockFile(file, MemESP::ram[2], 0x4000);
