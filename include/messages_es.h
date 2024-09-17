@@ -298,6 +298,6 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_OSD_ES "Config. OSD\n"\
     "IZQ/DRCH navegar menu\t>\n"\
-    "Rotaci\xA2n texto alterativa\t>\n"
+    "Rotaci\xA2n texto alternativa\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_ES_h
