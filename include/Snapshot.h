@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -43,14 +43,14 @@ visit https://zxespectrum.speccy.org/contacto
 using namespace std;
 
 bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8_t force_ALU);
-bool SaveSnapshot(string filename);
+bool SaveSnapshot(string filename, bool force_saverom = false);
 
 class FileSNA
 {
 public:
     static bool load(string sna_fn, string force_arch, string force_romset, uint8_t force_ALU);
-    static bool save(string sna_fn);
-    static bool save(string sna_fn, bool blockMode);
+    static bool save(string sna_fn, bool force_saverom = false);
+    static bool save(string sna_fn, bool blockMode, bool force_saverom);
     static bool isPersistAvailable(string filename);
 };
 
@@ -58,10 +58,10 @@ class FileZ80
 {
 public:
     static bool load(string z80_fn);
-    static void loader48();    
-    static void loader128();  
-    static bool keepArch;      
-    static bool save(string z80_fn);
+    static void loader48();
+    static void loader128();
+    static bool keepArch;
+    static bool save(string z80_fn, bool force_saverom = false);
 
 private:
     static void loadCompressedMemData(FILE *f, uint16_t dataLen, uint16_t memStart, uint16_t memlen);
@@ -78,9 +78,9 @@ public:
 
 class FileSP
 {
-public: 
+public:
     static bool load(string sp_fn);
-    static bool save(string sp_fn);
+    static bool save(string sp_fn, bool force_saverom = false);
 };
 
 #endif

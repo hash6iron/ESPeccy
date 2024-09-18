@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -70,7 +70,7 @@ bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8
     bool res = false;
 
     uint8_t OSDprev = VIDEO::OSD;
-    
+
     if (FileUtils::hasSNAextension(filename)) {
 
         // OSD::osdCenteredMsg(MSG_LOADING_SNA + (string) ": " + filename.substr(filename.find_last_of("/") + 1), LEVEL_INFO, 0);
@@ -100,28 +100,28 @@ bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8
         else
             VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
         ESPectrum::TapeNameScroller = 0;
-    }    
+    }
 
     return res;
 
 }
 
 // Change running snapshot
-bool SaveSnapshot(string filename) {
+bool SaveSnapshot(string filename, bool force_saverom) {
 
     bool res = false;
 
     if (FileUtils::hasSNAextension(filename)) {
 
-        res = FileSNA::save(filename);
+        res = FileSNA::save(filename, force_saverom);
 
     } else if (FileUtils::hasZ80extension(filename)) {
 
-        res = FileZ80::save(filename);
+        res = FileZ80::save(filename, force_saverom);
 
     } else if (FileUtils::hasExtension(filename, "sp")) {
 
-        res = FileSP::save(filename);
+        res = FileSP::save(filename, force_saverom);
 
     }
 
@@ -151,7 +151,9 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
     rewind (file);
 
     // Check snapshot arch
-    if (sna_size == SNA_48K_SIZE) {
+    if (sna_size == SNA_48K_SIZE
+       || sna_size == SNA_48K_SIZE + 16384 // Special SNA with included rom (non-standard)
+       ) {
 
         if (force_arch == "" && !Z80Ops::is48) {
             force_arch = "48K";
@@ -160,7 +162,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         // // If using some 48K arch it keeps unmodified. If not, we choose 48k because is SNA format default
         // if (ConfigZ80Ops::is48)
         //     snapshotArch = Config::arch;
-        // else    
+        // else
         //     snapshotArch = "48K";
 
     } else if ((sna_size == SNA_128K_SIZE1) || (sna_size == SNA_128K_SIZE2)) {
@@ -172,7 +174,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         // // If using some 128K arch it keeps unmodified. If not, we choose Pentagon because is SNA format default
         // if (!Z80Ops::is48)
         //     snapshotArch = Config::arch;
-        // else    
+        // else
         //     snapshotArch = "Pentagon";
 
     } else {
@@ -182,14 +184,14 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     // Change arch if needed
     if (force_arch != "" && force_arch != Config::arch) {
-        
+
         bool vreset = Config::videomode;
 
         // If switching between TK models there's no need to reset in vidmodes > 0
         if (force_arch[0] == 'T' && Config::arch[0] == 'T') vreset = false;
-    
+
         Config::requestMachine(force_arch, force_romset);
-    
+
         // Condition this to 50hz mode
         if(vreset) {
 
@@ -213,9 +215,9 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
             Config::ram_file = sna_fn;
             Config::save();
-            OSD::esp_hard_reset(); 
-        }                           
-    
+            OSD::esp_hard_reset();
+        }
+
     } else if (force_romset != "" && force_romset != Config::romSet) {
 
         Config::requestMachine(Config::arch, force_romset);
@@ -223,7 +225,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
     }
 
     // // Manage arch change
-    
+
     // if (Z80Ops::is128) { // If we are on 128K machine
 
     //     if (snapshotArch == "48K") {
@@ -253,13 +255,13 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     //             Config::ram_file = sna_fn;
     //             Config::save();
-    //             OSD::esp_hard_reset(); 
-    //         }                           
-        
+    //             OSD::esp_hard_reset();
+    //         }
+
     //     } else {
-            
+
     //         if ((force_arch != "") && ((Config::arch != force_arch) || (Config::romSet != force_romset))) {
-                
+
     //             snapshotArch = force_arch;
 
     //             Config::requestMachine(force_arch, force_romset);
@@ -287,7 +289,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     //                 Config::ram_file = sna_fn;
     //                 Config::save();
-    //                 OSD::esp_hard_reset();                            
+    //                 OSD::esp_hard_reset();
     //             }
 
     //         }
@@ -328,13 +330,13 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     //             Config::ram_file = sna_fn;
     //             Config::save();
-    //             OSD::esp_hard_reset();                            
+    //             OSD::esp_hard_reset();
     //         }
 
     //     }
 
     // }
-    
+
     // Change ALU to snapshot one if present
     if (force_ALU != 0xff && force_ALU != Config::ALUTK) {
 
@@ -363,9 +365,9 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
             Config::ram_file = sna_fn;
             Config::save();
-            OSD::esp_hard_reset(); 
+            OSD::esp_hard_reset();
 
-        }                           
+        }
 
     }
 
@@ -401,6 +403,11 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
     VIDEO::borderColor = readByteFile(file);
     VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
 
+    if (Z80Ops::is48 && sna_size == SNA_48K_SIZE + 16384) {
+        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
+        readBlockFile(file, MemESP::rom[0], 0x4000);
+    }
+
     // read 48K memory
     readBlockFile(file, MemESP::ram[5], 0x4000);
     readBlockFile(file, MemESP::ram[2], 0x4000);
@@ -427,7 +434,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         memcpy(MemESP::ram[tmp_latch], MemESP::ram[0], 0x4000);
 
         uint8_t tr_dos = readByteFile(file);     // Check if TR-DOS is paged
-        
+
         // read remaining pages
         for (int page = 0; page < 8; page++) {
             if (page != tmp_latch && page != 2 && page != 5) {
@@ -440,10 +447,10 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         MemESP::romLatch = bitRead(tmp_port, 4);
         MemESP::pagingLock = bitRead(tmp_port, 5);
         MemESP::bankLatch = tmp_latch;
-        
+
         if (tr_dos) {
             MemESP::romInUse = 4;
-            ESPectrum::trdos = true;            
+            ESPectrum::trdos = true;
         } else {
             MemESP::romInUse = MemESP::romLatch;
             ESPectrum::trdos = false;
@@ -458,7 +465,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         // if (Z80Ops::isPentagon) CPU::tstates = 22; // Pentagon SNA load fix... still dunno why this works but it works
 
     }
-    
+
     fclose(file);
 
     return true;
@@ -544,21 +551,21 @@ static bool writeMemPage(uint8_t page, FILE *file, bool blockMode)
 
 // ///////////////////////////////////////////////////////////////////////////////
 
-bool FileSNA::save(string sna_file) {
-        
+bool FileSNA::save(string sna_file, bool force_saverom) {
+
     // Try to save using pages
-    if (FileSNA::save(sna_file, true)) return true;
+    if (FileSNA::save(sna_file, true, force_saverom)) return true;
 
     OSD::osdCenteredMsg(OSD_PSNA_SAVE_WARN, LEVEL_WARN);
 
     // Try to save byte-by-byte
-    return FileSNA::save(sna_file, false);
+    return FileSNA::save(sna_file, false, force_saverom);
 
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
 
-bool FileSNA::save(string sna_file, bool blockMode) {
+bool FileSNA::save(string sna_file, bool blockMode, bool force_saverom) {
 
     FILE *file;
 
@@ -593,9 +600,9 @@ bool FileSNA::save(string sna_file, bool blockMode) {
     writeWordFileLE(Z80::getRegAF(), file);
 
     uint16_t SP = Z80::getRegSP();
-    
+
     // if (Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95") {
-    if (Z80Ops::is48) {    
+    if (Z80Ops::is48) {
         // decrement stack pointer it for pushing PC to stack, only on 48K
         SP -= 2;
         MemESP::writeword(SP, Z80::getRegPC());
@@ -603,14 +610,20 @@ bool FileSNA::save(string sna_file, bool blockMode) {
     writeWordFileLE(SP, file);
 
     writeByteFile(Z80::getIM(), file);
-    
+
     uint8_t bordercol = VIDEO::borderColor;
     writeByteFile(bordercol, file);
+
+    if ( Z80Ops::is48 ) {
+        if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+            writeBlockFile(file, MemESP::rom[0], 0x4000);
+        }
+    }
 
     // write RAM pages in 48K address space (0x4000 - 0xFFFF)
     uint8_t pages[3] = {5, 2, 0};
     // if (Config::arch != "48K")
-    if (Z80Ops::is128 || Z80Ops::isPentagon)    
+    if (Z80Ops::is128 || Z80Ops::isPentagon)
         pages[2] = MemESP::bankLatch;
 
     for (uint8_t ipage = 0; ipage < 3; ipage++) {
@@ -639,7 +652,7 @@ bool FileSNA::save(string sna_file, bool blockMode) {
 
         if (ESPectrum::trdos)
             writeByteFile(1, file);     // TR-DOS paged
-        else            
+        else
             writeByteFile(0, file);     // TR-DOS not paged
 
         // write remaining ram pages
@@ -667,7 +680,7 @@ static uint16_t mkword(uint8_t lobyte, uint8_t hibyte) {
     return lobyte | (hibyte << 8);
 }
 
-bool FileZ80::keepArch = false;      
+bool FileZ80::keepArch = false;
 
 bool FileZ80::load(string z80_fn) {
 
@@ -731,7 +744,7 @@ bool FileZ80::load(string z80_fn) {
             if (mch == 7) z80_arch = "128K"; // Spectrum +3
             if (mch == 9) z80_arch = "Pentagon";
             if (mch == 12) z80_arch = "128K"; // Spectrum +2
-            if (mch == 13) z80_arch = "128K"; // Spectrum +2A            
+            if (mch == 13) z80_arch = "128K"; // Spectrum +2A
         }
 
     }
@@ -758,8 +771,8 @@ bool FileZ80::load(string z80_fn) {
 
     }
 
-    // printf("fileTypes -> Path: %s, begin_row: %d, focus: %d\n",FileUtils::SNA_Path.c_str(),FileUtils::fileTypes[DISK_SNAFILE].begin_row,FileUtils::fileTypes[DISK_SNAFILE].focus);                    
-    // printf("Config    -> Path: %s, begin_row: %d, focus: %d\n",Config::Path.c_str(),(int)Config::begin_row,(int)Config::focus);                    
+    // printf("fileTypes -> Path: %s, begin_row: %d, focus: %d\n",FileUtils::SNA_Path.c_str(),FileUtils::fileTypes[DISK_SNAFILE].begin_row,FileUtils::fileTypes[DISK_SNAFILE].focus);
+    // printf("Config    -> Path: %s, begin_row: %d, focus: %d\n",Config::Path.c_str(),(int)Config::begin_row,(int)Config::focus);
 
     // Manage arch change
     if (Config::arch != z80_arch) {
@@ -787,7 +800,7 @@ bool FileZ80::load(string z80_fn) {
             }
 
             // printf("z80_arch: %s mch: %d pref_romset48: %s pref_romset128: %s z80_romset: %s\n",z80_arch.c_str(),mch,Config::pref_romSet_48.c_str(),Config::pref_romSet_128.c_str(),z80_romset.c_str());
-            
+
             Config::requestMachine(z80_arch, z80_romset);
 
             // Condition this to 50hz mode
@@ -813,17 +826,17 @@ bool FileZ80::load(string z80_fn) {
 
                 Config::ram_file = z80_fn;
                 Config::save();
-                OSD::esp_hard_reset(); 
-            }                           
+                OSD::esp_hard_reset();
+            }
 
         }
 
     } else {
 
         if (z80_arch == "128K") {
-            
+
             string z80_romset = "";
-            
+
             // printf("z80_arch: %s mch: %d pref_romset48: %s pref_romset128: %s z80_romset: %s\n",z80_arch.c_str(),mch,Config::pref_romSet_48.c_str(),Config::pref_romSet_128.c_str(),z80_romset.c_str());
 
             if (mch == 12) { // +2
@@ -835,7 +848,7 @@ bool FileZ80::load(string z80_fn) {
                     else
                         z80_romset = "+2";
 
-                    Config::requestMachine(z80_arch, z80_romset);        
+                    Config::requestMachine(z80_arch, z80_romset);
 
                 }
 
@@ -848,7 +861,7 @@ bool FileZ80::load(string z80_fn) {
                     else
                         z80_romset = "128K";
 
-                    Config::requestMachine(z80_arch, z80_romset);        
+                    Config::requestMachine(z80_arch, z80_romset);
                 }
 
             }
@@ -858,7 +871,7 @@ bool FileZ80::load(string z80_fn) {
         }
 
     }
-    
+
     ESPectrum::reset();
 
     keepArch = false;
@@ -888,13 +901,13 @@ bool FileZ80::load(string z80_fn) {
     // begin loading registers
     Z80::setRegA  (       header[0]);
     Z80::setFlags (       header[1]);
-    
+
     // Z80::setRegBC (mkword(header[2], header[3]));
-    Z80::setRegC(header[2]);    
+    Z80::setRegC(header[2]);
     Z80::setRegB(header[3]);
-    
+
     // Z80::setRegHL (mkword(header[4], header[5]));
-    Z80::setRegL(header[4]);    
+    Z80::setRegL(header[4]);
     Z80::setRegH(header[5]);
 
     Z80::setRegPC (mkword(header[6], header[7]));
@@ -913,7 +926,7 @@ bool FileZ80::load(string z80_fn) {
 
     VIDEO::borderColor = (b12 >> 1) & 0x07;
     VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
-    
+
     // Z80::setRegDE (mkword(header[13], header[14]));
     Z80::setRegE(header[13]);
     Z80::setRegD(header[14]);
@@ -945,7 +958,7 @@ bool FileZ80::load(string z80_fn) {
     // spectrum.setIssue2((z80Header1[29] & 0x04) != 0); // TO DO: Implement this
 
     uint16_t RegPC = Z80::getRegPC();
-   
+
     bool dataCompressed = (b12 & 0x20) ? true : false;
 
     if (z80version == 1) {
@@ -1011,14 +1024,14 @@ bool FileZ80::load(string z80_fn) {
                 uint8_t hdr1 = readByteFile(file); dataOffset ++;
                 uint8_t hdr2 = readByteFile(file); dataOffset ++;
                 uint16_t compDataLen = mkword(hdr0, hdr1);
-                
+
                 uint16_t memoff = pageStart[hdr2];
 
                 // z80 with rom
                 if ( !hdr2 ) {
                     MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
 
-                    if (compDataLen == 0xffff) { 
+                    if (compDataLen == 0xffff) {
                         // load uncompressed data into memory
                         // printf("Loading uncompressed data\n");
                         compDataLen = 0x4000;
@@ -1032,11 +1045,11 @@ bool FileZ80::load(string z80_fn) {
                     }
 
                 } else {
-                    if (compDataLen == 0xffff) {                 
+                    if (compDataLen == 0xffff) {
                         // Uncompressed data
                         compDataLen = 0x4000;
 
-                        for (int i = 0; i < compDataLen; i++)                    
+                        for (int i = 0; i < compDataLen; i++)
                             MemESP::writebyte(memoff + i, readByteFile(file));
 
                     } else {
@@ -1051,7 +1064,7 @@ bool FileZ80::load(string z80_fn) {
             }
 
         } else if ((z80_arch == "128K") || (z80_arch == "Pentagon")) {
-            
+
             // paging register
             uint8_t b35 = header[35];
             // printf("Paging register: %u\n",b35);
@@ -1077,15 +1090,15 @@ bool FileZ80::load(string z80_fn) {
                 uint8_t hdr1 = readByteFile(file); dataOffset ++;
                 uint8_t hdr2 = readByteFile(file); dataOffset ++;
                 uint16_t compDataLen = mkword(hdr0, hdr1);
-                
-                if (compDataLen == 0xffff) { 
+
+                if (compDataLen == 0xffff) {
 
                     // load uncompressed data into memory
                     // printf("Loading uncompressed data\n");
 
                     compDataLen = 0x4000;
 
-                    if ((hdr2 > 2) && (hdr2 < 11)) 
+                    if ((hdr2 > 2) && (hdr2 < 11))
                         for (int i = 0; i < compDataLen; i++)
                             pages[hdr2][i] = readByteFile(file);
 
@@ -1093,7 +1106,7 @@ bool FileZ80::load(string z80_fn) {
 
                     // Block is compressed
 
-                    if ((hdr2 > 2) && (hdr2 < 11)) 
+                    if ((hdr2 > 2) && (hdr2 < 11))
                         loadCompressedMemPage(file, compDataLen, pages[hdr2], 0x4000);
 
                 }
@@ -1222,10 +1235,10 @@ void FileZ80::loader48() {
     Z80::setRegBCx(mkword(z80_array[15], z80_array[16]));
     Z80::setRegDEx(mkword(z80_array[17], z80_array[18]));
     Z80::setRegHLx(mkword(z80_array[19], z80_array[20]));
-    
+
     Z80::setRegAx(z80_array[21]);
     Z80::setRegFx(z80_array[22]);
-    
+
     Z80::setRegIY (mkword(z80_array[23], z80_array[24]));
     Z80::setRegIX (mkword(z80_array[25], z80_array[26]));
     Z80::setIFF1  (z80_array[27] ? true : false);
@@ -1253,9 +1266,9 @@ void FileZ80::loader48() {
         uint8_t hdr2 = z80_array[2]; dataOffset ++;
         z80_array += 3;
         uint16_t compDataLen = mkword(hdr0, hdr1);
-        
+
         uint16_t memoff = pageStart[hdr2];
-        
+
         {
 
             uint16_t dataOff = 0;
@@ -1349,7 +1362,7 @@ void FileZ80::loader128() {
 
     }
 
-    // unsigned char *z80_array = Z80Ops::is128 ? (unsigned char *) load128spa : (unsigned char *) loadpentagon;    
+    // unsigned char *z80_array = Z80Ops::is128 ? (unsigned char *) load128spa : (unsigned char *) loadpentagon;
     // uint32_t dataLen = Z80Ops::is128 ? sizeof(load128spa) : sizeof(loadpentagon);
 
     uint32_t dataOffset = 86;
@@ -1378,10 +1391,10 @@ void FileZ80::loader128() {
     Z80::setRegBCx(mkword(z80_array[15], z80_array[16]));
     Z80::setRegDEx(mkword(z80_array[17], z80_array[18]));
     Z80::setRegHLx(mkword(z80_array[19], z80_array[20]));
-    
+
     Z80::setRegAx(z80_array[21]);
     Z80::setRegFx(z80_array[22]);
-    
+
     Z80::setRegIY (mkword(z80_array[23], z80_array[24]));
     Z80::setRegIX (mkword(z80_array[25], z80_array[26]));
     Z80::setIFF1  (z80_array[27] ? true : false);
@@ -1463,7 +1476,7 @@ void FileZ80::loader128() {
     memset(MemESP::ram[3],0,0x4000);
     memset(MemESP::ram[4],0,0x4000);
     memset(MemESP::ram[6],0,0x4000);
-    
+
     MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
     MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
     MemESP::ramContended[3] = Z80Ops::isPentagon ? false : (MemESP::bankLatch & 0x01 ? true: false);
@@ -1520,8 +1533,8 @@ bool FileP::load(string p_fn) {
 
             Config::ram_file = p_fn;
             Config::save();
-            OSD::esp_hard_reset(); 
-        }                           
+            OSD::esp_hard_reset();
+        }
     }
 
     FileZ80::loader128();
@@ -1625,7 +1638,7 @@ size_t FileZ80::saveCompressedMemPage(FILE *f, uint8_t* memPage, uint16_t memlen
 
 
 
-bool FileZ80::save(string z80_fn) {
+bool FileZ80::save(string z80_fn, bool force_saverom) {
 
     FILE *file;
 
@@ -1779,7 +1792,7 @@ bool FileZ80::save(string z80_fn) {
         mch = 9;
     }
     writeByteFile(mch, file);                                                       // off: 34
-    
+
     // write memESP bank control port
     uint8_t tmp_port = 0;
     if (Z80Ops::is128 || Z80Ops::isPentagon) {
@@ -1848,18 +1861,18 @@ bool FileZ80::save(string z80_fn) {
         uint16_t pageStart[12] = {0, 0, 0, 0, 0x8000, 0xC000, 0, 0, 0x4000, 0, 0};
 
         // z80 with rom
-        if ( MemESP::rom[0] == MemESP::ram[1] ) {
-            size_t dataLen = saveCompressedMemPage(NULL, MemESP::ram[1], 0x4000, true);
+        if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+            size_t dataLen = saveCompressedMemPage(NULL, MemESP::rom[0], 0x4000, true);
             if (dataLen >= 0x4000) {
                 writeWordFileLE(0xffff, file); // no compress
                 writeByteFile(0, file); // page
                 for (int off = 0; off < 0x4000; ++off) {
-                    writeByteFile(MemESP::ram[1][off], file);
+                    writeByteFile(MemESP::rom[0][off], file);
                 }
             } else {
                 writeWordFileLE(dataLen, file); // compressed size
                 writeByteFile(0, file); // page
-                saveCompressedMemPage(file, MemESP::ram[1], 0x4000, false);
+                saveCompressedMemPage(file, MemESP::rom[0], 0x4000, false);
             }
         }
 
@@ -1992,11 +2005,11 @@ bool FileSP::load(string sp_fn) {
 
     // Change arch if needed
     if ( !Z80Ops::is48 /*|| Config::arch != "48K" */) {
-        
+
         bool vreset = Config::videomode;
 
         Config::requestMachine("48K", "");
-    
+
         // Condition this to 50hz mode
         if(vreset) {
 
@@ -2020,9 +2033,9 @@ bool FileSP::load(string sp_fn) {
 
             Config::ram_file = sp_fn;
             Config::save();
-            OSD::esp_hard_reset(); 
-        }                           
-    
+            OSD::esp_hard_reset();
+        }
+
     }
 
     ESPectrum::reset();
@@ -2089,7 +2102,7 @@ bool FileSP::load(string sp_fn) {
 }
 
 
-bool FileSP::save(string sp_fn) {
+bool FileSP::save(string sp_fn, bool force_saverom) {
 
     // this format is only for 48k
     if (Z80Ops::is128 || Z80Ops::isPentagon)
@@ -2112,7 +2125,7 @@ bool FileSP::save(string sp_fn) {
     writeByteFile(sign[0], file);
     writeByteFile(sign[1], file);
 
-    if ( MemESP::rom[0] == MemESP::ram[1] ) {
+    if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
         // data size
         writeWordFileLE(0, file);
 
@@ -2165,8 +2178,8 @@ bool FileSP::save(string sp_fn) {
     bitWrite(tmp_port, 0, Z80::isIFF1());
     writeWordFileLE(tmp_port, file);
 
-    if ( MemESP::rom[0] == MemESP::ram[1] ) {
-        writeBlockFile(file, MemESP::ram[1], 0x4000);
+    if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+        writeBlockFile(file, MemESP::rom[0], 0x4000);
     }
 
     writeBlockFile(file, MemESP::ram[5], 0x4000);
