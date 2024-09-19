@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -37,6 +37,9 @@ visit https://zxespectrum.speccy.org/contacto
 #define ESPECTRUM_MESSAGES_EN_h
 
 #define ERR_FS_EXT_FAIL_EN "Cannot mount external storage!"
+
+#define OSD_MSGDIALOG_YES_EN " Yes  "
+#define OSD_MSGDIALOG_NO_EN "  No  "
 
 #define OSD_PAUSE_EN "--=[ PAUSED ]=--"
 
@@ -169,7 +172,7 @@ visit https://zxespectrum.speccy.org/contacto
     "Preferred ROM\t>\n"\
     "Joystick\t>\n"\
     "Joystick emulation\t>\n"\
-    "Video\t>\n"\
+    "Display\t>\n"\
     "Other\t>\n"\
     "Language\t>\n"\
     "OSD\t>\n"
@@ -179,12 +182,12 @@ visit https://zxespectrum.speccy.org/contacto
 	"Firmware\n"\
 	"Custom ROM 48K\n"\
 	"Custom ROM 128k\n"\
-	"Custom ROM TK\n"		    
+	"Custom ROM TK\n"
 
 #define MENU_VIDEO_EN \
-    "Video\n"\
+    "Display\n"\
     "Render type\t>\n"\
-    "Aspect Ratio\t>\n"\
+    "Resolution\t>\n"\
     "Scanlines\t>\n"
 
 #define MENU_RENDER_EN \
@@ -193,9 +196,9 @@ visit https://zxespectrum.speccy.org/contacto
     "Snow effect\t[A]\n"
 
 #define MENU_ASPECT_EN \
-    "Aspect Ratio\n"\
-    "4:3  (320x240)\t[4]\n"\
-    "16:9 (360x200)\t[1]\n"
+    "Resolution\n"\
+    "320x240 (4:3)\t[4]\n"\
+    "360x200 (16:9)\t[1]\n"
 
 #define MENU_RESET_EN \
     "Reset Menu\n"\
@@ -213,7 +216,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_STORAGE_EN "Storage\n"\
     "Betadisk\t>\n"\
     "Flash tape load\t>\n"\
-    "R.G. ROM timings\t>\n"	
+    "R.G. ROM timings\t>\n"
 
 #define MENU_YESNO_EN "Yes\t[Y]\n"\
     "No\t[N]\n"
@@ -253,9 +256,9 @@ visit https://zxespectrum.speccy.org/contacto
     "v1 Portuguese\n"\
     "v2 Spanish\n"\
     "v2 Portuguese\n"\
-    "v3 Spanish\n"\
-    "v3 Portuguese\n"\
-    "v3 English\n"\
+    "v3 Spanish (R.G.)\n"\
+    "v3 Portuguese (R.G.)\n"\
+    "v3 English (R.G.)\n"\
     "Custom\n"
 
 #define MENU_ROMSTK95_EN "Select ROM\n"\
@@ -288,7 +291,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_INTERFACE_LANG_EN "Language\n"\
     "English\t[ ]\n"\
     "Spanish\t[ ]\n"\
-    "Portuguese\t[ ]\n"	
+    "Portuguese\t[ ]\n"
 
 #define MENU_JOY_EN "Joystick menu\n"
 

@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -37,6 +37,9 @@ visit https://zxespectrum.speccy.org/contacto
 #define ESPECTRUM_MESSAGES_ES_h
 
 #define ERR_FS_EXT_FAIL_ES "\xAD" "Almacenamiento externo no disponible!"
+
+#define OSD_MSGDIALOG_YES_ES "  S\xA1  "
+#define OSD_MSGDIALOG_NO_ES "  No  "
 
 #define OSD_PAUSE_ES "--=[EN PAUSA]=--"
 
@@ -166,7 +169,7 @@ visit https://zxespectrum.speccy.org/contacto
     "ROM preferida\t>\n"\
     "Joystick\t>\n"\
     "Emulaci\xA2n joystick\t>\n"\
-    "Video\t>\n"\
+    "Pantalla\t>\n"\
     "Otros\t>\n"\
     "Idioma\t>\n"\
     "OSD\t>\n"
@@ -176,12 +179,12 @@ visit https://zxespectrum.speccy.org/contacto
 	"Firmware\n"\
 	"ROM Custom 48K\n"\
 	"ROM Custom 128k\n"\
-	"ROM Custom TK\n"		
+	"ROM Custom TK\n"
 
 #define MENU_VIDEO_ES \
-    "Video\n"\
+    "Pantalla\n"\
     "Tipo render\t>\n"\
-	"Relaci\xA2n de aspecto\t>\n"\
+	"Resoluci\xA2n\t>\n"\
     "Scanlines\t>\n"
 
 #define MENU_RENDER_ES \
@@ -190,9 +193,9 @@ visit https://zxespectrum.speccy.org/contacto
     "Efecto nieve\t[A]\n"
 
 #define MENU_ASPECT_ES \
-    "Rel. aspecto\n"\
-    "4:3  (320x240)\t[4]\n"\
-    "16:9 (360x200)\t[1]\n"
+    "Resoluci\xA2n\n"\
+    "320x240 (4:3)\t[4]\n"\
+    "360x200 (16:9)\t[1]\n"
 
 #define MENU_RESET_ES \
     "Resetear\n"\
@@ -210,7 +213,7 @@ visit https://zxespectrum.speccy.org/contacto
 #define MENU_STORAGE_ES "Almacenamiento\n"\
     "Betadisk\t>\n"\
     "Carga r\xA0pida cinta\t>\n"\
-    "Timings ROM R.G.\t>\n"	
+    "Timings ROM R.G.\t>\n"
 
 #define MENU_YESNO_ES "S\xA1\t[Y]\n"\
     "No\t[N]\n"
@@ -220,7 +223,7 @@ visit https://zxespectrum.speccy.org/contacto
     "Timing ULA\t>\n"\
     "48K Issue 2\t>\n"\
 	"ULA TK\t>\n"\
-    "Segundo disp. PS/2\t>\n"	
+    "Segundo disp. PS/2\t>\n"
 
 #define MENU_KBD2NDPS2_ES "Dispositivo\n"\
     "Nada\t[N]\n"\
@@ -251,9 +254,9 @@ visit https://zxespectrum.speccy.org/contacto
     "v1 Portugu\x82s\n"\
     "v2 Espa\xA4ol\n"\
     "v2 Portugu\x82s\n"\
-    "v3 Espa\xA4ol\n"\
-    "v3 Portugu\x82s\n"\
-    "v3 Ingl\x82s\n"\
+    "v3 Espa\xA4ol (R.G.)\n"\
+    "v3 Portugu\x82s (R.G.)\n"\
+    "v3 Ingl\x82s (R.G.)\n"\
     "Custom\n"
 
 #define MENU_ROMSTK95_ES "Elija ROM\n"\
@@ -271,7 +274,7 @@ visit https://zxespectrum.speccy.org/contacto
     "v3 Espa\xA4ol\t[v3es ]\n"\
     "v3 Portugu\x82s\t[v3pt ]\n"\
     "v3 Ingl\x82s\t[v3en ]\n"\
-    "Custom\t[TKcs ]\n"    	
+    "Custom\t[TKcs ]\n"
 
 #define MENU_ROMSTK95_PREF_ES "Espa\xA4ol\t[95es ]\n"\
     "Portugu\x82s\t[95pt ]\n"
