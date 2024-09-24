@@ -121,6 +121,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_DELETE_CURRENT_FILE_PT "Excluir arquivo"
 
+#define OSD_READONLY_FILE_WARN_PT "Arquivo de somente leitura"
+
 #define OSD_TAPE_FLASHLOAD_PT "Carregamento rapido de fita"
 #define OSD_TAPE_INSERT_PT "Fita inserida"
 #define OSD_TAPE_EJECT_PT "Fita ejetada"

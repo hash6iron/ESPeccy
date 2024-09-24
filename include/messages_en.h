@@ -119,6 +119,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_DELETE_CURRENT_FILE_EN "Delete file"
 
+#define OSD_READONLY_FILE_WARN_EN "Read only file"
+
 #define OSD_TAPE_FLASHLOAD_EN "Flash loading tape file"
 #define OSD_TAPE_INSERT_EN "Tape inserted"
 #define OSD_TAPE_EJECT_EN "Tape ejected"

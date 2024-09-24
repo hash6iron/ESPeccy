@@ -691,7 +691,7 @@ reset:
                                     goto reset;
                                 }
                             } else {
-                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
                             }
                             click();
                         }

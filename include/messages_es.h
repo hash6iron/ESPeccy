@@ -116,6 +116,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_DELETE_CURRENT_FILE_ES "Borrar archivo"
 
+#define OSD_READONLY_FILE_WARN_ES "Archivo de solo lectura"
+
 #define OSD_TAPE_FLASHLOAD_ES "Carga r\xA0pida de cinta"
 #define OSD_TAPE_INSERT_ES "Cinta insertada"
 #define OSD_TAPE_EJECT_ES "Cinta expulsada"
