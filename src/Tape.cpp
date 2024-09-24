@@ -69,6 +69,8 @@ uint32_t Tape::tapePlayOffset;
 size_t Tape::tapeFileSize;
 std::vector<int> Tape::selectedBlocks;
 
+bool Tape::tapeIsReadOnly = false;
+
 // Tape timing values
 uint16_t Tape::tapeSyncLen;
 uint16_t Tape::tapeSync1Len;
@@ -370,7 +372,9 @@ void Tape::TAP_Open(string name) {
 
     string fname = FileUtils::MountPoint + FileUtils::TAP_Path + name;
 
-    tape = fopen(fname.c_str(), access(fname.c_str(), W_OK) == 0 ? "rb+" : "rb");
+    tapeIsReadOnly = access(fname.c_str(), W_OK);
+
+    tape = fopen(fname.c_str(), tapeIsReadOnly == 0 ? "rb+" : "rb");
     if (tape == NULL) {
         OSD::osdCenteredMsg(OSD_TAPE_LOAD_ERR, LEVEL_ERROR);
         return;

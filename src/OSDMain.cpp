@@ -825,6 +825,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     if ( FileUtils::isSDReady() ) {
                         struct stat stat_buf;
                         if (stat(fname.c_str(), &stat_buf) == 0) {
+                            if (access(fname.c_str(), W_OK)) {
+                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                res = DLG_NO;
+                            } else
                             res = msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]);
                         }
 
@@ -1045,6 +1049,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             uint8_t res = DLG_YES;
                             struct stat stat_buf;
                             if (stat(fname.c_str(), &stat_buf) == 0) {
+                                if (access(fname.c_str(), W_OK)) {
+                                    OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                    res = DLG_NO;
+                                } else
                                 res = msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]);
                             }
 
@@ -1129,9 +1137,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         struct stat stat_buf;
                         int status = stat(tapFile.c_str(), &stat_buf);
                         if (stat(tapFile.c_str(), &stat_buf) == 0) {
+                            if (access(tapFile.c_str(), W_OK)) {
+                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                return;
+                            } else
                             if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
                         }
-
                         // Create empty tap
                         int fd = open(tapFile.c_str(), O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
                         if (!fd) return;
@@ -1392,6 +1403,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         if ( fprefix == "N" || fprefix == "*" ) {
                                             struct stat stat_buf;
                                             if (stat(fname.c_str(), &stat_buf) == 0) {
+                                                if (access(fname.c_str(), W_OK)) {
+                                                    OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                                    return;
+                                                } else
                                                 if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
                                             }
 
@@ -1430,6 +1445,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         uint8_t res = DLG_YES;
                                         struct stat stat_buf;
                                         if (stat(fname.c_str(), &stat_buf) == 0) {
+                                            if (access(fname.c_str(), W_OK)) {
+                                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                                return;
+                                            } else
                                             if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
                                         }
 
@@ -1526,6 +1545,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         struct stat stat_buf;
                                         int status = stat(tapFile.c_str(), &stat_buf);
                                         if (stat(tapFile.c_str(), &stat_buf) == 0) {
+                                            if (access(tapFile.c_str(), W_OK)) {
+                                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
+                                                return;
+                                            } else
                                             if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
                                         }
 

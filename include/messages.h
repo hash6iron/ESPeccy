@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -85,6 +85,8 @@ static const char *OSD_PAUSE[NLANGS] = { OSD_PAUSE_EN,OSD_PAUSE_ES,OSD_PAUSE_PT 
 #define OSD_TAPE_LOAD_ERR "ERROR Loading tape file"
 #define OSD_TAPE_SAVE_ERR "ERROR Saving tape file"
 #define OSD_BETADISK_LOAD_ERR "ERROR Loading Disk file"
+
+#define OSD_READONLY_FILE_WARN "Read only file"
 
 #define OSD_PLEASE_WAIT "Please Wait..."
 
@@ -253,8 +255,8 @@ static const char *MENU_ROMSTK95[NLANGS] = { MENU_ROMSTK95_EN, MENU_ROMSTK95_ES,
 	"TK90X\t[T]\n"\
 	"TK95\t[9]\n"
 
-static const char *MENU_ARCH_PREF[NLANGS] = { 
-	"Preferred machine\n" MENU_ARCHS_PREF "Last used\t[L]\n", 
+static const char *MENU_ARCH_PREF[NLANGS] = {
+	"Preferred machine\n" MENU_ARCHS_PREF "Last used\t[L]\n",
 	"Modelo preferido\n" MENU_ARCHS_PREF "Ultimo utilizado\t[L]\n",
 	"Hardware favorito\n" MENU_ARCHS_PREF "Usado por \xA3ltimo\t[L]\n"
 	};
@@ -262,7 +264,7 @@ static const char *MENU_ARCH_PREF[NLANGS] = {
 #define MENU_ROMS_PREF "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\
 	"TK90X\t>\n"\
-	"TK95\t>\n"	
+	"TK95\t>\n"
 
 static const char *MENU_ROM_PREF[NLANGS] = { "Preferred ROM\n" MENU_ROMS_PREF, "ROM preferida\n" MENU_ROMS_PREF, "ROM favorita\n" MENU_ROMS_PREF};
 
@@ -272,7 +274,7 @@ static const char *MENU_ROM_PREF_48[NLANGS] = {
 	"Escolha ROM\n" MENU_ROMS48_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
 	};
 
-static const char *MENU_ROM_PREF_TK90X[NLANGS] = {  
+static const char *MENU_ROM_PREF_TK90X[NLANGS] = {
 	"Select ROM\n" MENU_ROMSTK90X_PREF_EN "Last used\t[Last ]\n",
 	"Elija ROM\n" MENU_ROMSTK90X_PREF_ES "Ultima usada\t[Last ]\n",
 	"Escolha ROM\n" MENU_ROMSTK90X_PREF_PT "Usada por \xA3ltimo\t[Last ]\n"
@@ -420,7 +422,7 @@ static const char *AboutMsg[NLANGS][9] = {
 	"\nC1J.L. S\xA0nchez    \nF1Z80 core improvements\r"\
 	"\nD1Antonio Villena \nF1Hardware support\r"\
 	"\nE1ZjoyKiLer       \nF1Testing & ideas\r"\
-	"\r"		
+	"\r"
 	,
 	"\nF1Big thanks to our Patreons:\r"\
 	PATREONS
@@ -491,7 +493,7 @@ static const char *AboutMsg[NLANGS][9] = {
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
 	"\nE1ZjoyKiLer       \nF1Testing e ideas\r"\
-	"\r"		
+	"\r"
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -528,7 +530,7 @@ static const char *AboutMsg[NLANGS][9] = {
 	"\nA1VidaExtraRetro, \nB1C\x82sar Nicol\xA0s-Gonz\xA0lez\r"\
 	"\nC1Rodolfo Guerra, \nD1Todos los creadores en\r"\
 	"el servidor ZXSpectrum en Discord\r"\
-	"\r"\	
+	"\r"\
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h\r"
@@ -562,7 +564,7 @@ static const char *AboutMsg[NLANGS][9] = {
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
 	"\nE1ZjoyKiLer       \nF1Testing e ideas\r"\
-	"\r"		
+	"\r"
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -599,7 +601,7 @@ static const char *AboutMsg[NLANGS][9] = {
 	"\nA1VidaExtraRetro, \nB1C\x82sar Nicol\xA0s-Gonz\xA0lez\r"\
 	"\nC1Rodolfo Guerra, \nD1Todos los creadores en\r"\
 	"el servidor ZXSpectrum en Discord\r"\
-	"\r"\	
+	"\r"\
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h\r"
@@ -708,8 +710,8 @@ static const char *StartMsg[NLANGS] = {
 	"modify and share it for free.\n"\
 	"\n"\
 	"If you like    ectrum consider\n"\
-	"becoming Patreon. Your support help\n"\ 
-	"us to maintain and improve the project\n"\ 
+	"becoming Patreon. Your support help\n"\
+	"us to maintain and improve the project\n"\
 	"for all users. You can do it\n"\
 	"at\n"
 	,
@@ -720,8 +722,8 @@ static const char *StartMsg[NLANGS] = {
 	"modificarlo y compartirlo gratis.\n"\
 	"\n"\
 	"Si te gusta    ectrum considera hacer-\n"\
-	"te patrocinador. Tu apoyo nos ayuda a\n"\ 
-	"mantener y mejorar el proyecto para\n"\ 
+	"te patrocinador. Tu apoyo nos ayuda a\n"\
+	"mantener y mejorar el proyecto para\n"\
 	"todos los usuarios. Puedes hacerlo\n"\
 	"en\n"
 	,
@@ -732,13 +734,13 @@ static const char *StartMsg[NLANGS] = {
 	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\n"\
 	"\n"\
 	"Se voc\x88 gosta de    ectrum considere\n"\
-	"se tornar um patrocinador. Seu apoio\n"\ 
-	"ajuda a manter e melhorar o projeto\n"\ 
+	"se tornar um patrocinador. Seu apoio\n"\
+	"ajuda a manter e melhorar o projeto\n"\
 	"para todos os usu\xa0rios. Voc\x88 pode\n"\
-	"fazer isso em\n"	
+	"fazer isso em\n"
 };
 
-static const char *STARTMSG_CLOSE[NLANGS] = { "This message will close in %02ds", 
+static const char *STARTMSG_CLOSE[NLANGS] = { "This message will close in %02ds",
 											  "Este mensaje se cerrar\xA0 en %02ds",
 											  "Esta mensagem ser\xA0 fechada em %02ds"
 											};
@@ -8686,7 +8688,7 @@ const uint8_t Layout_TK[] = {
 	0xC0, 0xC0, 0xC0, 0xC0
 	};
 
-	const uint8_t ZX_Kbd[] = {	
+	const uint8_t ZX_Kbd[] = {
 	0x45, 0x42, 0x46, 0x38, 0x00, 0x01, 0xB0, 0x00, 0xC0, 0xC0, 0xC0, 0xC0,
 	0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0,
 	0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0,

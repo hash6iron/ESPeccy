@@ -673,19 +673,25 @@ reset:
 
                         filedir = rowGet(menu,FileUtils::fileTypes[ftype].focus);
                         // printf("%s\n",filedir.c_str());
-                        if (filedir[0] != ASCII_SPC) {
-                            rtrim(filedir);
-                            string title = MENU_DELETE_CURRENT_FILE[Config::lang];
-                            string msg = OSD_DLG_SURE[Config::lang];
-                            uint8_t res = msgDialog(title,msg);
-                            menu_saverect = true;
 
-                            if (res == DLG_YES) {
-                                if ( FileUtils::getResolvedPath( FileUtils::MountPoint + fdir + filedir ) == FileUtils::getResolvedPath( Tape::tapeSaveName ) ) Tape::tapeEject();
-                                remove(( FileUtils::MountPoint + fdir + filedir ).c_str());
-                                fd_Redraw(title, fdir, ftype);
+                        if ( filedir[0] != ASCII_SPC ) {
+                            rtrim(filedir);
+
+                            if ( !access(( FileUtils::MountPoint + fdir + filedir ).c_str(), W_OK) ) {
+                                string title = MENU_DELETE_CURRENT_FILE[Config::lang];
+                                string msg = OSD_DLG_SURE[Config::lang];
+                                uint8_t res = msgDialog(title,msg);
                                 menu_saverect = true;
-                                goto reset;
+
+                                if (res == DLG_YES) {
+                                    if ( FileUtils::getResolvedPath( FileUtils::MountPoint + fdir + filedir ) == FileUtils::getResolvedPath( Tape::tapeSaveName ) ) Tape::tapeEject();
+                                    remove(( FileUtils::MountPoint + fdir + filedir ).c_str());
+                                    fd_Redraw(title, fdir, ftype);
+                                    menu_saverect = true;
+                                    goto reset;
+                                }
+                            } else {
+                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN, LEVEL_WARN);
                             }
                             click();
                         }
