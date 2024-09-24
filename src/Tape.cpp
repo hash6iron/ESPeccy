@@ -314,7 +314,7 @@ void Tape::tapeEject() {
     if (tape != NULL) {
         fclose(tape);
         tape = NULL;
-    }   
+    }
 
     tapeFileType = TAPE_FTYPE_EMPTY;
 
@@ -366,17 +366,14 @@ void Tape::TAP_Open(string name) {
     if (tape != NULL) {
         fclose(tape);
         tape = NULL;
-    }   
+    }
 
     string fname = FileUtils::MountPoint + FileUtils::TAP_Path + name;
 
-    tape = fopen(fname.c_str(), "rb+");
+    tape = fopen(fname.c_str(), access(fname.c_str(), W_OK) == 0 ? "rb+" : "rb");
     if (tape == NULL) {
-        tape = fopen(fname.c_str(), "rb");
-        if (tape == NULL) {
-            OSD::osdCenteredMsg(OSD_TAPE_LOAD_ERR, LEVEL_ERROR);
-            return;
-        }
+        OSD::osdCenteredMsg(OSD_TAPE_LOAD_ERR, LEVEL_ERROR);
+        return;
     }
 
     fseek(tape,0,SEEK_END);
@@ -1442,7 +1439,7 @@ void Tape::removeSelectedBlocks() {
     if (tape != NULL) {
         fclose(tape);
         tape = NULL;
-    }   
+    }
 
     // Reemplazar el archivo original con el archivo temporal
     std::remove(filename.c_str());
@@ -1545,7 +1542,7 @@ void Tape::moveSelectedBlocks(int targetPosition) {
     if (tape != NULL) {
         fclose(tape);
         tape = NULL;
-    }   
+    }
 
     std::remove(filename.c_str());
     std::rename(outputFilename.c_str(), filename.c_str());
@@ -1566,7 +1563,7 @@ void Tape::renameBlock(int block, string new_name) {
         case TapeBlock::Character_array_header:
         case TapeBlock::Code_header: {
             long blockNameOff = CalcTapBlockPos(block) + 3; // size + flag
-            
+
             // Read header
             fseek( tape, blockNameOff, SEEK_SET );
             fread( header, 1, sizeof( header ), tape );
