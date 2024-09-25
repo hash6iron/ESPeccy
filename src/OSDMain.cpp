@@ -761,7 +761,7 @@ void OSD::pref_rom_menu() {
 
                     if (opt3 != menu_curopt) {
                         Config::pref_romSet_TK90X = menu_res[opt3 - 1];
-                        Config::save("pref_romSet_TK90X");
+                        Config::save("pref_romSet_90X");
                     }
 
                 }
@@ -783,7 +783,7 @@ void OSD::pref_rom_menu() {
 
                     if (opt3 != menu_curopt) {
                         Config::pref_romSet_TK95 = menu_res[opt3 - 1];
-                        Config::save("pref_romSet_TK95");
+                        Config::save("pref_romSet_95");
                     }
 
                 }
