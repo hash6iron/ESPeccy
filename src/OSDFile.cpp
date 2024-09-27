@@ -1048,13 +1048,25 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
 
                 if ( fdScrollPos >= (int) line.length() ) {
                     fdScrollPos = - ( cols - margin - extra_margin );
+#ifdef USE_FONT_6x8
                     line = string(-fdScrollPos, '\x07') + line;
+#else
+                    line = string(-fdScrollPos, '\xFA') + line;
+#endif
                 } else if ( fdScrollPos < 0 ) {
+#ifdef USE_FONT_6x8
                     line = string(-fdScrollPos, '\x07') + line;
+#else
+                    line = string(-fdScrollPos, '\xFA') + line;
+#endif
                 } else {
                     line = line.substr(fdScrollPos);
                     if (!Config::osd_AltRot && line.length() <= cols - margin - extra_margin && full_line.length() > cols - margin - extra_margin) {
+#ifdef USE_FONT_6x8
                         line += string(cols - margin - extra_margin, '\x07') + full_line;
+#else
+                        line += string(cols - margin - extra_margin, '\xFA') + full_line;
+#endif
                     }
                 }
 

@@ -311,7 +311,7 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
     } else {
         x += (Config::aspect_16_9 ? 24 : 8) + (60 * menu_level);
         if (menu_saverect && !prev_y[menu_level]) {
-            y += (4 + (8 * menu_prevopt));
+            y += (4 + (OSD_FONT_H * menu_prevopt));
             prev_y[menu_level] = y;
         } else {
             y = prev_y[menu_level];

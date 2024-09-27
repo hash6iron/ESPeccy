@@ -79,7 +79,11 @@ using namespace std;
 #define OSD_ERROR true
 #define OSD_NORMAL false
 
+#ifdef USE_FONT_6x8
 #define OSD_W 248
+#else
+#define OSD_W (OSD_FONT_W * OSD_COLS + 8)
+#endif
 #define OSD_H 184
 #define OSD_MARGIN 4
 
@@ -245,11 +249,11 @@ void OSD::drawKbdLayout(uint8_t layout) {
         case 2: vmode = Config::arch[0] == 'T' && Config::ALUTK == 2 ? "Mode CRT60 " : "Mode CRT50 "; break;
     }
 
-    for(int i=0; i<5; i++) bottom[i] += vmode;
+    for(int i=0; i<5; i++) bottom[i] += "         " + vmode;
 
     fabgl::VirtualKeyItem Nextkey;
 
-    drawWindow(256 + 8, 176 + 18, "", bottom[layout], true);
+    drawWindow(256 + OSD_FONT_W * 2, 176 + 18, "", bottom[layout], true);
 
     while (1) {
 
@@ -358,7 +362,7 @@ void OSD::drawKbdLayout(uint8_t layout) {
                 layout = 3;
         };
 
-        drawWindow(256 + 8, 176 + 18, "", bottom[layout], false);
+        drawWindow(256 + OSD_FONT_W * 2, 176 + 18, "", bottom[layout], false);
 
     }
 
@@ -3148,38 +3152,65 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 uint8_t *logo = (uint8_t *)ESPectrum_logo;
 
                 int pos_x, pos_y;
-
+#if 0
                 if (Config::videomode == 2) {
+#ifdef USE_FONT_6x8
                     pos_x = 82;
+#else
+                    pos_x = 62;
+                    pos_x = osdInsideX();
+#endif
                     if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-                        VIDEO::vga.fillRect( 56, 24, 240,50,zxColor(0, 0));
+#ifdef USE_FONT_6x8
+                        VIDEO::vga.fillRect( 56, 24, 240, 50,zxColor(0, 0));
+#else
+                        VIDEO::vga.fillRect( 36, 24, 207, 50,zxColor(0, 0));
+#endif
                         pos_y = 35;
                     } else {
-                        VIDEO::vga.fillRect( 56, 48,240,50,zxColor(0, 0));
+#ifdef USE_FONT_6x8
+                        VIDEO::vga.fillRect( 56, 48, 240, 50,zxColor(0, 0));
+#else
+                        VIDEO::vga.fillRect( 36, 48, 207, 50,zxColor(0, 0));
+#endif
                         pos_y = 59;
                     }
                 } else {
-                    VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40,Config::aspect_16_9 ? 12 : 32,240,50,zxColor(0, 0));
-                    pos_x = Config::aspect_16_9 ? 86 : 66;
+#ifdef USE_FONT_6x8
+                    VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40, Config::aspect_16_9 ? 12 : 32, 240, 50, zxColor(0, 0));
+//                    pos_x = Config::aspect_16_9 ? 86 : 66;
+#else
+                    VIDEO::vga.fillRect(osdInsideX() /*Config::aspect_16_9 ? 60 : 40*/, osdInsideY() /*Config::aspect_16_9 ? 12 : 32*/, OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
+//                    pos_x = Config::aspect_16_9 ? 66 : 46;
+#endif
                     pos_y = Config::aspect_16_9 ? 23 : 43;
                 }
+#endif
+                VIDEO::vga.fillRect(osdInsideX() /*Config::aspect_16_9 ? 60 : 40*/, osdInsideY() /*Config::aspect_16_9 ? 12 : 32*/, OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
                 int logo_w = (logo[5] << 8) + logo[4]; // Get Width
                 int logo_h = (logo[7] << 8) + logo[6]; // Get Height
+
+                pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
+                pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
+
                 logo+=8; // Skip header
                 for (int i=0; i < logo_h; i++)
                     for(int n=0; n<logo_w; n++)
                         VIDEO::vga.dotFast(pos_x + n,pos_y + i,logo[n+(i*logo_w)]);
 
                 VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
-
+/*
                 if (Config::videomode == 2) {
-                    pos_x = 62;
+                    pos_x = 42;
                     pos_y = Config::arch[0] == 'T' && Config::ALUTK == 2 ? 80 : 104;
                 } else {
                     pos_x = Config::aspect_16_9 ? 66 : 46;
                     pos_y = Config::aspect_16_9 ? 68 : 88;
                 }
+*/
+                pos_x = osdInsideX() + OSD_FONT_W;
+                pos_y = osdInsideY() + 50 + 2;
 
                 int osdRow = 0; int osdCol = 0;
                 int msgIndex = 0; int msgChar = 0;
@@ -3201,11 +3232,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 msgChar++;
                                 continue;
                             } else {
-                                VIDEO::vga.drawChar(pos_x + (osdCol * 6), pos_y + (osdRow * 8), nextChar);
+                                VIDEO::vga.drawChar(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), nextChar);
                             }
                             msgChar++;
                         } else {
-                            VIDEO::vga.fillRect(pos_x + (osdCol * 6), pos_y + (osdRow * 8), 6,8, zxColor(1, 0) );
+                            VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, zxColor(1, 0) );
                         }
                         osdCol++;
                         if (osdCol == 38) {
@@ -3213,7 +3244,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 osdCol--;
                                 msgDelay = 192;
                             } else {
-                                VIDEO::vga.fillRect(pos_x + (osdCol * 6), pos_y + (osdRow * 8), 6,8, zxColor(1, 0) );
+                                VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, zxColor(1, 0) );
                                 osdCol = 0;
                                 msgChar++;
                                 osdRow++;
@@ -3222,15 +3253,17 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     } else {
                         msgDelay--;
                         if (msgDelay==0) {
-
+/*
                             if (Config::videomode == 2) {
                                if (Config::arch[0] == 'T' && Config::ALUTK == 2)
-                                    VIDEO::vga.fillRect(56,76,240,114,zxColor(1, 0)); // Clean page
+                                    VIDEO::vga.fillRect(osdInsideX(),osdInsideY()+50,OSD_W,OSD_H-50-OSD_FONT_H,zxColor(1, 0)); // Clean page
                                 else
-                                    VIDEO::vga.fillRect(56,100,240,114,zxColor(1, 0)); // Clean page
+                                    VIDEO::vga.fillRect(osdInsideX(),osdInsideY()+50,OSD_W,OSD_H-50-OSD_FONT_H,zxColor(1, 0)); // Clean page
                             } else {
                                 VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40,Config::aspect_16_9 ? 64 : 84,240,114,zxColor(1, 0)); // Clean page
                             }
+*/
+                            VIDEO::vga.fillRect(osdInsideX(), osdInsideY() + 50 + 2, OSD_W - OSD_FONT_W - 2, ( osdRow + 1 ) * OSD_FONT_H, zxColor(1, 0)); // Clean page
 
                             osdCol = 0;
                             osdRow  = 0;
@@ -3247,7 +3280,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         cursorBlink = 16;
                     }
 
-                    VIDEO::vga.fillRect(pos_x + ((osdCol + 1) * 6), pos_y + (osdRow * 8), 6,8, cursorCol );
+                    VIDEO::vga.fillRect(pos_x + ((osdCol + 1) * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, cursorCol );
 
                     if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
 
@@ -5200,8 +5233,10 @@ void OSD::joyDialog(uint8_t joynum) {
 
 struct dlgObject {
     string Name;
-    unsigned short int posx;
-    unsigned short int posy;
+//    unsigned short int posx;
+//    unsigned short int posy;
+    float posx;
+    float posy;
     int objLeft;
     int objRight;
     int objTop;
@@ -5211,11 +5246,11 @@ struct dlgObject {
 };
 
 const dlgObject dlg_Objects[5] = {
-    {"Bank",70,16,-1,-1, 4, 1, DLG_OBJ_COMBO , {"RAM Bank  ","Banco RAM ","Banco RAM " }},
-    {"Address",70,32,-1,-1, 0, 2, DLG_OBJ_INPUT , {"Address   ","Direccion ","Endere\x87o  "}},
-    {"Value",70,48,-1,-1, 1, 4, DLG_OBJ_INPUT , {"Value     ","Valor     ","Valor     "}},
-    {"Ok",7,65,-1, 4, 2, 0, DLG_OBJ_BUTTON,  {"  Ok  "  ,"  Ok  ","  Ok  "}},
-    {"Cancel",52,65, 3,-1, 2, 0, DLG_OBJ_BUTTON, {"  Cancel  "," Cancelar "," Cancelar "}}
+    {"Bank",70/6.0,16/8.0,-1,-1, 4, 1, DLG_OBJ_COMBO , {"RAM Bank  ","Banco RAM ","Banco RAM " }},
+    {"Address",70/6.0,32/8.0,-1,-1, 0, 2, DLG_OBJ_INPUT , {"Address   ","Direccion ","Endere\x87o  "}},
+    {"Value",70/6.0,48/8.0,-1,-1, 1, 4, DLG_OBJ_INPUT , {"Value     ","Valor     ","Valor     "}},
+    {"Ok",7/6.0,65/8.0,-1, 4, 2, 0, DLG_OBJ_BUTTON,  {"  Ok  "  ,"  Ok  ","  Ok  "}},
+    {"Cancel",52/6.0,65/8.0, 3,-1, 2, 0, DLG_OBJ_BUTTON, {"  Cancel  "," Cancelar "," Cancelar "}}
 };
 
 const string BankCombo[9] = { "   -   ", "   0   ", "   1   ", "   2   ", "   3   ", "   4   ", "   5   ", "   6   ", "   7   " };
@@ -5237,10 +5272,10 @@ void OSD::pokeDialog() {
     uint8_t dlgMode = 0; // 0 -> Move, 1 -> Input
 
     const unsigned short h = (OSD_FONT_H * 10) + 2;
-    const unsigned short y = scrAlignCenterY(h) - 8;
+    const unsigned short y = scrAlignCenterY(h) - OSD_FONT_H;
 
     const unsigned short w = (OSD_FONT_W * 20) + 2;
-    const unsigned short x = scrAlignCenterX(w) - 3;
+    const unsigned short x = scrAlignCenterX(w) - OSD_FONT_W / 2;
 
     click();
 
@@ -5278,9 +5313,9 @@ void OSD::pokeDialog() {
 
         if (dlg_Objects[n].Label[Config::lang] != "" && dlg_Objects[n].objType != DLG_OBJ_BUTTON) {
             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-            VIDEO::vga.setCursor(x + dlg_Objects[n].posx - 63, y + dlg_Objects[n].posy);
+            VIDEO::vga.setCursor(x + ( dlg_Objects[n].posx - 63/6.0 ) * OSD_FONT_W, y + dlg_Objects[n].posy * OSD_FONT_H);
             VIDEO::vga.print(dlg_Objects[n].Label[Config::lang].c_str());
-            VIDEO::vga.rect(x + dlg_Objects[n].posx - 2, y + dlg_Objects[n].posy - 2, 46, 12, zxColor(0, 0));
+            VIDEO::vga.rect(x + dlg_Objects[n].posx * OSD_FONT_W - 2, y + dlg_Objects[n].posy * OSD_FONT_H - 2, (46/6.0)*OSD_FONT_W, (12/8.0)*OSD_FONT_H, zxColor(0, 0));
         }
 
         if (n == curObject)
@@ -5288,7 +5323,7 @@ void OSD::pokeDialog() {
         else
             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
 
-        VIDEO::vga.setCursor(x + dlg_Objects[n].posx, y + dlg_Objects[n].posy);
+        VIDEO::vga.setCursor(x + dlg_Objects[n].posx * OSD_FONT_W, y + dlg_Objects[n].posy * OSD_FONT_H);
         if (dlg_Objects[n].objType == DLG_OBJ_BUTTON) {
             VIDEO::vga.print(dlg_Objects[n].Label[Config::lang].c_str());
         } else {
@@ -5330,7 +5365,7 @@ void OSD::pokeDialog() {
                 if (dlg_Objects[curObject].objLeft >= 0) {
 
                     VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                     if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                         VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                     } else {
@@ -5340,7 +5375,7 @@ void OSD::pokeDialog() {
                     curObject = dlg_Objects[curObject].objLeft;
 
                     VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                     if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                         VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                     } else {
@@ -5357,7 +5392,7 @@ void OSD::pokeDialog() {
                 if (dlg_Objects[curObject].objRight >= 0) {
 
                     VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                     if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                         VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                     } else {
@@ -5367,7 +5402,7 @@ void OSD::pokeDialog() {
                     curObject = dlg_Objects[curObject].objRight;
 
                     VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                    VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                     if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                         VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                     } else {
@@ -5426,7 +5461,7 @@ void OSD::pokeDialog() {
                     if (validated) {
 
                         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                         if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                             VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                         } else {
@@ -5437,7 +5472,7 @@ void OSD::pokeDialog() {
                         curObject = dlg_Objects[curObject].objTop;
 
                         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                         if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                             VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                         } else {
@@ -5498,7 +5533,7 @@ void OSD::pokeDialog() {
                     if (validated) {
 
                         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                         if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                             VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                         } else {
@@ -5509,7 +5544,7 @@ void OSD::pokeDialog() {
                         curObject = dlg_Objects[curObject].objDown;
 
                         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                        VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                         if (dlg_Objects[curObject].objType == DLG_OBJ_BUTTON) {
                             VIDEO::vga.print(dlg_Objects[curObject].Label[Config::lang].c_str());
                         } else {
@@ -5543,7 +5578,7 @@ void OSD::pokeDialog() {
                     while (1) {
                         menu_level = 0;
                         menu_saverect = true;
-                        uint8_t opt = simpleMenuRun( Bankmenu, x + dlg_Objects[curObject].posx,y + dlg_Objects[curObject].posy, 10, 9);
+                        uint8_t opt = simpleMenuRun( Bankmenu, x + dlg_Objects[curObject].posx * OSD_FONT_W,y + dlg_Objects[curObject].posy * OSD_FONT_H, 10, 9);
                         if(opt!=0) {
 
                             if (BankCombo[opt -1] != dlgValues[curObject]) {
@@ -5551,13 +5586,13 @@ void OSD::pokeDialog() {
                                 dlgValues[curObject] = BankCombo[opt - 1];
 
                                 VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                                VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                                VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                                 VIDEO::vga.print(dlgValues[curObject].c_str());
 
                                 if (dlgValues[curObject]==BankCombo[0]) {
                                     dlgValues[1] = "16384";
                                     VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                                    VIDEO::vga.setCursor(x + dlg_Objects[1].posx, y + dlg_Objects[1].posy);
+                                    VIDEO::vga.setCursor(x + dlg_Objects[1].posx * OSD_FONT_W, y + dlg_Objects[1].posy * OSD_FONT_H);
                                     VIDEO::vga.print("16384");
                                 } else {
                                     string val = dlgValues[1];
@@ -5565,7 +5600,7 @@ void OSD::pokeDialog() {
                                     if(stoi(val) > 16383) {
                                         dlgValues[1] = "0";
                                         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
-                                        VIDEO::vga.setCursor(x + dlg_Objects[1].posx, y + dlg_Objects[1].posy);
+                                        VIDEO::vga.setCursor(x + dlg_Objects[1].posx * OSD_FONT_W, y + dlg_Objects[1].posy * OSD_FONT_H);
                                         VIDEO::vga.print("0    ");
                                     }
                                 }
@@ -5626,7 +5661,7 @@ void OSD::pokeDialog() {
             if ((++CursorFlash & 0xF) == 0) {
 
                 VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
-                VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx, y + dlg_Objects[curObject].posy);
+                VIDEO::vga.setCursor(x + dlg_Objects[curObject].posx * OSD_FONT_W, y + dlg_Objects[curObject].posy * OSD_FONT_H);
                 VIDEO::vga.print(dlgValues[curObject].c_str());
 
                 if (CursorFlash > 63) {

@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -53,8 +53,15 @@ using namespace std;
 #define IS_SELECTED 4
 #define IS_SELECTED_FOCUSED 5
 
+#ifdef USE_FONT_6x8
 #define OSD_FONT_W 6
 #define OSD_FONT_H 8
+#else
+#define OSD_FONT_W 5
+#define OSD_FONT_H 8
+#endif
+
+#define OSD_COLS    40
 
 #define LEVEL_INFO 0
 #define LEVEL_OK 1
@@ -120,7 +127,7 @@ public:
     static unsigned short menuRun(string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr );
     static unsigned short simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy, uint8_t max_rows, uint8_t max_cols);
     static string fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows);
-    static int menuTape(string title);    
+    static int menuTape(string title);
     static void menuScroll(bool up);
     static void fd_Redraw(string title, string fdir, uint8_t ftype);
     static void fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type);
@@ -130,16 +137,16 @@ public:
     static void menuScrollBar(unsigned short br);
     static void click();
     static void statusbarDraw(const string& statusbar);
-    
+
     // menu callbacks
-    static int menuProcessSnapshot(fabgl::VirtualKeyItem Menukey); 
-    static int menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey); 
+    static int menuProcessSnapshot(fabgl::VirtualKeyItem Menukey);
+    static int menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey);
 
 
     static uint8_t menu_level;
-    static bool menu_saverect;    
-    static unsigned short menu_curopt;    
-    static unsigned int SaveRectpos;    
+    static bool menu_saverect;
+    static unsigned short menu_curopt;
+    static unsigned int SaveRectpos;
 
     static int8_t fdScrollPos;
     static int8_t fdScrollStatus;
@@ -157,7 +164,7 @@ public:
     static int VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E);
     //static string input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", uint8_t *return_flags = nullptr);
     static string input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", const string& forbiddenchars = "", uint8_t * flags = nullptr);
- 
+
     // Rows
     static unsigned short rowCount(string menu);
     static string rowGet(string menu, unsigned short row_number);
@@ -187,9 +194,9 @@ public:
     static uint8_t last_focus;               // To check for changes
     static unsigned short last_begin_row; // To check for changes
 
-    static uint8_t fdCursorFlash;    
-    static bool fdSearchRefresh;    
-    static unsigned int fdSearchElements;   
+    static uint8_t fdCursorFlash;
+    static bool fdSearchRefresh;
+    static unsigned int fdSearchElements;
 
 };
 
