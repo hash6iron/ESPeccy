@@ -1187,6 +1187,13 @@ void Tape::Save() {
 	uint8_t dato;
 	int longitud;
 
+    Tape::Stop();
+
+    if (tape != NULL) {
+        fclose(tape);
+        tape = NULL;
+    }
+
     fichero = fopen(tapeSaveName.c_str(), "ab");
     if (fichero == NULL) {
         OSD::osdCenteredMsg(OSD_TAPE_SAVE_ERR, LEVEL_ERROR);
@@ -1199,11 +1206,12 @@ void Tape::Save() {
 	longitud+=2;
 
 	dato=(uint8_t)(longitud%256);
-	fprintf(fichero,"%c",dato);
+    fwrite(&dato,sizeof(uint8_t),1,fichero);
 	dato=(uint8_t)(longitud/256);
-	fprintf(fichero,"%c",dato); // file length
+    fwrite(&dato,sizeof(uint8_t),1,fichero); // file length
 
-	fprintf(fichero,"%c",Z80::getRegA()); // flag
+    dato = Z80::getRegA(); // flag
+	fwrite(&dato,sizeof(uint8_t),1,fichero);
 
 	xxor^=Z80::getRegA();
 
@@ -1213,13 +1221,13 @@ void Tape::Save() {
 	 		salir_s = 2;
 	 	if (!salir_s) {
             dato = MemESP::readbyte(Z80::getRegIX());
-			fprintf(fichero,"%c",dato);
+            fwrite(&dato,sizeof(uint8_t),1,fichero);
 	 		xxor^=dato;
 	        Z80::setRegIX(Z80::getRegIX() + 1);
 	        Z80::setRegDE(Z80::getRegDE() - 1);
 	 	}
 	} while (!salir_s);
-	fprintf(fichero,"%c",xxor);
+    fwrite(&xxor,sizeof(unsigned char),1,fichero);
 	Z80::setRegIX(Z80::getRegIX() + 2);
 
     fclose(fichero);
