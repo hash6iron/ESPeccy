@@ -275,9 +275,9 @@ visit https://zxespectrum.speccy.org/contacto
     "v1 Portuguese\t[v1pt ]\n"\
 	"v2 Spanish\t[v2es ]\n"\
     "v2 Portuguese\t[v2pt ]\n"\
-	"v3 Spanish\t[v3es ]\n"\
-    "v3 Portuguese\t[v3pt ]\n"\
-    "v3 English\t[v3en ]\n"\
+	"v3 Spanish (R.G.)\t[v3es ]\n"\
+    "v3 Portuguese (R.G.)\t[v3pt ]\n"\
+    "v3 English (R.G.)\t[v3en ]\n"\
     "Custom\t[TKcs ]\n"
 
 #define MENU_ROMSTK95_PREF_EN "Spanish\t[95es ]\n"\

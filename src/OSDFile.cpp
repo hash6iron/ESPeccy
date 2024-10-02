@@ -164,8 +164,8 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
         x += (Config::aspect_16_9 ? 24 : 4);
         y += (Config::aspect_16_9 ? 4 : 8);
     } else {
-        x += (Config::aspect_16_9 ? 24 : 4) + (60 * menu_level);
-        y += (Config::aspect_16_9 ? 4 : 8) + (8 * (menu_level - 1));
+        x += (Config::aspect_16_9 ? 24 : 4) + (48 /*60*/ * menu_level);
+        y += (Config::aspect_16_9 ? 4 : 8) + (4 /*8*/ * (menu_level - 1));
     }
 
     // Size
@@ -672,11 +672,9 @@ reset:
                         click();
 
                         filedir = rowGet(menu,FileUtils::fileTypes[ftype].focus);
-                        // printf("%s\n",filedir.c_str());
 
-                        if ( filedir[0] != ASCII_SPC ) {
+                        if (filedir[0] != ASCII_SPC) {
                             rtrim(filedir);
-
                             if ( !access(( FileUtils::MountPoint + fdir + filedir ).c_str(), W_OK) ) {
                                 string title = MENU_DELETE_CURRENT_FILE[Config::lang];
                                 string msg = OSD_DLG_SURE[Config::lang];
@@ -867,6 +865,7 @@ reset:
                                                          "Proc:"
                                     );
                     VIDEO::vga.print( FileUtils::fileTypes[ftype].fileSearch.size() > MAXSEARCHLEN ? FileUtils::fileTypes[ftype].fileSearch.substr( FileUtils::fileTypes[ftype].fileSearch.size() - MAXSEARCHLEN).c_str() : FileUtils::fileTypes[ftype].fileSearch.c_str());
+
                     if (fdCursorFlash > 63) {
                         VIDEO::vga.setTextColor(zxColor(5, 0), zxColor(7, 1));
                         if (fdCursorFlash == 128) fdCursorFlash = 0;

@@ -877,7 +877,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         //     }
 
         // } else
-        if (KeytoESP == fabgl::VK_F1) { // Show mem info
+        if (KeytoESP == fabgl::VK_F1) { // Show kbd layout
 
             uint8_t layout = 0;
 
@@ -1079,6 +1079,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             }
             if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
         }
+        // else if (KeytoESP == fabgl::VK_F3) {
+        //     // Test variable decrease
+        //     ESPectrum::ESPtestvar -= 1;
+        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        // }
+        // else if (KeytoESP == fabgl::VK_F4) {
+        //     // Test variable increase
+        //     ESPectrum::ESPtestvar += 1;
+        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        // }
         else if (KeytoESP == fabgl::VK_F3) {
 
             // if (MemESP::cur_timemachine > 0)
@@ -1154,6 +1164,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         mFile[0] = 'S';
                     }
+
                     Tape::LoadTape(mFile);
                     return;
                 }
@@ -1695,6 +1706,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             if (opt2 > 0) {
                                 if (opt2 == 1) {
                                     if (FileUtils::isSDReady()) {
+                                        menu_level = 3;
                                         menu_saverect = true;
                                         string mFile = fileDialog(FileUtils::DSK_Path, MENU_DSK_TITLE[Config::lang], DISK_DSKFILE, 26, 13);
                                         if (mFile != "" && FileUtils::isSDReady()) {

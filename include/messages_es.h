@@ -273,9 +273,9 @@ visit https://zxespectrum.speccy.org/contacto
     "v1 Portugu\x82s\t[v1pt ]\n"\
     "v2 Espa\xA4ol\t[v2es ]\n"\
     "v2 Portugu\x82s\t[v2pt ]\n"\
-    "v3 Espa\xA4ol\t[v3es ]\n"\
-    "v3 Portugu\x82s\t[v3pt ]\n"\
-    "v3 Ingl\x82s\t[v3en ]\n"\
+    "v3 Espa\xA4ol (R.G.)\t[v3es ]\n"\
+    "v3 Portugu\x82s (R.G.)\t[v3pt ]\n"\
+    "v3 Ingl\x82s (R.G.)\t[v3en ]\n"\
     "Custom\t[TKcs ]\n"
 
 #define MENU_ROMSTK95_PREF_ES "Espa\xA4ol\t[95es ]\n"\

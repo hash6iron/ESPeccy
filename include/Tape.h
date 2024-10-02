@@ -162,9 +162,7 @@ public:
     static uint32_t tapebufByteCount;
     static uint32_t tapePlayOffset;
     static size_t tapeFileSize;
-
     static bool tapeIsReadOnly;
-
     static uint8_t tapePhase;
 
     static std::vector<TapeBlock> TapeListing;
