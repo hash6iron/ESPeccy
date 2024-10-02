@@ -240,7 +240,7 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
             //         return data;
             // }
 
-            switch (address & 0xFF) {
+            switch (address8) {
                 case 0xFF:
                     data = ESPectrum::Betadisk.ReadSystemReg();
                     // printf("WD1793 Read Control Register: %d\n",(int)data);
@@ -273,7 +273,7 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
 
         // ZX81
         if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
-            if ((address & 0x8f) == 0x8f) {
+            if (address8 == 0xcf || address8 == 0xdf) {
                 return AySound::getRegisterData();
             }
         }
@@ -374,14 +374,10 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         // ZX81
         if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
-            if ((address & 0x0f) == 0x0f) {
-                if (address & 0x80) {  // Latch register
-                                       // 8F, 9F, AF, BF, CF, DF, EF, FF = ZON X-81 (verified)
-                                       // 9F, BF, DF, FF = ZON X
+            if (address8 == 0xcf || address8 == 0xdf || address8 == 0x1f || address8 == 0x0f) {
+                if (address8 & 0x80) {  // Latch register
                     AySound::selectRegister(data);
                 } else { // Write data
-                         // 0F, 1F, 2F, 3F, 4F, 5F, 6F, 7F = ZON X-81 (verified)
-                         // 1F, 3F, 5F, 7F = ZON X
                     ESPectrum::AYGetSample();
                     AySound::setRegisterData(data);
                 }
@@ -435,14 +431,10 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         // ZX81
         if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
-            if ((address & 0x0f) == 0x0f) {
-                if (address & 0x80) {  // Latch register
-                                       // 8F, 9F, AF, BF, CF, DF, EF, FF = ZON X-81 (verified)
-                                       // 9F, BF, DF, FF = ZON X
+            if (address8 == 0xcf || address8 == 0xdf || address8 == 0x1f || address8 == 0x0f) {
+                if (address8 & 0x80) {  // Latch register
                     AySound::selectRegister(data);
                 } else { // Write data
-                         // 0F, 1F, 2F, 3F, 4F, 5F, 6F, 7F = ZON X-81 (verified)
-                         // 1F, 3F, 5F, 7F = ZON X
                     ESPectrum::AYGetSample();
                     AySound::setRegisterData(data);
                 }
@@ -492,7 +484,7 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
             // int lowByte = address & 0xFF;
 
-            switch (address & 0xFF) {
+            switch (address8) {
                 case 0xFF:
                     // printf("WD1793 Write Control Register: %d\n",data);
                     ESPectrum::Betadisk.WriteSystemReg(data);
