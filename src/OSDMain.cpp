@@ -116,10 +116,10 @@ unsigned short OSD::scrH = 240;
 char OSD::stats_lin1[25]; // "CPU: 00000 / IDL: 00000 ";
 char OSD::stats_lin2[25]; // "FPS:000.00 / FND:000.00 ";
 
-// // X origin to center an element with pixel_width
+// X origin to center an element with pixel_width
 unsigned short OSD::scrAlignCenterX(unsigned short pixel_width) { return (scrW / 2) - (pixel_width / 2); }
 
-// // Y origin to center an element with pixel_height
+// Y origin to center an element with pixel_height
 unsigned short OSD::scrAlignCenterY(unsigned short pixel_height) { return (scrH / 2) - (pixel_height / 2); }
 
 uint8_t OSD::osdMaxRows() { return (OSD_H - (OSD_MARGIN * 2)) / OSD_FONT_H; }
@@ -2625,6 +2625,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             if (Config::AY48 != prev_ay48) {
                                                 Config::save("AY48");
                                             }
+
+                                            if (Z80Ops::is48) {
+                                                ESPectrum::AY_emu = Config::AY48;
+                                                if (Config::tape_player) ESPectrum::AY_emu = false; // Disable AY emulation if tape player mode is set
+                                            }
+
                                             menu_curopt = opt2;
                                             menu_saverect = false;
                                         } else {
@@ -3005,7 +3011,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if (res == DLG_YES) {
 
                                         // Flash custom ROM 48K
-                                        FILE *customrom = fopen(fname.c_str() /*"/sd/48custom.rom"*/, "rb");
+                                        FILE *customrom = fopen(fname.c_str(), "rb");
                                         if (customrom == NULL) {
                                             osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
                                         } else {
@@ -3042,7 +3048,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if (res == DLG_YES) {
 
                                         // Flash custom ROM 128K
-                                        FILE *customrom = fopen(fname.c_str() /*"/sd/128custom.rom"*/, "rb");
+                                        FILE *customrom = fopen(fname.c_str(), "rb");
                                         if (customrom == NULL) {
                                             osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
                                         } else {
@@ -3152,41 +3158,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 uint8_t *logo = (uint8_t *)ESPectrum_logo;
 
                 int pos_x, pos_y;
-#if 0
-                if (Config::videomode == 2) {
-#ifdef USE_FONT_6x8
-                    pos_x = 82;
-#else
-                    pos_x = 62;
-                    pos_x = osdInsideX();
-#endif
-                    if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-#ifdef USE_FONT_6x8
-                        VIDEO::vga.fillRect( 56, 24, 240, 50,zxColor(0, 0));
-#else
-                        VIDEO::vga.fillRect( 36, 24, 207, 50,zxColor(0, 0));
-#endif
-                        pos_y = 35;
-                    } else {
-#ifdef USE_FONT_6x8
-                        VIDEO::vga.fillRect( 56, 48, 240, 50,zxColor(0, 0));
-#else
-                        VIDEO::vga.fillRect( 36, 48, 207, 50,zxColor(0, 0));
-#endif
-                        pos_y = 59;
-                    }
-                } else {
-#ifdef USE_FONT_6x8
-                    VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40, Config::aspect_16_9 ? 12 : 32, 240, 50, zxColor(0, 0));
-//                    pos_x = Config::aspect_16_9 ? 86 : 66;
-#else
-                    VIDEO::vga.fillRect(osdInsideX() /*Config::aspect_16_9 ? 60 : 40*/, osdInsideY() /*Config::aspect_16_9 ? 12 : 32*/, OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
-//                    pos_x = Config::aspect_16_9 ? 66 : 46;
-#endif
-                    pos_y = Config::aspect_16_9 ? 23 : 43;
-                }
-#endif
-                VIDEO::vga.fillRect(osdInsideX() /*Config::aspect_16_9 ? 60 : 40*/, osdInsideY() /*Config::aspect_16_9 ? 12 : 32*/, OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
+                VIDEO::vga.fillRect(osdInsideX(), osdInsideY(), OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
                 int logo_w = (logo[5] << 8) + logo[4]; // Get Width
                 int logo_h = (logo[7] << 8) + logo[6]; // Get Height
@@ -3200,15 +3172,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         VIDEO::vga.dotFast(pos_x + n,pos_y + i,logo[n+(i*logo_w)]);
 
                 VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
-/*
-                if (Config::videomode == 2) {
-                    pos_x = 42;
-                    pos_y = Config::arch[0] == 'T' && Config::ALUTK == 2 ? 80 : 104;
-                } else {
-                    pos_x = Config::aspect_16_9 ? 66 : 46;
-                    pos_y = Config::aspect_16_9 ? 68 : 88;
-                }
-*/
+
                 pos_x = osdInsideX() + OSD_FONT_W;
                 pos_y = osdInsideY() + 50 + 2;
 
@@ -3253,16 +3217,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     } else {
                         msgDelay--;
                         if (msgDelay==0) {
-/*
-                            if (Config::videomode == 2) {
-                               if (Config::arch[0] == 'T' && Config::ALUTK == 2)
-                                    VIDEO::vga.fillRect(osdInsideX(),osdInsideY()+50,OSD_W,OSD_H-50-OSD_FONT_H,zxColor(1, 0)); // Clean page
-                                else
-                                    VIDEO::vga.fillRect(osdInsideX(),osdInsideY()+50,OSD_W,OSD_H-50-OSD_FONT_H,zxColor(1, 0)); // Clean page
-                            } else {
-                                VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40,Config::aspect_16_9 ? 64 : 84,240,114,zxColor(1, 0)); // Clean page
-                            }
-*/
                             VIDEO::vga.fillRect(osdInsideX(), osdInsideY() + 50 + 2, OSD_W - OSD_FONT_W - 2, ( osdRow + 1 ) * OSD_FONT_H, zxColor(1, 0)); // Clean page
 
                             osdCol = 0;

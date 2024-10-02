@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -177,11 +177,12 @@ uint8_t tkIOcon(uint16_t a) {
 IRAM_ATTR uint8_t Ports::input(uint16_t address) {
 
     uint8_t data;
-    uint8_t rambank = address >> 14;    
+    uint8_t rambank = address >> 14;
+    uint8_t address8 = address & 0xff;
 
     VIDEO::Draw(1, MemESP::ramContended[rambank]); // I/O Contention (Early)
-    
-    // ULA PORT    
+
+    // ULA PORT
     if ((address & 0x0001) == 0) {
 
         if (Config::arch[0] == 'T' && Config::ALUTK > 0) {
@@ -229,7 +230,7 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
 
         // Check if TRDOS Rom is mapped.
         if (ESPectrum::trdos) {
-            
+
             // int lowByte = address & 0xFF;
 
             // // Process Beta Disk instruction.
@@ -257,9 +258,9 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
                     // printf("WD1793 Read Sector Register: %d\n",(int)data);
                     return data;
                 case 0x7F:
-                    data = ESPectrum::Betadisk.ReadDataReg();                    
-                    // printf("WD1793 Read Data Register: %d\n",(int)data);                    
-                    return data;                    
+                    data = ESPectrum::Betadisk.ReadDataReg();
+                    // printf("WD1793 Read Data Register: %d\n",(int)data);
+                    return data;
             }
 
         }
@@ -268,18 +269,28 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
         if ((Config::joystick1 == JOY_KEMPSTON || Config::joystick2 == JOY_KEMPSTON || Config::joyPS2 == JOYPS2_KEMPSTON) && ((address & 0x00E0) == 0 || (address & 0xFF) == 0xDF)) return port[0x1f];
 
         // Fuller Joystick
-        if ((Config::joystick1 == JOY_FULLER || Config::joystick2 == JOY_FULLER || Config::joyPS2 == JOYPS2_FULLER) && (address & 0xFF) == 0x7F) return port[0x7f];
+        if (!ESPectrum::trdos && (Config::joystick1 == JOY_FULLER || Config::joystick2 == JOY_FULLER || Config::joyPS2 == JOYPS2_FULLER) && (address & 0xFF) == 0x7F) return port[0x7f];
+
+        // ZX81
+        if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
+            if ((address & 0x8f) == 0x8f) {
+                return AySound::getRegisterData();
+            }
+        }
+
+        // Fullerbox
+        if (!ESPectrum::trdos && ESPectrum::AY_emu && address8 == 0x3f) {
+            return AySound::getRegisterData();
+        }
 
         // Sound (AY-3-8912)
-        if (ESPectrum::AY_emu) {
-            if ((address & 0xC002) == 0xC000)
-                return AySound::getRegisterData();
-        }
+        if (ESPectrum::AY_emu && (address & 0xC002) == 0xC000)
+            return AySound::getRegisterData();
 
         if (!Z80Ops::isPentagon) {
 
             data = getFloatBusData();
-            
+
             if ((!Z80Ops::is48) && ((address & 0x8002) == 0)) {
 
                 // //  Solo en el modelo 128K, pero no en los +2/+2A/+3, si se lee el puerto
@@ -299,10 +310,10 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
                         MemESP::videoLatch = bitRead(data, 3);
                         VIDEO::grmem = MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5];
                     }
-                    
+
                     MemESP::romLatch = bitRead(data, 4);
                     bitWrite(MemESP::romInUse, 0, MemESP::romLatch);
-                    MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];            
+                    MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
                 }
 
             }
@@ -315,10 +326,11 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
 
 }
 
-IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {    
-    
+IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
+
     int Audiobit;
     uint8_t rambank = address >> 14;
+    uint8_t address8 = address & 0xff;
 
     VIDEO::Draw(1, MemESP::ramContended[rambank]); // I/O Contention (Early)
 
@@ -329,13 +341,13 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         // Border color
         if (VIDEO::borderColor != data & 0x07) {
-            
+
             VIDEO::brdChange = true;
-            
-            if (!Z80Ops::isPentagon) 
+
+            if (!Z80Ops::isPentagon)
                 if (Config::arch[0] == 'T' && Config::ALUTK > 0)
                     VIDEO::Draw(tkIOcon(address),false);
-                else            
+                else
                     VIDEO::Draw(0,true); // Seems not needed in Pentagon
 
             VIDEO::DrawBorder();
@@ -344,7 +356,7 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
             VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
 
         }
-    
+
         if (ESPectrum::ESP_delay) { // Disable beeper on turbo mode
 
             if (Config::tape_player)
@@ -358,6 +370,41 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
                 ESPectrum::lastaudioBit = Audiobit;
             }
 
+        }
+
+        // ZX81
+        if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
+            if ((address & 0x0f) == 0x0f) {
+                if (address & 0x80) {  // Latch register
+                                       // 8F, 9F, AF, BF, CF, DF, EF, FF = ZON X-81 (verified)
+                                       // 9F, BF, DF, FF = ZON X
+                    AySound::selectRegister(data);
+                } else { // Write data
+                         // 0F, 1F, 2F, 3F, 4F, 5F, 6F, 7F = ZON X-81 (verified)
+                         // 1F, 3F, 5F, 7F = ZON X
+                    ESPectrum::AYGetSample();
+                    AySound::setRegisterData(data);
+                }
+                VIDEO::Draw(3, true);   // I/O Contention (Late)
+                return;
+            }
+        }
+
+        // FullerBox
+        if (!ESPectrum::trdos && ESPectrum::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
+            if (address8 == 0x3f) {
+                AySound::selectRegister(data);
+            } else if (address8 == 0x5f) {
+                ESPectrum::AYGetSample();
+                AySound::setRegisterData(data);
+            }
+
+            if (Config::arch[0] == 'T' && Config::ALUTK > 0)
+                VIDEO::Draw( 3 + tkIOcon(address), false);
+            else
+                VIDEO::Draw(3, true);   // I/O Contention (Late)
+
+            return;
         }
 
         // AY ========================================================================
@@ -374,7 +421,7 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
                 VIDEO::Draw( 3 + tkIOcon(address), false);
             else
                 VIDEO::Draw(3, !Z80Ops::isPentagon);   // I/O Contention (Late)
-            
+
             return;
 
         }
@@ -385,6 +432,41 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
             VIDEO::Draw(3, !Z80Ops::isPentagon);   // I/O Contention (Late)
 
     } else {
+
+        // ZX81
+        if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
+            if ((address & 0x0f) == 0x0f) {
+                if (address & 0x80) {  // Latch register
+                                       // 8F, 9F, AF, BF, CF, DF, EF, FF = ZON X-81 (verified)
+                                       // 9F, BF, DF, FF = ZON X
+                    AySound::selectRegister(data);
+                } else { // Write data
+                         // 0F, 1F, 2F, 3F, 4F, 5F, 6F, 7F = ZON X-81 (verified)
+                         // 1F, 3F, 5F, 7F = ZON X
+                    ESPectrum::AYGetSample();
+                    AySound::setRegisterData(data);
+                }
+                ioContentionLate(MemESP::ramContended[rambank]);
+                return;
+            }
+        }
+
+        // FullerBox
+        if (!ESPectrum::trdos && ESPectrum::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
+            if (address8 == 0x3f) {
+                AySound::selectRegister(data);
+            } else if (address8 == 0x5f) {
+                ESPectrum::AYGetSample();
+                AySound::setRegisterData(data);
+            }
+
+            if (Config::arch[0] == 'T' && Config::ALUTK > 0)
+                VIDEO::Draw( 3 + tkIOcon(address), false);
+            else
+                ioContentionLate(MemESP::ramContended[rambank]);
+
+            return;
+        }
 
         // AY ========================================================================
         if ((ESPectrum::AY_emu) && ((address & 0x8002) == 0x8000)) {
@@ -420,11 +502,11 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
                     ESPectrum::Betadisk.WriteCommandReg(data);
                     break;
                 case 0x3F:
-                    // printf("WD1793 Write Track Register: %d\n",data);                    
+                    // printf("WD1793 Write Track Register: %d\n",data);
                     ESPectrum::Betadisk.WriteTrackReg(data);
                     break;
                 case 0x5F:
-                    // printf("WD1793 Write Sector Register: %d\n",data);                    
+                    // printf("WD1793 Write Sector Register: %d\n",data);
                     ESPectrum::Betadisk.WriteSectorReg(data);
                     break;
                 case 0x7F:
@@ -481,7 +563,7 @@ IRAM_ATTR void Ports::ioContentionLate(bool contend) {
     if (contend) {
         VIDEO::Draw(1, true);
         VIDEO::Draw(1, true);
-        VIDEO::Draw(1, true);        
+        VIDEO::Draw(1, true);
     } else {
         VIDEO::Draw(3, false);
     }

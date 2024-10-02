@@ -48,13 +48,8 @@ visit https://zxespectrum.speccy.org/contacto
 #include "AySound.h"
 #include "pwm_audio.h"
 #include "Z80_JLS/z80.h"
-#include "Config.h"
-#include "Tape.h"
-#include "pwm_audio.h"
-#include "AySound.h"
 #include "loaders.h"
 #include "ZXKeyb.h"
-#include "Config.h"
 
 #include <sys/unistd.h>
 #include <sys/stat.h>

@@ -171,24 +171,8 @@ void ShowStartMsg() {
     OSD::drawOSD(false);
 
     int pos_x, pos_y;
-/*
-    if (Config::videomode == 2) {
-        pos_x = 82;
-        if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-            VIDEO::vga.fillRect( 56, 24, 240,50,zxColor(0, 0));
-            pos_y = 35;
-        } else {
-            VIDEO::vga.fillRect( 56, 48,240,50,zxColor(0, 0));
-            pos_y = 59;
-        }
-    } else {
-        VIDEO::vga.fillRect(Config::aspect_16_9 ? 60 : 40,Config::aspect_16_9 ? 12 : 32,240,50,zxColor(0, 0));
-        pos_x = Config::aspect_16_9 ? 86 : 66;
-        pos_y = Config::aspect_16_9 ? 23 : 43;
-    }
-*/
 
-    VIDEO::vga.fillRect(OSD::osdInsideX() /*Config::aspect_16_9 ? 60 : 40*/, OSD::osdInsideY() /*Config::aspect_16_9 ? 12 : 32*/, OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
+    VIDEO::vga.fillRect(OSD::osdInsideX(), OSD::osdInsideY(), OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
     // Decode Logo in EBF8 format
     uint8_t *logo = (uint8_t *)ESPectrum_logo;
