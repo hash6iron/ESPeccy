@@ -156,13 +156,13 @@ public:
     static unsigned int ndirs;
 
     static uint8_t msgDialog(string title, string msg);
+
     static void progressDialog(string title, string msg, int percent, int action, bool noprogressbar = false);
     string inputBox(int x, int y, string text);
     static void joyDialog(uint8_t joynum);
     static void pokeDialog();
 
     static int VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E);
-    //static string input(int x, int y, string inputLabel, int maxSize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", uint8_t *return_flags = nullptr);
     static string input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", const string& forbiddenchars = "", uint8_t * flags = nullptr);
 
     // Rows

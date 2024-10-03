@@ -123,6 +123,7 @@ private:
 #define NO_RAM_FILE "none"
 
 #define SNA_48K_SIZE 49179
+#define SNA_48K_WITH_ROM_SIZE 65563
 #define SNA_128K_SIZE1 131103
 #define SNA_128K_SIZE2 147487
 

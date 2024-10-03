@@ -4351,12 +4351,6 @@ uint8_t OSD::msgDialog(string title, string msg) {
 
 }
 
-string OSD::inputBox(int x, int y, string text) {
-
-return text;
-
-}
-
 #define MENU_JOYSELKEY_EN "Key      \n"\
     "A-Z      \n"\
     "1-0      \n"\
@@ -5878,7 +5872,6 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
             }
             VIDEO::vga.print(mode_E?"E":"L");
             VIDEO::vga.setTextColor(ink_color, paper_color);
-//            VIDEO::vga.print(string(maxSize - inputValue.size(), ' ').c_str());
             if ( inputValue.size() < displayeLimit ) VIDEO::vga.print(string( displayeLimit - inputValue.size() , ' ').c_str());
 
         }

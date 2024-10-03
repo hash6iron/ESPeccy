@@ -1087,8 +1087,8 @@ IRAM_ATTR void VIDEO::TopBorder_Pentagon() {
         if (brdcol_cnt == brdcol_end) {
             brdlin_cnt++;
             brdptr16 = (uint16_t *)(vga.frameBuffer[brdlin_cnt]);
-            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 10 : 0);
-            lastBrdTstate += Config::videomode == 2 ? 48 : 64;
+            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 2 : 0);
+            lastBrdTstate += brdnextline;
             if (brdlin_cnt == lin_end) {
                 DrawBorder = &MiddleBorder_Pentagon;
                 MiddleBorder_Pentagon();
@@ -1116,8 +1116,8 @@ IRAM_ATTR void VIDEO::MiddleBorder_Pentagon() {
         } else if (brdcol_cnt == brdcol_end) {
             brdlin_cnt++;
             brdptr16 = (uint16_t *)(vga.frameBuffer[brdlin_cnt]);
-            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 10 : 0);
-            lastBrdTstate += Config::videomode == 2 ? 48 : 64;
+            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 2 : 0);
+            lastBrdTstate += brdnextline;
             if (brdlin_cnt == lin_end2) {
                 DrawBorder = Draw_OSD43;
                 DrawBorder();
@@ -1142,8 +1142,8 @@ IRAM_ATTR void VIDEO::BottomBorder_Pentagon() {
         if (brdcol_cnt == brdcol_end) {
             brdlin_cnt++;
             brdptr16 = (uint16_t *)(vga.frameBuffer[brdlin_cnt]);
-            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 10 : 0);
-            lastBrdTstate += Config::videomode == 2 ? 48 : 64;
+            brdcol_cnt = Config::videomode == 2 ? 0 : (is169 ? 2 : 0);
+            lastBrdTstate += brdnextline;
             if (brdlin_cnt == OSD::scrH) {
                 DrawBorder = &Border_Blank;
                 return;
@@ -1171,7 +1171,7 @@ IRAM_ATTR void VIDEO::BottomBorder_OSD_Pentagon() {
             brdlin_cnt++;
             brdptr16 = (uint16_t *)(vga.frameBuffer[brdlin_cnt]);
             brdcol_cnt = 0;
-            lastBrdTstate += 64;
+            lastBrdTstate += brdnextline;
             if (brdlin_cnt == OSD::scrH) {
                 DrawBorder = &Border_Blank;
                 return;

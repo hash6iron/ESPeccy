@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -82,11 +82,11 @@ public:
     static slotdata tm_slotdata[TIME_MACHINE_SLOTS];
     static bool tm_bank_chg[8];
     static uint8_t cur_timemachine;
-    static int tm_framecnt;  
+    static int tm_framecnt;
     static bool tm_loading_slot;
     #endif
 
-    static uint8_t* ramCurrent[4];    
+    static uint8_t* ramCurrent[4];
     static bool ramContended[4];
 
     static uint8_t bankLatch;
@@ -97,7 +97,7 @@ public:
     static uint8_t romInUse;
 
     static bool Init();
-    static void Reset();    
+    static void Reset();
 
     #ifdef ESPECTRUM_PSRAM
     static void Tm_Load(uint8_t slot);

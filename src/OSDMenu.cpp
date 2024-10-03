@@ -989,16 +989,14 @@ int OSD::menuTape(string title) {
 
                     long current_pos = ftell( Tape::tape );
 
-                    TapeBlock::BlockType blocktype = Tape::getBlockType(begin_row - 2 + focus);
-                    switch( blocktype ) {
+                    int blocknum = begin_row - 2 + focus;
+                    TapeBlock::BlockType blocktype = Tape::getBlockType(blocknum);
+                    switch( Tape::getBlockType(begin_row - 2 + focus) ) {
                         case TapeBlock::Program_header:
                         case TapeBlock::Number_array_header:
                         case TapeBlock::Character_array_header:
                         case TapeBlock::Code_header: {
-
-                            string current_name = rtrim_copy(rowGet( menu, menuRealRowFor( focus ) ).substr(18,10));
-
-                            string new_name = input(19, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), current_name);
+                            string new_name = input(19, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), Tape::getBlockName(blocknum));
                             if ( new_name != "" ) {
                                 Tape::renameBlock( begin_row - 2 + focus, new_name );
                             }

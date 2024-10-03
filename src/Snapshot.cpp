@@ -146,9 +146,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
     rewind (file);
 
     // Check snapshot arch
-    if (sna_size == SNA_48K_SIZE
-       || sna_size == SNA_48K_SIZE + 16384 // Special SNA with included rom (non-standard)
-       ) {
+    if (sna_size == SNA_48K_SIZE || sna_size == SNA_48K_WITH_ROM_SIZE) { // SNA_48K_WITH_ROM_SIZE for non-standard SNA with rom included
 
         if (force_arch == "" && !Z80Ops::is48) {
             force_arch = "48K";
@@ -398,7 +396,8 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
     VIDEO::borderColor = readByteFile(file);
     VIDEO::brd = VIDEO::border32[VIDEO::borderColor];
 
-    if (Z80Ops::is48 && sna_size == SNA_48K_SIZE + 16384) {
+    // Load ROM if present
+    if (Z80Ops::is48 && sna_size == SNA_48K_WITH_ROM_SIZE) {
         MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
         readBlockFile(file, MemESP::rom[0], 0x4000);
     }
@@ -617,7 +616,7 @@ bool FileSNA::save(string sna_file, bool blockMode, bool force_saverom) {
 
     // write RAM pages in 48K address space (0x4000 - 0xFFFF)
     uint8_t pages[3] = {5, 2, 0};
-    // if (Config::arch != "48K")
+
     if (Z80Ops::is128 || Z80Ops::isPentagon)
         pages[2] = MemESP::bankLatch;
 
@@ -626,7 +625,6 @@ bool FileSNA::save(string sna_file, bool blockMode, bool force_saverom) {
         if (!writeMemPage(page, file, blockMode)) {
             fclose(file);
             return false;
-
         }
     }
 
@@ -1544,7 +1542,6 @@ bool FileP::load(string p_fn) {
 
 }
 
-
 size_t FileZ80::saveCompressedMemData(FILE *f, uint16_t memoff, uint16_t memlen, bool onlygetsize) {
     size_t size = 0;
     uint16_t memidx = 0;
@@ -1965,7 +1962,6 @@ Offset    Longitud    Descripci¢n
                      0       Biestable IFF1 (estado de interrupci¢n):
                                  0 - Interrupciones desactivadas (DI)
                                  1 - Interrupciones activadas (EI)
-
 */
 
 bool FileSP::load(string sp_fn) {
@@ -1973,8 +1969,7 @@ bool FileSP::load(string sp_fn) {
     FILE *file;
 
     file = fopen(sp_fn.c_str(), "rb");
-    if (file==NULL)
-    {
+    if (!file) {
         printf("FileSP: Error opening %s\n",sp_fn.c_str());
         return false;
     }
@@ -1999,7 +1994,7 @@ bool FileSP::load(string sp_fn) {
     }
 
     // Change arch if needed
-    if ( !Z80Ops::is48 /*|| Config::arch != "48K" */) {
+    if (!Z80Ops::is48) {
 
         bool vreset = Config::videomode;
 
@@ -2007,7 +2002,6 @@ bool FileSP::load(string sp_fn) {
 
         // Condition this to 50hz mode
         if(vreset) {
-
             Config::SNA_Path = FileUtils::SNA_Path;
             Config::SNA_begin_row = FileUtils::fileTypes[DISK_SNAFILE].begin_row;
             Config::SNA_focus = FileUtils::fileTypes[DISK_SNAFILE].focus;
@@ -2080,12 +2074,13 @@ bool FileSP::load(string sp_fn) {
     MemESP::pagingLock = 1;
     MemESP::videoLatch = 0;
 
-    // read 48K memory
+    // read ROM page if present
     if (!startAddress && !dataSize) {
         readBlockFile(file, MemESP::ram[1], 0x4000);
         MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
     }
 
+    // read 48K memory
     readBlockFile(file, MemESP::ram[5], 0x4000);
     readBlockFile(file, MemESP::ram[2], 0x4000);
     readBlockFile(file, MemESP::ram[0], 0x4000);
@@ -2095,7 +2090,6 @@ bool FileSP::load(string sp_fn) {
     return true;
 
 }
-
 
 bool FileSP::save(string sp_fn, bool force_saverom) {
 
