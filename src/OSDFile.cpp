@@ -814,7 +814,20 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
+                    } else if ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1) && fdir != "/"){
+                        // When press LEFT go to the previous dir
+                        fclose(dirfile);
+                        dirfile = NULL;
+                        filedir = rowGet(menu,FileUtils::fileTypes[ftype].focus);
+                        if (fdir != "/") {
+                            fdir.pop_back();
+                            fdir = fdir.substr(0,fdir.find_last_of("/") + 1);      
+                            FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
+                            break; 
+                        }
+                        // printf("Fdir: %s\n",fdir.c_str());
+
+                    } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1) && fdir == "/") || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
 
                         OSD::restoreBackbufferData();
 
