@@ -327,26 +327,39 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
 
     // Columns
     cols = 0;
-    uint8_t col_count = 0;
+    uint8_t col_count = 0, col_count_partial = 0;
+    uint8_t cols_title = 0;
+    bool with_tab = false;
     for (unsigned short i = 0; i < menu.length(); i++) {
-        if ((menu.at(i) == ASCII_TAB) || (menu.at(i) == ASCII_NL)) {
-            if (col_count > cols) {
-                cols = col_count;
-            }
-            while (menu.at(i) != ASCII_NL) i++;
+        if ((menu.at(i) == ASCII_TAB)) {
+            with_tab = true;
+            col_count_partial = col_count + 2; // space for el tab
             col_count = 0;
-        }
-        col_count++;
+        } else
+        if ((menu.at(i) == ASCII_NL)) {
+            if (col_count + col_count_partial > cols) cols = col_count + col_count_partial;
+            if (!cols_title) cols_title = cols;
+            col_count_partial = 0;
+            col_count = 0;
+        } else
+            col_count++;
     }
+
+    if (cols_title + 6 > cols) cols = cols_title + 6; // color bars in title
 
     // printf("Cols: %d\n",cols);
 
-    if ( statusbar != "" && cols < statusbar.length() ) cols = statusbar.length() + 2;
+    int max_cols = (menu_level == 0 ? 41 : 31);
 
-    cols += 8;
-    cols = (cols > 31 ? 31 : cols); //    cols = (cols > 28 ? 28 : cols);
+    cols += (real_rows > virtual_rows ? 1 : 0); // For scrollbar
 
-    // printf("Cols final: %d\n",cols);
+    cols += with_tab ? 1 : 2;
+
+    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
+
+    if (cols > max_cols) cols = max_cols;
+
+// printf("Cols final: %d\n",cols);
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
@@ -655,18 +668,18 @@ void OSD::menuScrollBar(unsigned short br) {
         holder_y++;
 
         // Scroll bar
-        unsigned long shown_pct = round(((float)virtual_rows / (float)real_rows) * 100.0);
-        unsigned long begin_pct = round(((float)(br - 1) / (float)real_rows) * 100.0);
-        unsigned long bar_h = round(((float)holder_h / 100.0) * (float)shown_pct);
-        unsigned long bar_y = round(((float)holder_h / 100.0) * (float)begin_pct);
-
-        while ((bar_y + bar_h) >= holder_h) {
-            bar_h--;
-        }
+        float shown_pct = (float)virtual_rows / (float)real_rows * 100.0;
+        float begin_pct = (float)(br - 1) / (float)real_rows * 100.0;
+        unsigned long bar_h = (float)holder_h / 100.0 * (float)shown_pct;
+        unsigned long bar_y = (float)holder_h / 100.0 * (float)begin_pct;
 
         if (bar_h == 0) bar_h = 1;
 
-        VIDEO::vga.fillRect(holder_x + 1, holder_y + bar_y, holder_w - 2, bar_h, zxColor(0, 0));
+        while ((bar_y + bar_h) >= holder_h) {
+            bar_y--;
+        }
+
+        VIDEO::vga.fillRect(holder_x + 1, holder_y + bar_y, holder_w - 1, bar_h, zxColor(0, 0));
 
         // Bottom handle
         menuAt(-1, -1);
@@ -709,8 +722,14 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
         margin = (real_rows > virtual_rows ? 3 : 2);
     }
 
-    if (line.find(ASCII_TAB) != line.npos) {
-        line = line.substr(0,line.find(ASCII_TAB)) + string(cols - margin - line.length(),' ') + line.substr(line.find(ASCII_TAB) + 1);
+    int line_len_to_tab = line.find(ASCII_TAB);
+
+    if (line_len_to_tab != line.npos) {
+        int line_len_without_tab = line.length() - 1;
+        bool safe_limit = cols - margin >= line_len_without_tab;
+        line = line.substr(0, safe_limit ? line_len_to_tab : cols - margin - (line_len_without_tab - line_len_to_tab) - 1)
+             + string(safe_limit ? cols - margin - line_len_without_tab : 1, ' ')
+             + line.substr(line_len_to_tab + 1);
     }
 
     menuAt(virtual_row_num, 0);
@@ -726,9 +745,9 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
             VIDEO::vga.print(" ");
     } else {
         if (line.length() < cols - margin) {
-        VIDEO::vga.print(line.c_str());
-        for (uint8_t i = line.length(); i < (cols - margin); i++)
-            VIDEO::vga.print(" ");
+            VIDEO::vga.print(line.c_str());
+            for (uint8_t i = line.length(); i < (cols - margin); i++)
+                VIDEO::vga.print(" ");
         } else {
             VIDEO::vga.print(line.substr(0, cols - margin).c_str());
         }
@@ -745,7 +764,7 @@ void OSD::tapemenuRedraw(string title, bool force) {
         // Read bunch of rows
         menu = title + "\n";
         if ( Tape::tapeNumBlocks ) {
-            for (int i = begin_row - 1; i < virtual_rows - ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly ? 1 : 0 ) + begin_row - 2; i++) {
+            for (int i = begin_row - 1; i < virtual_rows + begin_row - 2; i++) {
                 if (i >= Tape::tapeNumBlocks) break;
                 if (Tape::tapeFileType == TAPE_FTYPE_TAP)
                     menu += Tape::tapeBlockReadData(i);
@@ -759,7 +778,7 @@ void OSD::tapemenuRedraw(string title, bool force) {
                                         "<Vazio>\n";
         }
 
-        for (uint8_t row = 1; row < virtual_rows - ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly ? 1 : 0 ); row++) {
+        for (uint8_t row = 1; row < virtual_rows; row++) {
             if (row == focus) {
                 PrintRow(row, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + row) ) ? IS_SELECTED_FOCUSED : IS_FOCUSED);
             } else {
@@ -779,7 +798,7 @@ void OSD::tapemenuRedraw(string title, bool force) {
                                               " [TAP somente leitura]";
             }
 
-            menuAt(-1, 0);
+            VIDEO::vga.setCursor(x + 1, y + 1 + (virtual_rows * OSD_FONT_H));
             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
             VIDEO::vga.print((options + std::string(cols - options.size(), ' ')).c_str());
         }
@@ -806,7 +825,7 @@ int OSD::menuTape(string title) {
     Tape::selectedBlocks.clear();
 
     real_rows = Tape::tapeNumBlocks + 1;
-    virtual_rows = (real_rows > 8 ? 8 : real_rows) + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 ); // previous max real_rows 14
+    virtual_rows = (real_rows > 8 ? 8 : real_rows) + ( ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly ) ? 1 : 0 ); // previous max real_rows 14
     // begin_row = last_begin_row = last_focus = focus = 1;
 
     // ATENCION: NO ALCANZA LA MEMORIA. PARA LOS DIALOGOS DE CONFIRMACION.
@@ -822,21 +841,8 @@ int OSD::menuTape(string title) {
         begin_row = 1;
         focus = Tape::tapeCurBlock + 1;
     }
-    // last_focus = focus;
-    // last_begin_row = begin_row;
+
     menu_curopt = focus;
-
-    // // Get first bunch of rows
-    // menu = title + "\n";
-    // for (int i = (begin_row - 1); i < (begin_row - 1) + (virtual_rows - 1); i++) {
-    //     if (i > Tape::tapeNumBlocks) break;
-    //     menu += tapeBlockReadData(i);
-    // }
-
-    // printf(menu.c_str());
-
-    // Position
-//    if (menu_level == 0) {
 
     // CRT Overscan compensation
     if (Config::videomode == 2) {
@@ -854,20 +860,15 @@ int OSD::menuTape(string title) {
     x += (Config::aspect_16_9 ? 24 : 8);
     y += 8;
 
-//    } else {
-//        x = (Config::aspect_16_9 ? 24 : 8) + (60 * menu_level);
-//        y = 8 + (16 * menu_level);
-//    }
-
     // Columns
-//    cols = 39; // 35 for block info + 2 pre and post space + 1 for scrollbar
     cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
 
     // Size
     w = (cols * OSD_FONT_W) + 2;
-    h = (virtual_rows * OSD_FONT_H) + 2;
+    h = ((virtual_rows + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 )) * OSD_FONT_H) + 2;
 
     menu = title + "\n";
+
     WindowDraw();
 
     last_begin_row = last_focus = 0;
@@ -905,14 +906,14 @@ int OSD::menuTape(string title) {
                         click();
                     }
                 } else if (Menukey.vk == fabgl::VK_DOWN || Menukey.vk == fabgl::VK_JOY1DOWN || Menukey.vk == fabgl::VK_JOY2DOWN) {
-                    if (focus == virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 ) ) {
-                        if ((begin_row + virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 2 : 1) : 0 )) < real_rows) {
+                    if (focus == virtual_rows - 1) {
+                        if ((begin_row + virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 1 : 0) : 0 ) ) < real_rows) {
                             last_begin_row = begin_row;
                             begin_row++;
                             tapemenuRedraw(title);
                             click();
                         }
-                    } else if (focus < virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 )) {
+                    } else if (focus < virtual_rows - 1) {
                         last_focus = focus;
                         focus++;
                         PrintRow(focus, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + focus) ) ? IS_SELECTED_FOCUSED : IS_FOCUSED);
@@ -941,14 +942,14 @@ int OSD::menuTape(string title) {
                         last_focus = focus;
                         last_begin_row = begin_row;
                         focus = 1;
-                        begin_row += virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
+                        begin_row += virtual_rows - 1;
                         tapemenuRedraw(title);
                         click();
                     } else {
                         last_focus = focus;
                         last_begin_row = begin_row;
-                        focus = virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
-                        begin_row = real_rows - virtual_rows + 1 + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 2 : 1) : 0 );
+                        focus = virtual_rows - 1;
+                        begin_row = real_rows - virtual_rows + 1 + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 1 : 0) : 0 );
                         tapemenuRedraw(title);
                         click();
                     }
@@ -962,15 +963,15 @@ int OSD::menuTape(string title) {
                 } else if (Menukey.vk == fabgl::VK_END) {
                     last_focus = focus;
                     last_begin_row = begin_row;
-                    focus = virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? 1 : 0 );
-                    begin_row = real_rows - virtual_rows + 1 + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 2 : 1) : 0 );
+                    focus = virtual_rows - 1;
+                    begin_row = real_rows - virtual_rows + 1 + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 1 : 0) : 0 );
                     tapemenuRedraw(title);
                     click();
                 } else if (Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && (Menukey.vk == fabgl::VK_SPACE || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C)) {
                     if ( begin_row - 1 + focus < real_rows ) Tape::selectBlockToggle(begin_row - 2 + focus);
 
-                    if (focus == virtual_rows - 1 - 1 ) {
-                        if ((begin_row + virtual_rows - 1 - 2) < real_rows) {
+                    if (focus == virtual_rows - 1 ) {
+                        if ((begin_row + virtual_rows - 2) < real_rows) {
                             last_begin_row = begin_row;
                             begin_row++;
                             tapemenuRedraw(title);
@@ -978,7 +979,7 @@ int OSD::menuTape(string title) {
                         } else {
                             PrintRow(focus, Tape::isSelectedBlock(begin_row - 2 + focus) ? IS_SELECTED_FOCUSED : IS_FOCUSED);
                         }
-                    } else if (focus < virtual_rows - 1 - 1) {
+                    } else if (focus < virtual_rows - 1) {
                         last_focus = focus;
                         focus++;
                         PrintRow(focus, Tape::isSelectedBlock(begin_row - 2 + focus) ? IS_SELECTED_FOCUSED : IS_FOCUSED);

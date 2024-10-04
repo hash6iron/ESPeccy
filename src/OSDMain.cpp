@@ -862,6 +862,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
             }
         }
+
     } else if (CTRL && !SHIFT) {
 
         // if (KeytoESP == fabgl::VK_F11) { // Toggle snow effect
@@ -1110,7 +1111,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 string statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
                                    Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
                                                        " F2 Renomear | F8 Excluir";
-                statusbar += std::string(28 - statusbar.size(), ' ');
+                statusbar += std::string(26 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                 if (opt2 && FileUtils::isSDReady()) {
                     if ( FileUtils::isSDReady() ) persistLoad(opt2);
@@ -1129,7 +1130,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 string statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
                                    Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
                                                        " F2 Renomear | F8 Excluir";
-                statusbar += std::string(28 - statusbar.size(), ' ');
+                statusbar += std::string(26 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     if ( FileUtils::isSDReady() ) if (persistSave(opt2)) return;
@@ -1494,7 +1495,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     string statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
                                                        Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
                                                                            " F2 Renomear | F8 Excluir";
-                                    statusbar += std::string(28 - statusbar.size(), ' ');
+                                    statusbar += std::string(26 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                                     if (opt2 && FileUtils::isSDReady()) {
                                         if (persistLoad(opt2)) return;
@@ -1515,7 +1516,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     string statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
                                                        Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
                                                                            " F2 Renomear | F8 Excluir";
-                                    statusbar += std::string(28 - statusbar.size(), ' ');
+                                    statusbar += std::string(26 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                                     if (opt2 && FileUtils::isSDReady()) {
                                         if (persistSave(opt2)) return;
