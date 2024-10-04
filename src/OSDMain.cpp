@@ -4607,18 +4607,18 @@ default:
 }
 
 unsigned int joyControl[12][3]={
-    {34,55,zxColor(0,0)}, // Left
-    {87,55,zxColor(0,0)}, // Right
-    {63,30,zxColor(0,0)}, // Up
-    {63,78,zxColor(0,0)}, // Down
-    {49,109,zxColor(0,0)}, // Start
-    {136,109,zxColor(0,0)}, // Mode
-    {145,69,zxColor(0,0)}, // A
-    {205,69,zxColor(0,0)}, // B
-    {265,69,zxColor(0,0)}, // C
-    {145,37,zxColor(0,0)}, // X
-    {205,37,zxColor(0,0)}, // Y
-    {265,37,zxColor(0,0)} // Z
+    {6*OSD_FONT_W-OSD_FONT_W/2,((55-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Left
+    {15*OSD_FONT_W-OSD_FONT_W/2,((55-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Right
+    {11*OSD_FONT_W-OSD_FONT_W/2,((30-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Up
+    {11*OSD_FONT_W-OSD_FONT_W/2,((78-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Down
+    {((49-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((109-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Start
+    {((136-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((109-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Mode
+    {((145-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((69-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // A
+    {((205-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((69-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // B
+    {((265-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((69-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // C
+    {((145-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((37-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // X
+    {((205-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((37-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)}, // Y
+    {((265-4)/6)*OSD_FONT_W+OSD_FONT_W/2,((37-4)/8)*OSD_FONT_H+OSD_FONT_H/2,zxColor(0,0)} // Z
 };
 
 void DrawjoyControls(unsigned short x, unsigned short y) {
@@ -4696,20 +4696,20 @@ void DrawjoyControls(unsigned short x, unsigned short y) {
 void OSD::joyDialog(uint8_t joynum) {
 
     int joyDropdown[14][7]={
-        {7,65,-1,1,2,3,0}, // Left
-        {67,65,0,-1,2,3,0}, // Right
-        {37,17,-1,9,-1,0,0}, // Up
-        {37,89,-1,6,0,4,0}, // Down
-        {37,121,-1,5,3,-1,0}, // Start
-        {121,121,4,12,6,-1,0}, // Mode
-        {121,89,3,7,9,5,0}, // A
-        {181,89,6,8,10,12,0}, // B
-        {241,89,7,-1,11,13,0}, // C
-        {121,17,2,10,-1,6,0}, // X
-        {181,17,9,11,-1,7,0}, // Y
-        {241,17,10,-1,-1,8,0}, // Z
-        {181,121,5,13,7,-1,0}, // Ok
-        {241,121,12,-1,8,-1,0} // Test
+        {((7-1)/6)*OSD_FONT_W+1,((65-1)/8)*OSD_FONT_H+1,-1,1,2,3,0}, // Left
+        {((67-1)/6)*OSD_FONT_W+1,((65-1)/8)*OSD_FONT_H+1,0,-1,2,3,0}, // Right
+        {((37-1)/6)*OSD_FONT_W+1,((17-1)/8)*OSD_FONT_H+1,-1,9,-1,0,0}, // Up
+        {((37-1)/6)*OSD_FONT_W+1,((89-1)/8)*OSD_FONT_H+1,-1,6,0,4,0}, // Down
+        {((37-1)/6)*OSD_FONT_W+1,((121-1)/8)*OSD_FONT_H+1,-1,5,3,-1,0}, // Start
+        {((121-1)/6)*OSD_FONT_W+1,((121-1)/8)*OSD_FONT_H+1,4,12,6,-1,0}, // Mode
+        {((121-1)/6)*OSD_FONT_W+1,((89-1)/8)*OSD_FONT_H+1,3,7,9,5,0}, // A
+        {((181-1)/6)*OSD_FONT_W+1,((89-1)/8)*OSD_FONT_H+1,6,8,10,12,0}, // B
+        {((241-1)/6)*OSD_FONT_W+1,((89-1)/8)*OSD_FONT_H+1,7,-1,11,13,0}, // C
+        {((121-1)/6)*OSD_FONT_W+1,((17-1)/8)*OSD_FONT_H+1,2,10,-1,6,0}, // X
+        {((181-1)/6)*OSD_FONT_W+1,((17-1)/8)*OSD_FONT_H+1,9,11,-1,7,0}, // Y
+        {((241-1)/6)*OSD_FONT_W+1,((17-1)/8)*OSD_FONT_H+1,10,-1,-1,8,0}, // Z
+        {((181-1)/6)*OSD_FONT_W+1,((121-1)/8)*OSD_FONT_H+1,5,13,7,-1,0}, // Ok
+        {((241-1)/6)*OSD_FONT_W+1,((121-1)/8)*OSD_FONT_H+1,12,-1,8,-1,0} // Test
     };
 
     string keymenu = MENU_JOYSELKEY[Config::lang];
@@ -4775,7 +4775,7 @@ void OSD::joyDialog(uint8_t joynum) {
 
     // Draw Joy DropDowns
     for (int n=0; n<12; n++) {
-        VIDEO::vga.rect(x + joyDropdown[n][0] - 2, y + joyDropdown[n][1] - 2, 58, 12, zxColor(0, 0));
+        VIDEO::vga.rect(x + joyDropdown[n][0] - 2, y + joyDropdown[n][1] - 2, ((58-4)/6)*OSD_FONT_W+4, ((12-4)/8)*OSD_FONT_H+4, zxColor(0, 0));
         if (n == curDropDown)
             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
         else

@@ -76,7 +76,7 @@ using namespace std;
 
 // File dialog
 
-#define MAXSEARCHLEN 16
+#define MAXSEARCHLEN 8
 
 // OSD Interface
 class OSD {
