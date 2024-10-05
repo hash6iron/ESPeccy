@@ -36,7 +36,7 @@ visit https://zxespectrum.speccy.org/contacto
 #ifndef ESPECTRUM_MESSAGES_h
 #define ESPECTRUM_MESSAGES_h
 
-#define EMU_VERSION " v1.3pr9cny "
+#define EMU_VERSION "       v1.3 "
 
 // Language files
 #include "messages_en.h"
@@ -67,7 +67,8 @@ static const char *ERR_FS_EXT_FAIL[NLANGS] = { ERR_FS_EXT_FAIL_EN, ERR_FS_EXT_FA
 // OSD
 #define OSD_TITLE  " ESPectrum - The ESP32 powered emulator "
 // #define OSD_BOTTOM " SCIENCE LEADS TO PROGRESS              "
-#define OSD_BOTTOM " zxespectrum.speccy.org     " EMU_VERSION
+//#define OSD_BOTTOM " zxespectrum.speccy.org     " EMU_VERSION
+#define OSD_BOTTOM " zxespectrum.speccy.org     "
 
 static const char *OSD_MSGDIALOG_YES[NLANGS] = { OSD_MSGDIALOG_YES_EN, OSD_MSGDIALOG_YES_ES, OSD_MSGDIALOG_YES_PT };
 static const char *OSD_MSGDIALOG_NO[NLANGS] = { OSD_MSGDIALOG_NO_EN, OSD_MSGDIALOG_NO_ES, OSD_MSGDIALOG_NO_PT };

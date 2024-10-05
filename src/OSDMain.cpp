@@ -48,6 +48,7 @@ visit https://zxespectrum.speccy.org/contacto
 #include "pwm_audio.h"
 #include "Z80_JLS/z80.h"
 #include "roms.h"
+#include "BuildDate.h"
 
 #include "esp_system.h"
 #include "esp_ota_ops.h"
@@ -224,8 +225,14 @@ void OSD::drawOSD(bool bottom_info) {
             case 1: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: VGA 60hz       " : " Video mode: VGA 50hz       "; break;
             case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz       " : " Video mode: CRT 50hz       "; break;
         }
-        VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str());
-    } else VIDEO::vga.print(OSD_BOTTOM);
+
+//        VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
+
+        VIDEO::vga.print(bottom_line.append(string(getShortBuildDate())+"c ").c_str()); // For Canary
+    } else {
+        VIDEO::vga.print(OSD_BOTTOM);
+        VIDEO::vga.print((string(getShortBuildDate())+"c ").c_str()); // For Canary
+    }
     osdHome();
 }
 
