@@ -2034,8 +2034,8 @@ bool FileSP::load(string sp_fn) {
     Z80::setRegDE(readWordFileLE(file));
     Z80::setRegHL(readWordFileLE(file));
 
-    Z80::setRegA(readByteFile(file));
     Z80::setFlags(readByteFile(file));
+    Z80::setRegA(readByteFile(file));
 
     Z80::setRegIX(readWordFileLE(file));
     Z80::setRegIY(readWordFileLE(file));
@@ -2044,8 +2044,8 @@ bool FileSP::load(string sp_fn) {
     Z80::setRegDEx(readWordFileLE(file));
     Z80::setRegHLx(readWordFileLE(file));
 
-    Z80::setRegAx(readByteFile(file));
     Z80::setRegFx(readByteFile(file));
+    Z80::setRegAx(readByteFile(file));
 
     Z80::setRegR(readByteFile(file));
 
@@ -2134,8 +2134,8 @@ bool FileSP::save(string sp_fn, bool force_saverom) {
     writeWordFileLE(Z80::getRegDE(), file);
     writeWordFileLE(Z80::getRegHL(), file);
 
-    writeByteFile(Z80::getRegA(), file);
     writeByteFile(Z80::getFlags(), file);
+    writeByteFile(Z80::getRegA(), file);
 
     writeWordFileLE(Z80::getRegIX(), file);
     writeWordFileLE(Z80::getRegIY(), file);
@@ -2144,8 +2144,8 @@ bool FileSP::save(string sp_fn, bool force_saverom) {
     writeWordFileLE(Z80::getRegDEx(), file);
     writeWordFileLE(Z80::getRegHLx(), file);
 
-    writeByteFile(Z80::getRegAx(), file);
     writeByteFile(Z80::getRegFx(), file);
+    writeByteFile(Z80::getRegAx(), file);
 
     writeByteFile(Z80::getRegR(), file);
 
