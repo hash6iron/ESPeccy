@@ -28,7 +28,7 @@ Cuando se restaura un snapshot, el programa reanuda su ejecución mediante un co
 
 ### **Formato SNA (128K)**
 
-El formato SNA para los modelos de 128K y +2 es una extensión del formato de 48K, incluyendo los bancos adicionales de memoria RAM. Además, corrige el problema relacionado con el registro **PC**, que ahora se almacena en una variable adicional en lugar de ser empujado en la pila.
+El formato SNA para los modelos de 128K es una extensión del formato de 48K, incluyendo los bancos adicionales de memoria RAM. Además, corrige el problema relacionado con el registro **PC**, que ahora se almacena en una variable adicional en lugar de ser empujado en la pila.
 
 | **Desplazamiento** | **Tamaño** | **Descripción** |
 | ------------------ | ---------- | --------------- |
