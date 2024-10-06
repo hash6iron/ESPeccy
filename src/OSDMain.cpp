@@ -1286,7 +1286,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             click();
 
         }
-        else if (KeytoESP == fabgl::VK_F9 || KeytoESP == fabgl::VK_VOLUMEDOWN) {
+        else if (KeytoESP == fabgl::VK_F9 || KeytoESP == fabgl::VK_VOLUMEDOWN ||
+                 KeytoESP == fabgl::VK_F10 || KeytoESP == fabgl::VK_VOLUMEUP) {
 
             // EXPERIMENTAL: TIME MACHINE TEST
 
@@ -1324,9 +1325,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             ESPectrum::totalsecondsnodelay = 0;
             VIDEO::framecnt = 0;
 
-            if (ESPectrum::aud_volume>ESP_VOLUME_MIN) {
-                ESPectrum::aud_volume--;
-                pwm_audio_set_volume(ESPectrum::aud_volume);
+            if (KeytoESP == fabgl::VK_F9 || KeytoESP == fabgl::VK_VOLUMEDOWN) {
+                if (ESPectrum::aud_volume>ESP_VOLUME_MIN) {
+                    ESPectrum::aud_volume--;
+                    pwm_audio_set_volume(ESPectrum::aud_volume);
+                }
+            } else {
+                if (ESPectrum::aud_volume<ESP_VOLUME_MAX) {
+                    ESPectrum::aud_volume++;
+                    pwm_audio_set_volume(ESPectrum::aud_volume);
+                }
             }
 
             unsigned short x,y;
@@ -1339,53 +1347,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 y = VIDEO::brdlin_osdstart + 4;
             }
 
-            VIDEO::vga.fillRect(x ,y - 4, 24 * 6, 16, zxColor(1, 0));
+            VIDEO::vga.fillRect(x, y - 4, 24 * OSD_FONT_W, 16, zxColor(1, 0));
             VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
             VIDEO::vga.setFont(Font6x8);
-            VIDEO::vga.setCursor(x + 4,y + 1);
+            VIDEO::vga.setCursor(x + OSD_FONT_W, y + 1);
             VIDEO::vga.print(Config::tape_player ? "TAP" : "VOL");
             for (int i = 0; i < ESPectrum::aud_volume + 16; i++)
-                VIDEO::vga.fillRect(x + 26 + (i * 7) , y + 1, 6, 7, zxColor( 7, 0));
-
-        }
-        else if (KeytoESP == fabgl::VK_F10 || KeytoESP == fabgl::VK_VOLUMEUP) {
-
-            if (VIDEO::OSD == 0) {
-
-                if (Config::aspect_16_9)
-                    VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
-                else
-                    VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
-
-                VIDEO::OSD = 0x04;
-
-            } else VIDEO::OSD |= 0x04;
-
-            ESPectrum::totalseconds = 0;
-            ESPectrum::totalsecondsnodelay = 0;
-            VIDEO::framecnt = 0;
-
-            if (ESPectrum::aud_volume<ESP_VOLUME_MAX) {
-                ESPectrum::aud_volume++;
-                pwm_audio_set_volume(ESPectrum::aud_volume);
-            }
-
-            unsigned short x,y;
-            if (Config::aspect_16_9) {
-                x = 156;
-                y = 180;
-            } else {
-                x = 168;
-                y = VIDEO::brdlin_osdstart + 4;
-            }
-
-            VIDEO::vga.fillRect(x ,y - 4, 24 * 6, 16, zxColor(1, 0));
-            VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
-            VIDEO::vga.setFont(Font6x8);
-            VIDEO::vga.setCursor(x + 4,y + 1);
-            VIDEO::vga.print(Config::tape_player ? "TAP" : "VOL");
-            for (int i = 0; i < ESPectrum::aud_volume + 16; i++)
-                VIDEO::vga.fillRect(x + 26 + (i * 7) , y + 1, 6, 7, zxColor( 7, 0));
+                VIDEO::vga.fillRect(x + (i + 7) * OSD_FONT_W, y + 1, OSD_FONT_W - 1, 7, zxColor( 7, 0));
 
         }
         else if (KeytoESP == fabgl::VK_F11) { // Hard reset
