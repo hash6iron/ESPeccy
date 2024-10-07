@@ -36,11 +36,15 @@ This project is based on David Crespo excellent work on [ZX-ESPectrum-Wiimote](h
 - Flashload of TAP files.
 - Rodolfo Guerra's ROMs fast load routines support with on the fly standard speed blocks translation.
 - Virtual tape system with support for SAVE command and block renaming, deleting and moving.
-- SNA, Z80 and SP snapshot loading.
-- Snapshot saving and loading.
+- SNA, Z80 and SP snapshot saving and loading.
+- Persistent snapshot (in slots) saving and loading.
+- Rename and delete persistent snapshot (in slots).
 - Complete file navigation system with autoindexing, folder support and search functions.
 - Complete OSD menu in three languages: English, Spanish and Portuguese.
 - BMP screen capture to SD Card (thanks David Crespo 😉).
+- Menu navigation with cursor keys.
+- Fullerbox sound in ZX-Spectrum.
+- Zon-X sound emulation in ZX80+.
 
 ## Work in progress
 
@@ -84,7 +88,7 @@ There's also no need to sort files using external utilities: the emulator create
 ## PS/2 Keyboard functions
 
 - F1 Main menu
-- F2 Load (SNA,Z80, SP, P)
+- F2 Load snapshot (SNA, Z80, SP, P)
 - F3 Load custom snapshot
 - F4 Save customn snapshot
 - F5 Select TAP file
@@ -102,6 +106,7 @@ There's also no need to sort files using external utilities: the emulator create
 - CTRL + F10 NMI
 - CTRL + F11 Reset to TR-DOS
 - SHIFT + F1 Hardware info
+- SHIFT + F2 Save snapshot (SNA, Z80, SP, P)
 - SHIFT + F6 Eject tape
 - Pause Pause
 - ScrollLock Switch "Cursor keys as joy" setting
@@ -197,7 +202,7 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 - [RetroReal](https://www.youtube.com/@retroreal) for his kindness and hospitality and his great work.
 - Rodrigo Méndez [Ron](https://www.twitch.tv/retrocrypta)
 - Armand López [El Viejoven FX](https://www.youtube.com/@ElViejovenFX)
-- Javi Ortiz [El Spectrumero](https://www.youtube.com/@ElSpectrumeroJaviOrtiz) 
+- Javi Ortiz [El Spectrumero](https://www.youtube.com/@ElSpectrumeroJaviOrtiz)
 - José Luis Rodríguez [VidaExtraRetro](https://www.twitch.tv/vidaextraretro)
 - [El Mundo del Spectrum](http://www.elmundodelspectrum.com/)
 - [Microhobby magazine](https://es.wikipedia.org/wiki/MicroHobby).
