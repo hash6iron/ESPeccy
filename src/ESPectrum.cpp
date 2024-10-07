@@ -1010,7 +1010,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
     bool Kdown;
     bool r = false;
     bool j[10] = { true, true, true, true, true, true, true, true, true, true };
-    // bool j1 =  true;
+    // bool j1 = true;
     // bool j2 = true;
     // bool j3 = true;
     // bool j4 = true;
@@ -1537,6 +1537,9 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             } else
             if (!bitRead(ZXKeyb::ZXcols[6],2)) { // K -> Help / Kbd layout
                 OSD::do_OSD(fabgl::VK_F1,true,0);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[1],1)) { // S -> Save snapshot
+                OSD::do_OSD(fabgl::VK_F2,0,true);
             } else
             if (!bitRead(ZXKeyb::ZXcols[0],1)) { // Z -> CenterH
                 if (Config::CenterH > -16) Config::CenterH--;
