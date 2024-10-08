@@ -278,6 +278,8 @@ En modo 48K, se guardan las p√°ginas 4, 5 y 8. En modo SamRam, se guardan las p√
 
 En el modo 48k, aunque no es habitual, es posible guardar la pagina 0 (ROM de 48k).
 
+---
+
 # **Referencias**
 
 - World of Spectrum. Formats Reference. Recuperado de [https://worldofspectrum.org/faq/reference/formats.htm](https://worldofspectrum.org/faq/reference/formats.htm).
