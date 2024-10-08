@@ -36,6 +36,10 @@ visit https://zxespectrum.speccy.org/contacto
 #include <stdio.h>
 #include <string>
 
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "nvs_handle.hpp"
+
 #include "ESPectrum.h"
 #include "Snapshot.h"
 #include "Config.h"
@@ -346,6 +350,7 @@ void ESPectrum::bootKeyboard() {
     fabgl::VirtualKeyItem NextKey;
     int i = 0;
     string s = "00";
+    uint8_t factory_reset = 0;
 
     // printf("Boot kbd!\n");
 
@@ -374,6 +379,17 @@ void ESPectrum::bootKeyboard() {
                 s[1]='W';
             }
 
+            if (!bitRead(ZXKeyb::ZXcols[0], 0)) { // SHIFT
+                factory_reset |= 0x01;
+            }
+
+            if (!bitRead(ZXKeyb::ZXcols[2], 3)) { // R
+                factory_reset |= 0x02;
+            }
+
+            if (!bitRead(ZXKeyb::ZXcols[4], 0)) { // 0
+                factory_reset |= 0x04;
+            }
         }
 
         while (Kbd->virtualKeyAvailable()) {
@@ -401,20 +417,78 @@ void ESPectrum::bootKeyboard() {
                     case fabgl::VK_w:
                         s[1] = 'W';
                         break;
+
+                    case fabgl::VK_LSHIFT:
+                    case fabgl::VK_RSHIFT:
+                        factory_reset |= 0x01;
+                        break;
+
+                    case fabgl::VK_R:
+                    case fabgl::VK_r:
+                        factory_reset |= 0x02;
+                        break;
+
+                    case fabgl::VK_0:
+                        factory_reset |= 0x04;
+                        break;
+
                 }
 
             }
 
         }
 
-        if (s.find('0') == std::string::npos) break;
+        if (s.find('0') == std::string::npos || (factory_reset & 0x04) == 0x04) break;
 
         delayMicroseconds(1000);
 
     }
 
-    // printf("Boot kbd end!\n");
+    if ((factory_reset & 0x04) == 0x04) {
+        // wait confirm or cancel
 
+        int8_t confirm = (ZXKeyb::Exists) ? 1 : -1;
+        int8_t active_led = 0;
+
+        for(i = 0; i < 500 && confirm == -1; i++) {
+            while (Kbd->virtualKeyAvailable()) {
+                bool r = Kbd->getNextVirtualKey(&NextKey);
+
+                if (r && NextKey.down) {
+
+                    // Check keyboard status
+                    switch (NextKey.vk) {
+                        case fabgl::VK_Y:
+                        case fabgl::VK_y:
+                            confirm = 1;
+                            break;
+
+                        case fabgl::VK_N:
+                        case fabgl::VK_n:
+                            confirm = 0;
+                            break;
+
+                    }
+
+                }
+            }
+
+            if ( i & 0x04 ) {
+                active_led++;
+                if ( active_led > 3) active_led = 0;
+
+                ESPectrum::PS2Controller.keyboard()->setLEDs(active_led==1,active_led==2,active_led==3);
+            }
+
+            delayMicroseconds(1000);
+        }
+
+        if ( confirm == 1 ) {
+            nvs_flash_erase();
+            OSD::esp_hard_reset();
+        }
+
+    } else
     if (i < 200) {
         Config::videomode = (s[0] == '1') ? 0 : (s[0] == '2') ? 1 : 2;
         if (Config::videomode == 2)
