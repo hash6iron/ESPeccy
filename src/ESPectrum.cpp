@@ -350,7 +350,7 @@ void ESPectrum::bootKeyboard() {
     fabgl::VirtualKeyItem NextKey;
     int i = 0;
     string s = "00";
-    uint8_t factory_reset = 0;
+    uint8_t factory_reset = ZXKeyb::Exists ? 0 : 0x01;
 
     // printf("Boot kbd!\n");
 
@@ -416,11 +416,6 @@ void ESPectrum::bootKeyboard() {
                     case fabgl::VK_W:
                     case fabgl::VK_w:
                         s[1] = 'W';
-                        break;
-
-                    case fabgl::VK_LSHIFT:
-                    case fabgl::VK_RSHIFT:
-                        factory_reset |= 0x01;
                         break;
 
                     case fabgl::VK_R:
