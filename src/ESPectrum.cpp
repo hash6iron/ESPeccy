@@ -442,11 +442,15 @@ void ESPectrum::bootKeyboard() {
     if ((factory_reset & 0x04) == 0x04) {
         // wait confirm or cancel
 
+        bool numLock, capsLock, scrollLock;
+
+        ESPectrum::PS2Controller.keyboard()->getLEDs(&numLock, &capsLock, &scrollLock);
+
         int8_t confirm = (ZXKeyb::Exists) ? 1 : -1;
         int8_t active_led = 0;
 
         for(i = 0; i < 500 && confirm == -1; i++) {
-            while (Kbd->virtualKeyAvailable()) {
+            if (Kbd->virtualKeyAvailable()) {
                 bool r = Kbd->getNextVirtualKey(&NextKey);
 
                 if (r && NextKey.down) {
@@ -471,17 +475,18 @@ void ESPectrum::bootKeyboard() {
             if ( i & 0x04 ) {
                 active_led++;
                 if ( active_led > 3) active_led = 0;
-
                 ESPectrum::PS2Controller.keyboard()->setLEDs(active_led==1,active_led==2,active_led==3);
             }
 
-            delayMicroseconds(1000);
+            delayMicroseconds(10000);
         }
 
         if ( confirm == 1 ) {
             nvs_flash_erase();
             OSD::esp_hard_reset();
         }
+
+        ESPectrum::PS2Controller.keyboard()->setLEDs(numLock, capsLock, scrollLock);
 
     } else
     if (i < 200) {
