@@ -825,7 +825,7 @@ int OSD::menuTape(string title) {
     Tape::selectedBlocks.clear();
 
     real_rows = Tape::tapeNumBlocks + 1;
-    virtual_rows = (real_rows > 8 ? 8 : real_rows) + ( ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly ) ? 1 : 0 ); // previous max real_rows 14
+    virtual_rows = (real_rows > 8 ? 8 : real_rows) + ( ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly ) ? (Tape::tapeNumBlocks ? 1 : 0) : 0 ); // previous max real_rows 14
     // begin_row = last_begin_row = last_focus = focus = 1;
 
     // ATENCION: NO ALCANZA LA MEMORIA. PARA LOS DIALOGOS DE CONFIRMACION.

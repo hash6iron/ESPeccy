@@ -239,7 +239,7 @@ void Tape::LoadTape(string mFile) {
         mFile.erase(0, 1);
 
         // Flashload .tap if needed
-        if (FileUtils::fileSize( ( FileUtils::MountPoint + FileUtils::TAP_Path + mFile ).c_str() ) > 0
+        if (FileUtils::fileSize( ( mFile[0] == '/' ? mFile : ( FileUtils::MountPoint + FileUtils::TAP_Path + mFile ) ).c_str() ) > 0
             && keySel ==  "R"
             && Config::flashload
             && Config::romSet != "ZX81+"
@@ -374,7 +374,7 @@ void Tape::TAP_Open(string name) {
         tape = NULL;
     }
 
-    string fname = FileUtils::MountPoint + FileUtils::TAP_Path + name;
+    string fname = ( name[0] == '/' ) ? name : ( FileUtils::MountPoint + FileUtils::TAP_Path + name );
 
     tapeIsReadOnly = access(fname.c_str(), W_OK);
 
@@ -1235,14 +1235,14 @@ void Tape::Save() {
 
     fclose(fichero);
 
-    Tape::TAP_Open( tapeFileName );
+    Tape::TAP_Open( tapeSaveName.c_str() );
 }
 
 bool Tape::FlashLoad() {
 
     if (tape == NULL) {
 
-        string fname = FileUtils::MountPoint + FileUtils::TAP_Path + tapeFileName;
+        string fname = tapeFileName[0] == '/' ? tapeFileName : ( FileUtils::MountPoint + FileUtils::TAP_Path + tapeFileName );
 
         tape = fopen(fname.c_str(), "rb");
         if (tape == NULL) {
@@ -1400,8 +1400,6 @@ void Tape::removeSelectedBlocks() {
         return;
     }
 
-    string filename = FileUtils::MountPoint + FileUtils::TAP_Path + tapeFileName;
-
     int blockIndex = 0;
     int tapeBlkLen = 0;
     long off = 0;
@@ -1457,10 +1455,10 @@ void Tape::removeSelectedBlocks() {
     }
 
     // Reemplazar el archivo original con el archivo temporal
-    std::remove(filename.c_str());
-    std::rename(filenameTemp.c_str(), filename.c_str());
+    std::remove(tapeSaveName.c_str());
+    std::rename(filenameTemp.c_str(), tapeSaveName.c_str());
 
-    Tape::LoadTape((" "+tapeFileName).c_str());
+    Tape::LoadTape((" "+tapeSaveName).c_str());
 
     selectedBlocks.clear();
 }
@@ -1481,8 +1479,6 @@ void Tape::moveSelectedBlocks(int targetPosition) {
         printf("Error al crear el archivo de salida temporal.\n");
         return;
     }
-
-    string filename = FileUtils::MountPoint + FileUtils::TAP_Path + tapeFileName;
 
     int blockIndex = 0;
     int tapeBlkLen = 0;
@@ -1559,10 +1555,10 @@ void Tape::moveSelectedBlocks(int targetPosition) {
         tape = NULL;
     }
 
-    std::remove(filename.c_str());
-    std::rename(outputFilename.c_str(), filename.c_str());
+    std::remove(tapeSaveName.c_str());
+    std::rename(outputFilename.c_str(), tapeSaveName.c_str());
 
-    Tape::LoadTape((" " + tapeFileName).c_str());
+    Tape::LoadTape((" " + tapeSaveName).c_str());
 
     selectedBlocks.clear();
 }
@@ -1573,7 +1569,7 @@ string Tape::getBlockName(int block) {
     char fname[11] = { 0 };
     fseek( tape, CalcTapBlockPos(block) + 3, SEEK_SET );
     uint8_t blocktype = readByteFile(Tape::tape);
-    if (blocktype <= TapeBlock::Code_header) {        
+    if (blocktype <= TapeBlock::Code_header) {
         fread( fname, 1, 10, tape );
         string ret = (char *) fname;
         rtrim(ret);
