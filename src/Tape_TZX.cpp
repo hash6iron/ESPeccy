@@ -262,8 +262,8 @@ string Tape::tzxBlockReadData(int Blocknum) {
     int tapeContentIndex = 0;
     int tapeBlkLen = 0;
     string blktype;
-    char buf[48];
-    char fname[10];
+    char buf[52];
+    char fname[11];
 
     TZXBlock TZXblock;
 
@@ -389,7 +389,7 @@ string Tape::tzxBlockReadData(int Blocknum) {
     fname[0] = '\0';
 
     if (tapeBlkLen >= 0)
-        snprintf(buf, sizeof(buf), "%04d %s %10s % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
+        snprintf(buf, sizeof(buf), "%04d %s  %10s           % 6d\n", Blocknum + 1, blktype.c_str(), fname, tapeBlkLen);
     else
         snprintf(buf, sizeof(buf), "%04d %s\n", Blocknum + 1, blktype.c_str());
 

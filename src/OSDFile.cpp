@@ -682,7 +682,7 @@ reset:
                                 menu_saverect = true;
 
                                 if (res == DLG_YES) {
-                                    if ( FileUtils::getResolvedPath( FileUtils::MountPoint + fdir + filedir ) == FileUtils::getResolvedPath( Tape::tapeSaveName ) ) Tape::tapeEject();
+                                    if ( FileUtils::getResolvedPath( FileUtils::MountPoint + fdir + filedir ) == FileUtils::getResolvedPath( Tape::tapeSaveName ) ) Tape::Eject();
                                     remove(( FileUtils::MountPoint + fdir + filedir ).c_str());
                                     fd_Redraw(title, fdir, ftype);
                                     menu_saverect = true;

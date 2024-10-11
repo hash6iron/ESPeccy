@@ -4601,54 +4601,33 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
             regIXY.word--;
 
             if (REG_PC == 0x04d4) { // Save trap
-
-                uint8_t SaveRes = DLG_YES;
+                bool SaveFile = true;
 
                 if (REG_HL == 0x1F80) {
-#if 0
-                    regIXY.word++;
-
-                    // Get save name from memory
-                    string name;
-                    uint16_t header_data = REG_IX;
-                    for (int i=0; i < 10; i++)
-                        name += MemESP::ramCurrent[header_data++ >> 14][header_data & 0x3fff];
-                    rtrim(name);
-#endif
                     struct stat stat_buf;
-
-                    printf("Tapesavename: %s\n",Tape::tapeSaveName.c_str());
-                    if ( Tape::tapeSaveName == "" || Tape::tapeSaveName == "none" || !FileUtils::hasTAPextension(Tape::tapeSaveName) || stat(Tape::tapeSaveName.c_str(), &stat_buf) ) {
+                    if ( /*Tape::tapeSaveName == "" || Tape::tapeSaveName == "none" ||*/
+                         !Tape::tape || // Check if exists a tap opened
+                         !FileUtils::hasTAPextension(Tape::tapeSaveName) || // check if file is tap
+                         stat(Tape::tapeSaveName.c_str(), &stat_buf) // check if exists and if SD is present
+                    ) {
                         OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                        SaveRes = DLG_NO;
+                        SaveFile = false;
                     }
 
+                    if ( SaveFile && Tape::tapeIsReadOnly ) {
+                        OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
+                        SaveFile = false;
+                    }
                 }
 
-                if (SaveRes == DLG_YES) {
-
+                if (SaveFile) {
                     REG_DE--;
                     regIXY.word++;
-
                     regA = (REG_HL == 0x1F80) ? 0x00 : 0xFF;
-
-#if 0
-                    if (REG_HL == 0x1F80) {
-                        regA = 0x00;
-                    } else {
-                        regIXY.word++;
-                        regA = 0xFF;
-                    }
-#endif
-
                     Tape::Save();
-
                     REG_PC = 0x555;
-
                 }
-
             }
-
             break;
         }
         case 0x2C:

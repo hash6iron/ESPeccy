@@ -863,7 +863,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
                 menu_saverect = false;
             } else {
-                Tape::tapeEject();
+                Tape::Eject();
                 osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
             }
         }
@@ -1595,7 +1595,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
                                 menu_saverect = false;
                             } else {
-                                Tape::tapeEject();
+                                Tape::Eject();
                                 osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
                             }
                             menu_curopt = 3;

@@ -997,7 +997,7 @@ int OSD::menuTape(string title) {
                         case TapeBlock::Number_array_header:
                         case TapeBlock::Character_array_header:
                         case TapeBlock::Code_header: {
-                            string new_name = input(19, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), Tape::getBlockName(blocknum));
+                            string new_name = input(21, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), Tape::getBlockName(blocknum));
                             if ( new_name != "" ) {
                                 Tape::renameBlock( begin_row - 2 + focus, new_name );
                             }
