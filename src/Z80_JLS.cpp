@@ -4601,9 +4601,11 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
             regIXY.word--;
 
             if (REG_PC == 0x04d4) { // Save trap
-                bool SaveFile = true;
+                static bool SaveFile;
 
                 if (REG_HL == 0x1F80) {
+                    SaveFile = true;
+
                     struct stat stat_buf;
                     if ( /*Tape::tapeSaveName == "" || Tape::tapeSaveName == "none" ||*/
                          !Tape::tape || // Check if exists a tap opened
@@ -4618,6 +4620,7 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
                         OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
                         SaveFile = false;
                     }
+
                 }
 
                 if (SaveFile) {

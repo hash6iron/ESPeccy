@@ -1192,10 +1192,10 @@ void Tape::Save() {
 	int longitud;
 
     // if Save is called without tap opened
-    if (tape == NULL) {
-        OSD::osdCenteredMsg(OSD_TAPE_SAVE_ERR, LEVEL_ERROR);
-        return;
-    }
+    // if (tape == NULL) {
+    //     OSD::osdCenteredMsg(OSD_TAPE_SAVE_ERR, LEVEL_ERROR);
+    //     return;
+    // }
 
     fseek(tape,0,SEEK_END);
 
