@@ -124,6 +124,31 @@ bool SaveSnapshot(string filename, bool force_saverom) {
 
 }
 
+std::string getSnapshotCheatPath(const std::string& path) {
+    // Buscar la posición del último separador '/' o '\' (para compatibilidad).
+    size_t lastSlash = path.find_last_of("/\\");
+
+    // Extraer el nombre del archivo sin ruta.
+    std::string filename = (lastSlash == std::string::npos)
+                            ? path
+                            : path.substr(lastSlash + 1);
+
+    // Buscar la posición del punto de la extensión.
+    size_t dotPos = filename.find_last_of('.');
+
+    // Eliminar la extensión, si existe.
+    if (dotPos != std::string::npos) {
+        filename = filename.substr(0, dotPos);
+    }
+
+    // Construir la nueva ruta: <directorio>/POKES/<archivo>.pok
+    std::string newPath = (lastSlash == std::string::npos)
+                            ? "POKES/" + filename + ".pok"
+                            : path.substr(0, lastSlash + 1) + "POKES/" + filename + ".pok";
+
+    return newPath;
+}
+
 // ///////////////////////////////////////////////////////////////////////////////
 
 bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_t force_ALU) {

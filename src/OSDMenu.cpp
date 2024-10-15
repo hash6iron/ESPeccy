@@ -64,6 +64,20 @@ using namespace std;
 
 extern Font Font6x8;
 
+void OSD::menuSaveState(MenuState& state) {
+    state.begin_row = begin_row;
+    state.focus = focus;
+    state.last_focus = last_focus;
+    state.last_begin_row = last_begin_row;
+}
+
+void OSD::menuRestoreState(const MenuState& state) {
+    begin_row = state.begin_row;
+    focus = state.focus;
+    last_focus = state.last_focus;
+    last_begin_row = state.last_begin_row;
+}
+
 int OSD::prepare_checkbox_menu(string &menu, string curopt) {
 
     int mpos = -1;
@@ -281,8 +295,103 @@ int OSD::menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey) {
 }
 
 
+int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
+    int idx = menuRealRowFor( focus );
+
+    if ( menu_level == 0 && ((Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C)) {
+        return 0;
+    } else
+    if (Menukey.vk == fabgl::VK_F2) {
+        return SHRT_MIN;
+    } else
+    if (Menukey.vk == fabgl::VK_SPACE && begin_row - 1 + focus < real_rows) {
+        click();
+
+        Cheat * t = cheat_data.getCheat(idx - 1);
+
+        t->enabled = !t->enabled;
+
+        string new_row = t->name + "\t ";
+        if ( t->inputCount > 0 ) new_row += ">>>";
+        new_row += "  [" + string(t->enabled ? "*" : " ") + "]";
+
+        OSD::menu = OSD::rowReplace(menu, idx, new_row);
+
+        last_focus = focus - 1; // force redraw
+        menuRedraw();
+
+        // Move cursor to next row
+        if (focus == virtual_rows - 1 && virtual_rows + begin_row - 1 < real_rows) {
+            menuScroll(UP);
+        } else {
+            last_focus = focus;
+            focus++;
+            if (focus > virtual_rows - 1) {
+                focus = 1;
+                last_begin_row = begin_row;
+                begin_row = 1;
+                menuRedraw();
+                menuPrintRow(focus, IS_FOCUSED);
+            }
+            else {
+                menuPrintRow(focus, IS_FOCUSED);
+                menuPrintRow(last_focus, IS_NORMAL);
+            }
+        }
+
+    } else
+    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
+        click();
+
+        Cheat * t = cheat_data.getCheat(idx - 1);
+
+        if ( cheat_data.getInputCount(t) > 0 ) {
+            currentCheat = t;
+            return -idx;
+        }
+
+        last_focus = focus - 1; // force redraw
+        menuRedraw();
+
+        return 0;
+
+    }
+
+    return 1;
+}
+
+int OSD::menuProcessPokeInput(fabgl::VirtualKeyItem Menukey) {
+    int idx = menuRealRowFor( focus );
+
+    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
+        click();
+        uint8_t flags = 0;
+
+        Poke * p = cheat_data.getPokeForInput(currentCheat, idx - 1);
+        string value = to_string( p->userDefinedValue );
+        if ( value != "" ) {
+            string new_value = input(cols - 5, focus, "", 3, 3, zxColor(0,0), zxColor(7,0), value, "0123456789", &flags, FILTER_ALLOWED );
+            if ( !( flags & 1 ) && new_value != "" ) { // if not canceled
+                int nv = stoi(new_value);
+                if ( nv < 256 ) p->userDefinedValue = nv;
+                value = to_string(p->userDefinedValue);
+                string new_row = to_string( idx ) + ":\t " + ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " ";
+                OSD::menu = OSD::rowReplace(menu, idx, new_row);
+            }
+        }
+
+        last_focus = focus - 1; // force redraw
+        menuRedraw();
+
+        return 0;
+
+    }
+
+    return 1;
+}
+
 // Run a new menu
-unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
+short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
 
     fabgl::VirtualKeyItem Menukey;
 
@@ -370,9 +479,11 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
 
     WindowDraw(); // Draw menu outline
 
-    begin_row = 1;
-    focus = menu_curopt;
-    last_begin_row = last_focus = 0;
+    if (!use_current_menu_state) {
+        begin_row = 1;
+        focus = menu_curopt;
+        last_begin_row = last_focus = 0;
+    }
 
     menuRedraw(); // Draw menu content
 
@@ -388,7 +499,16 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
             if (ESPectrum::readKbd(&Menukey)) {
                 if (!Menukey.down) continue;
-                if ( proc_cb && !proc_cb(Menukey) ) continue;
+                if (proc_cb) {
+                    int retcb = proc_cb(Menukey);
+                    if (!retcb) continue;
+                    if (retcb < 0) {
+                        if (menu_level!=0) OSD::restoreBackbufferData(true);
+                        click();
+                        use_current_menu_state = false;
+                        return retcb;
+                    }
+                }
                 if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
                     if (focus == 1 and begin_row > 1) {
                         menuScroll(DOWN);
@@ -460,10 +580,12 @@ unsigned short OSD::menuRun(string new_menu, const string& statusbar, int (*proc
                 } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C) {
                     click();
                     menu_prevopt = menuRealRowFor(focus);
+                    use_current_menu_state = false;
                     return menu_prevopt;
                 } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_F1 || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
                     if (menu_level!=0) OSD::restoreBackbufferData(true);
                     click();
+                    use_current_menu_state = false;
                     return 0;
                 }
             }

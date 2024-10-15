@@ -110,6 +110,8 @@ visit https://zxespectrum.speccy.org/contacto
 
 #define MENU_ESP_SAVE_TITLE_ES "Guardar snapshot de ESPectrum"
 
+#define MENU_CHT_TITLE_ES "Elija fichero de cheats"
+
 #define MENU_DELETE_TAP_BLOCKS_ES "Borrar selecci\xA2n"
 
 #define MENU_DELETE_CURRENT_TAP_BLOCK_ES "Borrar bloque"

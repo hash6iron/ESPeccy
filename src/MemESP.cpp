@@ -49,6 +49,7 @@ uint8_t* MemESP::rom[5];
 uint8_t* MemESP::ram[8] = { NULL };
 
 #ifdef ESPECTRUM_PSRAM
+#ifdef TIME_MACHINE_ENABLED
 uint32_t* MemESP::timemachine[TIME_MACHINE_SLOTS][8];
 uint8_t MemESP::tm_slotbanks[TIME_MACHINE_SLOTS][8];
 slotdata MemESP::tm_slotdata[TIME_MACHINE_SLOTS];
@@ -56,6 +57,7 @@ bool MemESP::tm_bank_chg[8];
 uint8_t MemESP::cur_timemachine = 0;
 int MemESP::tm_framecnt = 0;
 bool MemESP::tm_loading_slot = false;
+#endif
 #endif
 
 uint8_t* MemESP::ramCurrent[4];
@@ -83,10 +85,12 @@ bool MemESP::Init() {
     MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 
+    #ifdef TIME_MACHINE_ENABLED
     // Allocate time machine RAM
     for (int i=0;i < TIME_MACHINE_SLOTS; i++)
         for (int n=0; n < 8; n++)
             MemESP::timemachine[i][n] = (uint32_t *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    #endif
 
     #else
 
@@ -136,12 +140,15 @@ void MemESP::Reset() {
     MemESP::pagingLock = Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95" ? 1 : 0;
 
     #ifdef ESPECTRUM_PSRAM
+    #ifdef TIME_MACHINE_ENABLED
     Tm_Init();
+    #endif
     #endif
 
 }
 
 #ifdef ESPECTRUM_PSRAM
+#ifdef TIME_MACHINE_ENABLED
 
 void MemESP::Tm_Init() {
 
@@ -315,5 +322,5 @@ void MemESP::Tm_DoTimeMachine() {
     MemESP::tm_framecnt = 0;
 
 }
-
+#endif
 #endif

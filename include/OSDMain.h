@@ -41,6 +41,8 @@ visit https://zxespectrum.speccy.org/contacto
 #include <vector>
 #include <algorithm>
 
+#include "Cheat.h"
+
 using namespace std;
 
 // Defines
@@ -77,6 +79,22 @@ using namespace std;
 // File dialog
 
 #define MAXSEARCHLEN 8
+
+
+// Input filter behavior
+
+#define FILTER_FORBIDDEN    0
+#define FILTER_ALLOWED      1
+
+
+typedef struct MenuState
+{
+    unsigned short begin_row;       // First real displayed row
+    uint8_t focus;                  // Focused virtual row
+    uint8_t last_focus;             // To check for changes
+    unsigned short last_begin_row;  // To check for changes
+};
+
 
 // OSD Interface
 class OSD {
@@ -124,7 +142,7 @@ public:
     static void menuPrintRow(uint8_t virtual_row_num, uint8_t line_type);
     static void menuRedraw();
     static void WindowDraw();
-    static unsigned short menuRun(string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr );
+    static short menuRun(string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr );
     static unsigned short simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy, uint8_t max_rows, uint8_t max_cols);
     static string fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows);
     static int menuTape(string title);
@@ -141,6 +159,19 @@ public:
     // menu callbacks
     static int menuProcessSnapshot(fabgl::VirtualKeyItem Menukey);
     static int menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey);
+
+    static int menuProcessCheat(fabgl::VirtualKeyItem Menukey);
+    static int menuProcessPokeInput(fabgl::VirtualKeyItem Menukey);
+
+    static bool browseCheatFiles();
+    static void LoadCheatFile(string snapfile);
+    static void showCheatDialog();
+
+    // Función para preservar el estado actual en una estructura pasada por referencia.
+    static void menuSaveState(MenuState& state);
+
+    // Función para restaurar el estado desde una estructura proporcionada.
+    static void menuRestoreState(const MenuState& state);
 
 
     static uint8_t menu_level;
@@ -163,7 +194,7 @@ public:
     static void pokeDialog();
 
     static int VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E);
-    static string input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", const string& forbiddenchars = "", uint8_t * flags = nullptr);
+    static string input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", const string& filterchars = "", uint8_t * result_flags = nullptr, int filterbehavior = FILTER_FORBIDDEN );
 
     // Rows
     static unsigned short rowCount(string menu);
@@ -189,14 +220,21 @@ public:
     static uint16_t prev_y[5];                // Y prev. position
     static unsigned short menu_prevopt;
     static string menu;                   // Menu string
+
     static unsigned short begin_row;      // First real displayed row
     static uint8_t focus;                    // Focused virtual row
     static uint8_t last_focus;               // To check for changes
     static unsigned short last_begin_row; // To check for changes
 
+    static bool use_current_menu_state;
+
     static uint8_t fdCursorFlash;
     static bool fdSearchRefresh;
     static unsigned int fdSearchElements;
+
+
+    static CheatParser cheat_data;
+    static Cheat* currentCheat;
 
 };
 

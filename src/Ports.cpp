@@ -526,7 +526,9 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
             if (MemESP::bankLatch != (data & 0x7)) {
                 MemESP::bankLatch = data & 0x7;
                 #ifdef ESPECTRUM_PSRAM
+                #ifdef TIME_MACHINE_ENABLED
                 MemESP::tm_bank_chg[MemESP::bankLatch] = true; // Bank selected. Mark for time machine
+                #endif
                 #endif
                 MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
                 MemESP::ramContended[3] = Z80Ops::isPentagon ? false : (MemESP::bankLatch & 0x01 ? true: false);
@@ -539,7 +541,9 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
             if (MemESP::videoLatch != bitRead(data, 3)) {
                 MemESP::videoLatch = bitRead(data, 3);
                 #ifdef ESPECTRUM_PSRAM
+                #ifdef TIME_MACHINE_ENABLED
                 MemESP::tm_bank_chg[MemESP::videoLatch ? 7 : 5] = true; // Bank selected. Mark for time machine
+                #endif
                 #endif
                 VIDEO::grmem = MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5];
             }

@@ -824,6 +824,9 @@ void ESPectrum::setup()
     // Reset cpu
     CPU::reset();
 
+    // Clear Cheat data
+    OSD::cheat_data.clearData();
+
     // Load snapshot if present in Config::ram_file
     if (Config::ram_file != NO_RAM_FILE) {
 
@@ -846,6 +849,8 @@ void ESPectrum::setup()
         FileUtils::fileTypes[DISK_DSKFILE].fileSearch = Config::DSK_fileSearch;
 
         LoadSnapshot(Config::ram_file,"","",0xff);
+        OSD::LoadCheatFile(Config::last_ram_file);
+        Config::ram_file = Config::last_ram_file;
 
         Config::last_ram_file = Config::ram_file;
         Config::ram_file = NO_RAM_FILE;
@@ -862,7 +867,6 @@ void ESPectrum::setup()
 //=======================================================================================
 void ESPectrum::reset()
 {
-
     // Load romset
     Config::requestMachine(Config::arch, Config::romSet);
 
@@ -1162,8 +1166,13 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                     // Soft reset
                     if (Config::last_ram_file != NO_RAM_FILE) {
                         LoadSnapshot(Config::last_ram_file,"","",0xff);
+                        OSD::LoadCheatFile(Config::last_ram_file);
                         Config::ram_file = Config::last_ram_file;
-                    } else ESPectrum::reset();
+                    } else {
+                        // Clear Cheat data
+                        OSD::cheat_data.clearData();
+                        ESPectrum::reset();
+                    }
                     return;
                 }
             }
@@ -1606,6 +1615,9 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             if (!bitRead(ZXKeyb::ZXcols[5],1)) { // O -> Poke
                 OSD::pokeDialog();
             } else
+            if (!bitRead(ZXKeyb::ZXcols[5],2)) { // U -> Cheats
+                OSD::do_OSD(fabgl::VK_F9,0,true);
+            } else
             if (!bitRead(ZXKeyb::ZXcols[7],3)) { // N -> NMI
                 Z80::triggerNMI();
             } else
@@ -1867,8 +1879,10 @@ for(;;) {
     if (!(VIDEO::flash_ctr++ & 0x0f)) VIDEO::flashing ^= 0x80;
 
     #ifdef ESPECTRUM_PSRAM
+    #ifdef TIME_MACHINE_ENABLED
     // Time machine
     if (Config::TimeMachine) MemESP::Tm_DoTimeMachine();
+    #endif
     #endif
 
     elapsed = esp_timer_get_time() - ts_start;

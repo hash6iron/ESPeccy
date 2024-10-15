@@ -50,6 +50,8 @@ visit https://zxespectrum.speccy.org/contacto
 #include "roms.h"
 #include "BuildDate.h"
 
+#include "Cheat.h"
+
 #include "esp_system.h"
 #include "esp_ota_ops.h"
 #include "esp_efuse.h"
@@ -102,6 +104,7 @@ uint16_t OSD::prev_y[5];                // Y prev. position
 unsigned short OSD::menu_prevopt = 1;
 string OSD::menu;                   // Menu string
 unsigned short OSD::begin_row = 1;      // First real displayed row
+bool OSD::use_current_menu_state = false;
 uint8_t OSD::focus = 1;                    // Focused virtual row
 uint8_t OSD::last_focus = 0;               // To check for changes
 unsigned short OSD::last_begin_row = 0; // To check for changes
@@ -811,10 +814,143 @@ void OSD::pref_rom_menu() {
 
 }
 
+CheatParser OSD::cheat_data;
+Cheat* OSD::currentCheat = nullptr;
+
+void OSD::LoadCheatFile(string snapfile) {
+    if ( FileUtils::isSDReady() ) {
+        if ( !OSD::cheat_data.loadCheatFile( getSnapshotCheatPath( snapfile ) ) ) {
+            OSD::cheat_data.clearData();
+        } else {
+            showCheatDialog();
+        }
+    }
+}
+
+bool OSD::browseCheatFiles() {
+    if ( FileUtils::isSDReady() ) {
+        uint8_t res = DLG_YES;
+        string mFile = fileDialog(FileUtils::CHT_Path, MENU_CHT_TITLE[Config::lang], DISK_CHTFILE, 51, 12);
+        if (mFile != "") {
+//            string fprefix = mFile.substr(0,1);
+            mFile.erase(0, 1);
+            string fname = FileUtils::MountPoint + FileUtils::CHT_Path + "/" + mFile;
+            if ( FileUtils::isSDReady() ) cheat_data.loadCheatFile(fname);
+        }
+    }
+    return true;
+}
+
+void OSD::showCheatDialog() {
+
+    menu_level = 0;
+    menu_curopt = 1;
+
+    if (!cheat_data.getCheatCount()) {
+        menu_saverect = true;
+        OSD::browseCheatFiles();
+    }
+
+    if (cheat_data.getCheatCount()) {
+        MenuState ms;
+        use_current_menu_state = false;
+        menu_curopt = 1;
+
+        while(true) {
+            // Crear la cadena de menú
+            string menucheat = "Cheats\n"; // Primera línea con el nombre del archivo .pok
+
+            // Iterar sobre los entrenadores y sus POKEs para construir el menú
+            for (size_t i = 0; i < cheat_data.getCheatCount(); ++i) {
+                Cheat* cheat = cheat_data.getCheat(i);
+                if (cheat) {
+                    menucheat += cheat->name + "\t ";
+                    if ( cheat->inputCount > 0 ) menucheat += ">>>";
+                    menucheat += "  [" + string(cheat->enabled ? "*" : " ") + "]\n";
+                }
+            }
+
+            string statusbar = Config::lang == 0 ? " F2 Open | ESP Yes/No | ESC End " :
+                               Config::lang == 1 ? " F2 Abrir | ESP S\xA1/No | ESC Fin " :
+                                                   " F2 Iniciar | ESP Sim/N\x84o | ESC Fim ";
+
+            currentCheat = nullptr;
+
+            menuRestoreState(ms);
+
+            menu_saverect = true;
+            short opt2 = menuRun(menucheat, statusbar, menuProcessCheat);
+
+            menuSaveState(ms);
+
+            if (opt2 == SHRT_MIN) {
+                OSD::restoreBackbufferData();
+                menu_saverect = true;
+                OSD::browseCheatFiles();
+                use_current_menu_state = false;
+                menu_curopt = 1;
+            } else
+            if (opt2 < 0 && currentCheat) {
+
+                string menupokeinput = Config::lang == 0 ? " Enter value/s" :
+                                       Config::lang == 1 ? " Introduzca valor/es" :
+                                                           " Insira o(s) valor(es)";
+
+                menupokeinput += "\n";
+
+                for (int i = 0; i < currentCheat->inputCount; i++ ) {
+                    menupokeinput += to_string( i + 1 ) + ":\t ";
+                    Poke* p = cheat_data.getPokeForInput(currentCheat, i);
+                    string value = to_string(p->userDefinedValue);
+                    menupokeinput += ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " \n";
+                }
+
+                menu_saverect = true;
+                menu_level = 1;
+                menu_curopt = 1;
+
+                short opt3 = menuRun(menupokeinput, "", menuProcessPokeInput);
+                menu_level = 0;
+                menu_saverect = false;
+
+                menu_curopt = -opt2;
+                use_current_menu_state = true;
+
+                continue;
+            }
+            else
+            {
+                // Apply cheats
+                // Iterar sobre los cheats y sus POKEs
+                for (size_t i = 0; i < cheat_data.getCheatCount(); ++i) {
+                    Cheat* cheat = cheat_data.getCheat(i);
+                    if (cheat) {
+                        for (auto& poke : cheat->pokes) {
+                            if (cheat->enabled || (!cheat->enabled && poke.original) ) {
+                                uint8_t value = (!cheat->enabled && poke.original) ? poke.original : poke.userDefinedValue;
+                                // Apply poke
+                                if (poke.bank & 0x08) {
+                                    // Poke address between 16384 and 65535
+                                    MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = value;
+                                } else {
+                                    // Poke address in bank
+                                    MemESP::ram[poke.bank & 0x07][poke.address] = value;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+
+
 // OSD Main Loop
 void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
-    static uint8_t last_sna_row = 0;
     fabgl::VirtualKeyItem Nextkey;
 
     if (SHIFT && !CTRL) {
@@ -825,7 +961,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             if ( FileUtils::isSDReady() ) {
                 uint8_t res = DLG_YES;
-                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 51, 13);
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 51, 12);
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
                     mFile.erase(0, 1);
@@ -866,6 +1002,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 Tape::Eject();
                 osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
             }
+        } else
+        if (KeytoESP == fabgl::VK_F9) { // .pok file manager
+            click();
+            showCheatDialog();
         }
 
     } else if (CTRL && !SHIFT) {
@@ -942,6 +1082,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     Config::ram_file = NO_RAM_FILE;
                 }
                 Config::last_ram_file = NO_RAM_FILE;
+
+                // Clear Cheat data
+                OSD::cheat_data.clearData();
 
                 ESPectrum::reset();
 
@@ -1040,11 +1183,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         }
         else if (KeytoESP == fabgl::VK_F2) {
             menu_level = 0;
-            menu_saverect = false;
+            menu_saverect = true; // force save background, for show cheat dialog if exists
 
             if (FileUtils::isSDReady()) {
                 // ESPectrum::showMemInfo("Before F2 file dialog");
-                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,13);
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,12);
                 // ESPectrum::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
@@ -1077,6 +1220,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         } else {
                             LoadSnapshot(fname,"","",0xff);
+                            LoadCheatFile(fname);
                             Config::ram_file = fname;
                             Config::last_ram_file = fname;
                         }
@@ -1119,7 +1263,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 statusbar += std::string(26 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                 if (opt2 && FileUtils::isSDReady()) {
-                    if ( FileUtils::isSDReady() ) persistLoad(opt2);
+                    if ( FileUtils::isSDReady() ) {
+                        if ( persistLoad(opt2) ) {
+                            // Clear Cheat data
+                            OSD::cheat_data.clearData();
+                        }
+                    }
                     menu_curopt = opt2;
                 }
             }
@@ -1166,7 +1315,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             menu_saverect = false;
 
             if ( FileUtils::isSDReady() ) {
-                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang],DISK_TAPFILE,51,13);
+                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang],DISK_TAPFILE,51,12);
                 if (mFile != "" && FileUtils::isSDReady() ) {
                     string tapFile = FileUtils::MountPoint + FileUtils::TAP_Path + "/" + mFile.substr(1);
                     string fprefix = mFile.substr(0,1);
@@ -1190,6 +1339,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     }
 
                     Tape::LoadTape(mFile);
+                    if (Tape::tape) {
+                        // Clear Cheat data
+                        OSD::cheat_data.clearData();
+                    }
                     return;
                 }
             }
@@ -1361,6 +1514,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 Config::ram_file = NO_RAM_FILE;
             }
             Config::last_ram_file = NO_RAM_FILE;
+
+            // Clear Cheat data
+            OSD::cheat_data.clearData();
+
             ESPectrum::reset();
         }
         else if (KeytoESP == fabgl::VK_F12) { // ESP32 reset
@@ -1426,6 +1583,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         } else {
                                             LoadSnapshot(fname,"","",0xff);
+                                            LoadCheatFile(fname);
                                             Config::ram_file = fname;
                                             Config::last_ram_file = fname;
                                         }
@@ -1489,7 +1647,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     statusbar += std::string(26 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                                     if (opt2 && FileUtils::isSDReady()) {
-                                        if (persistLoad(opt2)) return;
+                                        if (persistLoad(opt2)) {
+                                            // Clear Cheat data
+                                            OSD::cheat_data.clearData();
+                                            return;
+                                        }
                                         menu_saverect = false;
                                         menu_curopt = opt2;
                                     } else break;
@@ -1959,6 +2121,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                             }
 
+                            // Clear Cheat data
+                            OSD::cheat_data.clearData();
+
                             ESPectrum::reset();
 
                             return;
@@ -1989,8 +2154,14 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         // Soft
                         if (Config::last_ram_file != NO_RAM_FILE) {
                             LoadSnapshot(Config::last_ram_file,"","",0xff);
+                            LoadCheatFile(Config::last_ram_file);
                             Config::ram_file = Config::last_ram_file;
-                        } else ESPectrum::reset();
+                        } else {
+                            // Clear Cheat data
+                            OSD::cheat_data.clearData();
+
+                            ESPectrum::reset();
+                        }
                         return;
                     }
                     else if (opt2 == 4) {
@@ -2011,6 +2182,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = NO_RAM_FILE;
                         }
                         Config::last_ram_file = NO_RAM_FILE;
+
+                        // Clear Cheat data
+                        OSD::cheat_data.clearData();
+
                         ESPectrum::reset();
 
                         // Reset to TR-DOS
@@ -2765,6 +2940,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                             Config::ram_file = NO_RAM_FILE;
                                                         }
                                                         Config::last_ram_file = NO_RAM_FILE;
+
+                                                        // Clear Cheat data
+                                                        OSD::cheat_data.clearData();
+
                                                         ESPectrum::reset();
                                                     }
 
@@ -5794,7 +5973,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
     return ascii;
 }
 
-string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value, const string& forbiddenchars, uint8_t * flags ) {
+string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value, const string& filterchars, uint8_t * result_flags, int filterbehavior ) {
 
     int curObject = 0;
 
@@ -5828,7 +6007,15 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
             int ascii = VirtualKey2ASCII(Nextkey, &mode_E);
 
-            if ( ascii && forbiddenchars.find(ascii) != std::string::npos ) {
+            size_t charfilterpos = filterchars.find(ascii);
+
+            if ( ascii &&
+                    (
+                        ( filterbehavior == FILTER_FORBIDDEN && charfilterpos != std::string::npos ) ||
+                        ( filterbehavior == FILTER_ALLOWED && charfilterpos == std::string::npos )
+                    )
+                )
+            {
 //                OSD::osdCenteredMsg(OSD_INVALIDCHAR[Config::lang], LEVEL_WARN);
                 ascii = 0;
             }
@@ -5846,9 +6033,9 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
             } else
             if (Nextkey.vk == fabgl::VK_RETURN) {
                 click();
-                if ( flags ) *flags = 0;
+                if ( result_flags ) *result_flags = 0;
                 if ( default_value != "" && inputValue == default_value ) {
-                    if ( flags ) *flags = 1;
+                    if ( result_flags ) *result_flags = 1;
                     return "";
                 }
                 ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
@@ -5884,7 +6071,7 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
     }
 
-    if ( flags ) *flags = 1;
+    if ( result_flags ) *result_flags = 1;
 
     ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
     ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);

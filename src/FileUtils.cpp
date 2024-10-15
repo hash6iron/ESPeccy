@@ -68,13 +68,15 @@ string FileUtils::TAP_Path = "/"; // DISK_TAP_DIR; // Current path on the SD (fo
 string FileUtils::DSK_Path = "/"; // DISK_DSK_DIR; // Current path on the SD (for future folder support)
 string FileUtils::ROM_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
 string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
+string FileUtils::CHT_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
 
-DISK_FTYPE FileUtils::fileTypes[5] = {
+DISK_FTYPE FileUtils::fileTypes[6] = {
     {"sna,z80,sp,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
     {"rom",".r",2,2,0,""},
-    {"esp",".e",2,2,0,""}
+    {"esp",".e",2,2,0,""},
+    {"pok",".c.idx",2,2,0,""}
 };
 
 string toLower(const std::string& str) {
@@ -229,118 +231,6 @@ bool FileUtils::isSDReady() {
     return true;
 
 }
-
-// String FileUtils::getAllFilesFrom(const String path) {
-//     KB_INT_STOP;
-//     File root = THE_FS.open("/");
-//     File file = root.openNextFile();
-//     String listing;
-
-//     while (file) {
-//         file = root.openNextFile();
-//         String filename = file.name();
-//         if (filename.startsWith(path) && !filename.startsWith(path + "/.")) {
-//             listing.concat(filename.substring(path.length() + 1));
-//             listing.concat("\n");
-//         }
-//     }
-//     vTaskDelay(2);
-//     KB_INT_START;
-//     return listing;
-// }
-
-// void FileUtils::listAllFiles() {
-//     KB_INT_STOP;
-//     File root = THE_FS.open("/");
-//     Serial.println("fs opened");
-//     File file = root.openNextFile();
-//     Serial.println("fs openednextfile");
-
-//     while (file) {
-//         Serial.print("FILE: ");
-//         Serial.println(file.name());
-//         file = root.openNextFile();
-//     }
-//     vTaskDelay(2);
-//     KB_INT_START;
-// }
-
-// void FileUtils::sanitizeFilename(String filename)
-// {
-//     filename.replace("\n", " ");
-//     filename.trim();
-// }
-
-// File FileUtils::safeOpenFileRead(String filename)
-// {
-//     sanitizeFilename(filename);
-//     File f;
-//     if (Config::slog_on)
-//         Serial.printf("%s '%s'\n", MSG_LOADING, filename.c_str());
-//     if (!THE_FS.exists(filename.c_str())) {
-//         KB_INT_START;
-//         OSD::errorHalt((String)ERR_READ_FILE + "\n" + filename);
-//     }
-//     f = THE_FS.open(filename.c_str(), FILE_READ);
-//     vTaskDelay(2);
-
-//     return f;
-// }
-
-// string FileUtils::getFileEntriesFromDir(string path) {
-
-//     string filelist;
-
-//     // printf("Getting entries from: '%s'\n", path.c_str());
-
-//     DIR* dir = opendir(path.c_str());
-//     if (dir == NULL) {
-//         // OSD::errorHalt(ERR_DIR_OPEN + "\n" + path).cstr());
-//     }
-
-//     struct dirent* de = readdir(dir);
-
-//     if (!de) {
-
-//         printf("No entries found!\n");
-
-//     } else {
-
-//         int cnt = 0;
-//         while (true) {
-
-//             printf("Found file: %s\n", de->d_name);
-
-//             string filename = de->d_name;
-
-//             // printf("readdir filename -> %s\n", filename.c_str());
-
-//             if (filename.compare(0,1,".") == 0) {
-//         //        printf("HIDDEN\n");
-//             } else if (filename.substr(filename.size()-4) == ".txt") {
-//         //        printf("IGNORING TXT\n");
-//             } else if (filename.substr(filename.size()-4) == ".TXT") {
-//         //        printf("IGNORING TXT\n");
-//             } else {
-//         //        printf("ADDING\n");
-//                 filelist += filename + "\n";
-//                 cnt++;
-//             }
-
-//             de = readdir(dir);
-//             if ((!de) || (cnt == 20)) break;
-
-//         }
-
-//     }
-
-//     // printf(filelist.c_str());
-
-//     closedir(dir);
-
-//     return filelist;
-
-// }
 
 int FileUtils::getDirStats(const string& filedir, const vector<string>& filexts, unsigned long* hash, unsigned int* elements, unsigned int* ndirs) {
     *hash = 0; // Name checksum variable
@@ -724,6 +614,10 @@ bool FileUtils::hasTZXextension(string filename) {
     return ( getLCaseExt(filename) == "tzx" );
 }
 
+bool FileUtils::hasPOKextension(string filename) {
+    return ( getLCaseExt(filename) == "pok" );
+}
+
 void FileUtils::deleteFilesWithExtension(const char *folder_path, const char *extension) {
 
     DIR *dir;
@@ -752,54 +646,3 @@ void FileUtils::deleteFilesWithExtension(const char *folder_path, const char *ex
     closedir(dir);
 
 }
-
-// uint16_t FileUtils::countFileEntriesFromDir(String path) {
-//     String entries = getFileEntriesFromDir(path);
-//     unsigned short count = 0;
-//     for (unsigned short i = 0; i < entries.length(); i++) {
-//         if (entries.charAt(i) == ASCII_NL) {
-//             count++;
-//         }
-//     }
-//     return count;
-// }
-
-// // Get all sna files sorted alphabetically
-// string FileUtils::getSortedFileList(string fileDir)
-// {
-
-//     // get string of unsorted filenames, separated by newlines
-//     string entries = getFileEntriesFromDir(fileDir);
-
-//     // count filenames (they always end at newline)
-//     int count = 0;
-//     for (int i = 0; i < entries.length(); i++) {
-//         if (entries.at(i) == ASCII_NL) {
-//             count++;
-//         }
-//     }
-
-//     std::vector<std::string> filenames;
-//     filenames.reserve(count);
-
-//     // Copy filenames from string to vector
-//     string fname = "";
-//     for (int i = 0; i < entries.length(); i++) {
-//         if (entries.at(i) == ASCII_NL) {
-//             filenames.push_back(fname.c_str());
-//             fname = "";
-//         } else fname += entries.at(i);
-//     }
-
-//     // Sort vector
-//     sort(filenames.begin(),filenames.end());
-
-//     // Copy back filenames from vector to string
-//     string sortedEntries = "";
-//     for (int i = 0; i < count; i++) {
-//         sortedEntries += filenames[i] + '\n';
-//     }
-
-//     return sortedEntries;
-
-// }

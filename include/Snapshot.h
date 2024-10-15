@@ -45,6 +45,8 @@ using namespace std;
 bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8_t force_ALU);
 bool SaveSnapshot(string filename, bool force_saverom = false);
 
+std::string getSnapshotCheatPath(const std::string& path);
+
 class FileSNA
 {
 public:

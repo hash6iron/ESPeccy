@@ -28,7 +28,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-To Contact the dev team you can write to zxespectrum@gmail.com or 
+To Contact the dev team you can write to zxespectrum@gmail.com or
 visit https://zxespectrum.speccy.org/contacto
 
 */
@@ -54,6 +54,7 @@ using namespace std;
 #define DISK_DSKFILE 2
 #define DISK_ROMFILE 3
 #define DISK_ESPFILE 4
+#define DISK_CHTFILE 5
 
 struct DISK_FTYPE {
     string fileExts;
@@ -61,7 +62,7 @@ struct DISK_FTYPE {
     int begin_row;
     int focus;
     uint8_t fdMode;
-    string fileSearch;    
+    string fileSearch;
 };
 
 class FileUtils
@@ -93,7 +94,8 @@ public:
     static bool hasZ80extension(string filename);
     static bool hasPextension(string filename);
     static bool hasTAPextension(string filename);
-    static bool hasTZXextension(string filename);    
+    static bool hasTZXextension(string filename);
+    static bool hasPOKextension(string filename);
 
     static void deleteFilesWithExtension(const char *folder_path, const char *extension);
 
@@ -108,12 +110,13 @@ public:
     static string DSK_Path; // Current DSK path on the SD
     static string ROM_Path; // Current ROM path on the SD
     static string ESP_Path; // Current ROM path on the SD
+    static string CHT_Path; // Current POK path on the SD
 
-    static DISK_FTYPE fileTypes[5];
+    static DISK_FTYPE fileTypes[6];
 
 private:
     friend class Config;
-    static sdmmc_card_t *card;    
+    static sdmmc_card_t *card;
 };
 
 #define MOUNT_POINT_SD "/sd"
@@ -148,6 +151,12 @@ private:
 
 // inline utility functions for uniform access to file/memory
 // and making it easy to to implement SNA/Z80 functions
+
+static inline std::string basename(const std::string& path) {
+    size_t pos = path.find_last_of("/\\");
+    return (pos == std::string::npos) ? path : path.substr(pos + 1);
+}
+
 
 static inline uint8_t readByteFile(FILE *f) {
     uint8_t result;
