@@ -307,7 +307,7 @@ int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
     if (Menukey.vk == fabgl::VK_SPACE && begin_row - 1 + focus < real_rows) {
         click();
 
-        Cheat * t = cheat_data.getCheat(idx - 1);
+        Cheat * t = CheatMngr::getCheat(idx - 1);
 
         t->enabled = !t->enabled;
 
@@ -343,9 +343,9 @@ int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
     if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
         click();
 
-        Cheat * t = cheat_data.getCheat(idx - 1);
+        Cheat * t = CheatMngr::getCheat(idx - 1);
 
-        if ( cheat_data.getInputCount(t) > 0 ) {
+        if ( CheatMngr::getInputCount(t) > 0 ) {
             currentCheat = t;
             return -idx;
         }
@@ -367,7 +367,7 @@ int OSD::menuProcessPokeInput(fabgl::VirtualKeyItem Menukey) {
         click();
         uint8_t flags = 0;
 
-        Poke * p = cheat_data.getPokeForInput(currentCheat, idx - 1);
+        Poke * p = CheatMngr::getPokeForInput(currentCheat, idx - 1);
         string value = to_string( p->userDefinedValue );
         if ( value != "" ) {
             string new_value = input(cols - 5, focus, "", 3, 3, zxColor(0,0), zxColor(7,0), value, "0123456789", &flags, FILTER_ALLOWED );

@@ -423,7 +423,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     // Load ROM if present
     if (Z80Ops::is48 && sna_size == SNA_48K_WITH_ROM_SIZE) {
-        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
+        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[7];
         readBlockFile(file, MemESP::rom[0], 0x4000);
     }
 
@@ -634,7 +634,7 @@ bool FileSNA::save(string sna_file, bool blockMode, bool force_saverom) {
     writeByteFile(bordercol, file);
 
     if ( Z80Ops::is48 ) {
-        if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+        if ( MemESP::rom[0] == MemESP::ram[7] || force_saverom ) {
             writeBlockFile(file, MemESP::rom[0], 0x4000);
         }
     }
@@ -1047,7 +1047,7 @@ bool FileZ80::load(string z80_fn) {
 
                 // z80 with rom
                 if ( !hdr2 ) {
-                    MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
+                    MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[7];
 
                     if (compDataLen == 0xffff) {
                         // load uncompressed data into memory
@@ -1055,11 +1055,11 @@ bool FileZ80::load(string z80_fn) {
                         compDataLen = 0x4000;
 
                         for (int i = 0; i < compDataLen; i++)
-                            MemESP::ram[1][i] = readByteFile(file);
+                            MemESP::ram[7][i] = readByteFile(file);
 
                     } else {
                         // Block is compressed
-                        loadCompressedMemPage(file, compDataLen, MemESP::ram[1], 0x4000);
+                        loadCompressedMemPage(file, compDataLen, MemESP::ram[7], 0x4000);
                     }
 
                 } else {
@@ -1878,7 +1878,7 @@ bool FileZ80::save(string z80_fn, bool force_saverom) {
         uint16_t pageStart[12] = {0, 0, 0, 0, 0x8000, 0xC000, 0, 0, 0x4000, 0, 0};
 
         // z80 with rom
-        if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+        if ( MemESP::rom[0] == MemESP::ram[7] || force_saverom ) {
             size_t dataLen = saveCompressedMemPage(NULL, MemESP::rom[0], 0x4000, true);
             if (dataLen >= 0x4000) {
                 writeWordFileLE(0xffff, file); // no compress
@@ -2101,8 +2101,8 @@ bool FileSP::load(string sp_fn) {
 
     // read ROM page if present
     if (!startAddress && !dataSize) {
-        readBlockFile(file, MemESP::ram[1], 0x4000);
-        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[1];
+        readBlockFile(file, MemESP::ram[7], 0x4000);
+        MemESP::ramCurrent[0] = MemESP::rom[0] = MemESP::ram[7];
     }
 
     // read 48K memory
@@ -2139,7 +2139,7 @@ bool FileSP::save(string sp_fn, bool force_saverom) {
     writeByteFile(sign[0], file);
     writeByteFile(sign[1], file);
 
-    if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+    if ( MemESP::rom[0] == MemESP::ram[7] || force_saverom ) {
         // data size
         writeWordFileLE(0, file);
 
@@ -2192,7 +2192,7 @@ bool FileSP::save(string sp_fn, bool force_saverom) {
     bitWrite(tmp_port, 0, Z80::isIFF1());
     writeWordFileLE(tmp_port, file);
 
-    if ( MemESP::rom[0] == MemESP::ram[1] || force_saverom ) {
+    if ( MemESP::rom[0] == MemESP::ram[7] || force_saverom ) {
         writeBlockFile(file, MemESP::rom[0], 0x4000);
     }
 

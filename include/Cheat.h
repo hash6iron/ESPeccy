@@ -22,26 +22,22 @@ struct Cheat {
 };
 
 // Clase para parsear archivos .pok
-class CheatParser {
+class CheatMngr {
 public:
-    CheatParser();  // Constructor por defecto
-    ~CheatParser(); // Destructor
+    static bool loadCheatFile(const std::string& filename);
+    static void clearData();
+    static Cheat* getCheat(int index);
+    static int getCheatCount();
+    static Poke* getPokeForInput(Cheat* cheat, size_t inputIndex);
 
-    bool loadCheatFile(const std::string& filename);
-    void clearData();
-    Cheat* getCheat(int index);
-    int getCheatCount() const;
-    Poke* getPokeForInput(Cheat* cheat, size_t inputIndex);
-
-    int getInputCount(Cheat* cheat) {
+    static inline int getInputCount(Cheat* cheat) {
         if ( !cheat ) return 0;
         return cheat->inputCount;
     }
 
-
 private:
-    std::vector<Cheat> cheats; // Lista de entrenadores
-    void parseCheatFile(FILE* file);  // Método para parsear el archivo .pok
+    static std::vector<Cheat> cheats; // Lista de entrenadores
+    static void parseCheatFile(FILE* file);  // Método para parsear el archivo .pok
 };
 
-#endif // CheatParser_H
+#endif // CheatMngr_H

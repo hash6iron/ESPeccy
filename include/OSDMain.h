@@ -232,8 +232,6 @@ public:
     static bool fdSearchRefresh;
     static unsigned int fdSearchElements;
 
-
-    static CheatParser cheat_data;
     static Cheat* currentCheat;
 
 };

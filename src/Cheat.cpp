@@ -2,17 +2,50 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
-// Constructor por defecto
-CheatParser::CheatParser() {}
-
-// Destructor
-CheatParser::~CheatParser() {
-    clearData(); // Liberar memoria
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
 }
 
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    rtrim(s);
+    ltrim(s);
+}
+
+// trim from start (copying)
+static inline std::string ltrim_copy(std::string s) {
+    ltrim(s);
+    return s;
+}
+
+// trim from end (copying)
+static inline std::string rtrim_copy(std::string s) {
+    rtrim(s);
+    return s;
+}
+
+// trim from both ends (copying)
+static inline std::string trim_copy(std::string s) {
+    trim(s);
+    return s;
+}
+
+std::vector<Cheat> CheatMngr::cheats; // Lista de entrenadores
+
 // Función para cargar un archivo .pok
-bool CheatParser::loadCheatFile(const std::string& filename) {
+bool CheatMngr::loadCheatFile(const std::string& filename) {
     FILE* file = fopen(filename.c_str(), "rb");
     if (!file) {
         printf("Error: Could not open file %s\n", filename.c_str());
@@ -27,7 +60,7 @@ bool CheatParser::loadCheatFile(const std::string& filename) {
 }
 
 // Función para liberar todos los datos
-void CheatParser::clearData() {
+void CheatMngr::clearData() {
     cheats.clear(); // Limpiar el vector de entrenadores
 }
 
@@ -56,7 +89,7 @@ std::vector<std::string> splitLine(const std::string& line) {
 }
 
 // Función para parsear el archivo .pok
-void CheatParser::parseCheatFile(FILE* file) {
+void CheatMngr::parseCheatFile(FILE* file) {
     char line[100]; // Buffer para la línea
     Cheat currentCheat;
 
@@ -69,7 +102,7 @@ void CheatParser::parseCheatFile(FILE* file) {
                 cheats.push_back(currentCheat);
                 currentCheat = Cheat(); // Reiniciar el actual
             }
-            currentCheat.name = std::string(line + 1);
+            currentCheat.name = trim_copy(std::string(line + 1)); //.substr(0,30);
             currentCheat.enabled = false;
             currentCheat.inputCount = 0; // Reiniciar contador
         } else if (line[0] == 'M' || line[0] == 'Z') {
@@ -99,7 +132,7 @@ void CheatParser::parseCheatFile(FILE* file) {
 }
 
 // Función para obtener un puntero a un Cheat
-Cheat* CheatParser::getCheat(int index) {
+Cheat* CheatMngr::getCheat(int index) {
     if (index < 0 || index >= cheats.size()) {
         return nullptr; // Indice inválido
     }
@@ -107,12 +140,12 @@ Cheat* CheatParser::getCheat(int index) {
 }
 
 // Función para obtener la cantidad de Cheats
-int CheatParser::getCheatCount() const {
+int CheatMngr::getCheatCount() {
     return static_cast<int>(cheats.size());
 }
 
 // Método para obtener puntero a Cheate por índice
-Poke* CheatParser::getPokeForInput(Cheat *cheat, size_t inputIndex) {
+Poke* CheatMngr::getPokeForInput(Cheat *cheat, size_t inputIndex) {
     size_t count = 0;
 
     for (auto& poke : cheat->pokes) {

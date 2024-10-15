@@ -814,13 +814,12 @@ void OSD::pref_rom_menu() {
 
 }
 
-CheatParser OSD::cheat_data;
 Cheat* OSD::currentCheat = nullptr;
 
 void OSD::LoadCheatFile(string snapfile) {
     if ( FileUtils::isSDReady() ) {
-        if ( !OSD::cheat_data.loadCheatFile( getSnapshotCheatPath( snapfile ) ) ) {
-            OSD::cheat_data.clearData();
+        if ( !CheatMngr::loadCheatFile( getSnapshotCheatPath( snapfile ) ) ) {
+            CheatMngr::clearData();
         } else {
             showCheatDialog();
         }
@@ -835,7 +834,7 @@ bool OSD::browseCheatFiles() {
 //            string fprefix = mFile.substr(0,1);
             mFile.erase(0, 1);
             string fname = FileUtils::MountPoint + FileUtils::CHT_Path + "/" + mFile;
-            if ( FileUtils::isSDReady() ) cheat_data.loadCheatFile(fname);
+            if ( FileUtils::isSDReady() ) CheatMngr::loadCheatFile(fname);
         }
     }
     return true;
@@ -846,12 +845,12 @@ void OSD::showCheatDialog() {
     menu_level = 0;
     menu_curopt = 1;
 
-    if (!cheat_data.getCheatCount()) {
+    if (!CheatMngr::getCheatCount()) {
         menu_saverect = true;
         OSD::browseCheatFiles();
     }
 
-    if (cheat_data.getCheatCount()) {
+    if (CheatMngr::getCheatCount()) {
         MenuState ms;
         use_current_menu_state = false;
         menu_curopt = 1;
@@ -861,10 +860,20 @@ void OSD::showCheatDialog() {
             string menucheat = "Cheats\n"; // Primera línea con el nombre del archivo .pok
 
             // Iterar sobre los entrenadores y sus POKEs para construir el menú
-            for (size_t i = 0; i < cheat_data.getCheatCount(); ++i) {
-                Cheat* cheat = cheat_data.getCheat(i);
+            for (size_t i = 0; i < CheatMngr::getCheatCount(); ++i) {
+                Cheat* cheat = CheatMngr::getCheat(i);
                 if (cheat) {
-                    menucheat += cheat->name + "\t ";
+#if 0
+    multi_heap_info_t info;
+    heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
+    printf(" Total free bytes %d\n",info.total_free_bytes);
+
+    printf("[%s][%s][%d]\n", cheat->name.c_str(), menucheat.c_str(), menucheat.size());
+#endif
+//                    if ( cheat->name.size() > 30 )
+//                        menucheat += cheat->name.substr(0,30) + "\t ";
+//                    else
+                        menucheat += cheat->name + "\t ";
                     if ( cheat->inputCount > 0 ) menucheat += ">>>";
                     menucheat += "  [" + string(cheat->enabled ? "*" : " ") + "]\n";
                 }
@@ -900,7 +909,7 @@ void OSD::showCheatDialog() {
 
                 for (int i = 0; i < currentCheat->inputCount; i++ ) {
                     menupokeinput += to_string( i + 1 ) + ":\t ";
-                    Poke* p = cheat_data.getPokeForInput(currentCheat, i);
+                    Poke* p = CheatMngr::getPokeForInput(currentCheat, i);
                     string value = to_string(p->userDefinedValue);
                     menupokeinput += ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " \n";
                 }
@@ -922,8 +931,8 @@ void OSD::showCheatDialog() {
             {
                 // Apply cheats
                 // Iterar sobre los cheats y sus POKEs
-                for (size_t i = 0; i < cheat_data.getCheatCount(); ++i) {
-                    Cheat* cheat = cheat_data.getCheat(i);
+                for (size_t i = 0; i < CheatMngr::getCheatCount(); ++i) {
+                    Cheat* cheat = CheatMngr::getCheat(i);
                     if (cheat) {
                         for (auto& poke : cheat->pokes) {
                             if (cheat->enabled || (!cheat->enabled && poke.original) ) {
@@ -1084,7 +1093,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 Config::last_ram_file = NO_RAM_FILE;
 
                 // Clear Cheat data
-                OSD::cheat_data.clearData();
+                CheatMngr::clearData();
 
                 ESPectrum::reset();
 
@@ -1266,7 +1275,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     if ( FileUtils::isSDReady() ) {
                         if ( persistLoad(opt2) ) {
                             // Clear Cheat data
-                            OSD::cheat_data.clearData();
+                            CheatMngr::clearData();
                         }
                     }
                     menu_curopt = opt2;
@@ -1341,7 +1350,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     Tape::LoadTape(mFile);
                     if (Tape::tape) {
                         // Clear Cheat data
-                        OSD::cheat_data.clearData();
+                        CheatMngr::clearData();
                     }
                     return;
                 }
@@ -1516,7 +1525,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             Config::last_ram_file = NO_RAM_FILE;
 
             // Clear Cheat data
-            OSD::cheat_data.clearData();
+            CheatMngr::clearData();
 
             ESPectrum::reset();
         }
@@ -1649,7 +1658,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if (opt2 && FileUtils::isSDReady()) {
                                         if (persistLoad(opt2)) {
                                             // Clear Cheat data
-                                            OSD::cheat_data.clearData();
+                                            CheatMngr::clearData();
                                             return;
                                         }
                                         menu_saverect = false;
@@ -2122,7 +2131,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
 
                             // Clear Cheat data
-                            OSD::cheat_data.clearData();
+                            CheatMngr::clearData();
 
                             ESPectrum::reset();
 
@@ -2158,7 +2167,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = Config::last_ram_file;
                         } else {
                             // Clear Cheat data
-                            OSD::cheat_data.clearData();
+                            CheatMngr::clearData();
 
                             ESPectrum::reset();
                         }
@@ -2184,7 +2193,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         Config::last_ram_file = NO_RAM_FILE;
 
                         // Clear Cheat data
-                        OSD::cheat_data.clearData();
+                        CheatMngr::clearData();
 
                         ESPectrum::reset();
 
@@ -2942,7 +2951,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                         Config::last_ram_file = NO_RAM_FILE;
 
                                                         // Clear Cheat data
-                                                        OSD::cheat_data.clearData();
+                                                        CheatMngr::clearData();
 
                                                         ESPectrum::reset();
                                                     }

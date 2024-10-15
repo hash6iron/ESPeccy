@@ -118,10 +118,6 @@ bool MemESP::Init() {
 
 void MemESP::Reset() {
 
-    // Set memory to 0
-    for (int i=0; i < 8; i++)
-        memset(MemESP::ram[i],0,0x4000);
-
     MemESP::romInUse = 0;
     MemESP::bankLatch = 0;
     MemESP::videoLatch = 0;
@@ -138,6 +134,34 @@ void MemESP::Reset() {
     MemESP::ramContended[3] = false;
 
     MemESP::pagingLock = Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95" ? 1 : 0;
+
+    if ( MemESP::pagingLock ) { // *48k
+        free( MemESP::ram[1] ); MemESP::ram[1] = NULL;
+        MemESP::ram[3] = NULL;
+        free( MemESP::ram[4] ); MemESP::ram[4] = NULL;
+        free( MemESP::ram[6] ); MemESP::ram[6] = NULL;
+    } else {
+        if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+        MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
+        if ( !MemESP::ram[4] ) MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+        if ( !MemESP::ram[6] ) MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+
+        if ( !MemESP::ram[1] ) {
+            if (Config::slog_on) printf("ERROR! Unable to allocate ram1\n");
+            return;
+        }
+        if ( !MemESP::ram[4] ) {
+            if (Config::slog_on) printf("ERROR! Unable to allocate ram4\n");
+            return;
+        }
+        if ( !MemESP::ram[6] ) {
+            if (Config::slog_on) printf("ERROR! Unable to allocate ram6\n");
+            return;
+        }
+    }
+
+    // Set memory to 0
+    for (int i=0; i < 8; i++) if ( MemESP::ram[i] ) memset(MemESP::ram[i],0,0x4000);
 
     #ifdef ESPECTRUM_PSRAM
     #ifdef TIME_MACHINE_ENABLED
