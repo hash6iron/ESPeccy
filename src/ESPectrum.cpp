@@ -1716,7 +1716,7 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
         // Finish fill of beeper oversampled audio buffers
         for (;faudbufcnt < (samplesPerFrame * audioSampleDivider); faudbufcnt++) {
             audioBitBuf += faudioBit;
-            if(++audioBitbufCount == audioSampleDivider) {
+            if(++audioBitbufCount == audioSampleDivider && audbufcntover < ESP_AUDIO_SAMPLES_PENTAGON ) {
                 overSamplebuf[audbufcntover++] = audioBitBuf;
                 audioBitBuf = 0;
                 audioBitbufCount = 0;
@@ -1747,7 +1747,7 @@ IRAM_ATTR void ESPectrum::BeeperGetSample() {
     uint32_t audbufpos = CPU::tstates / audioOverSampleDivider;
     for (;audbufcnt < audbufpos; audbufcnt++) {
         audioBitBuf += lastaudioBit;
-        if(++audioBitbufCount == audioSampleDivider) {
+        if(++audioBitbufCount == audioSampleDivider && audbufcntover < ESP_AUDIO_SAMPLES_PENTAGON ) {
             overSamplebuf[audbufcntover++] = audioBitBuf;
             audioBitBuf = 0;
             audioBitbufCount = 0;
@@ -1771,175 +1771,175 @@ IRAM_ATTR void ESPectrum::AYGetSample() {
 
 IRAM_ATTR void ESPectrum::loop() {
 
-// // Video adjustment
-// VIDEO::vga.clear(zxColor(3,0)); // For overscan testing. Remove once adjusted
+//    // Video adjustment
+//    VIDEO::vga.clear(zxColor(3,0)); // For overscan testing. Remove once adjusted
 
-// for(;;) {
+//    for(;;) {
 
-//     processKeyboard();
+//        processKeyboard();
 
-//     VIDEO::vga.fillRect(165,126,20,20,zxColor(4,1));
-//     VIDEO::vga.fillRect(0,0,20,20,zxColor(4,1));
-//     VIDEO::vga.fillRect(331,0,20,20,zxColor(4,1));
-//     VIDEO::vga.fillRect(0,251,20,20,zxColor(4,1));
-//     VIDEO::vga.fillRect(331,251,20,20,zxColor(4,1));
+//        VIDEO::vga.fillRect(165,126,20,20,zxColor(4,1));
+//        VIDEO::vga.fillRect(0,0,20,20,zxColor(4,1));
+//        VIDEO::vga.fillRect(331,0,20,20,zxColor(4,1));
+//        VIDEO::vga.fillRect(0,251,20,20,zxColor(4,1));
+//        VIDEO::vga.fillRect(331,251,20,20,zxColor(4,1));
 
-//     VIDEO::vga.line(331,271,340,271,zxColor(0,0));
-//     VIDEO::vga.line(10,271,19,271,zxColor(0,0));
-//     VIDEO::vga.line(10,0,19,0,zxColor(0,0));
-//     VIDEO::vga.line(331,0,340,0,zxColor(0,0));
+//        VIDEO::vga.line(331,271,340,271,zxColor(0,0));
+//        VIDEO::vga.line(10,271,19,271,zxColor(0,0));
+//        VIDEO::vga.line(10,0,19,0,zxColor(0,0));
+//        VIDEO::vga.line(331,0,340,0,zxColor(0,0));
 
-// }
+//    }
 
-for(;;) {
+    for(;;) {
 
-    ts_start = esp_timer_get_time();
+        ts_start = esp_timer_get_time();
 
-    // Send audioBuffer to pwmaudio
-    if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
+        // Send audioBuffer to pwmaudio
+        if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
 
-    audbufcnt = 0;
-    audbufcntover = 0;
-    audbufcntAY = 0;
+        audbufcnt = 0;
+        audbufcntover = 0;
+        audbufcntAY = 0;
 
-    CPU::loop();
+        CPU::loop();
 
-    // Process audio buffer
-    faudbufcnt = audbufcnt;
-    faudioBit = lastaudioBit;
-    faudbufcntAY = audbufcntAY;
+        // Process audio buffer
+        faudbufcnt = audbufcnt;
+        faudioBit = lastaudioBit;
+        faudbufcntAY = audbufcntAY;
 
-    if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
+        if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
 
-    processKeyboard();
+        processKeyboard();
 
-    // Update stats every 50 frames
-    if (VIDEO::OSD && VIDEO::framecnt >= 50) {
+        // Update stats every 50 frames
+        if (VIDEO::OSD && VIDEO::framecnt >= 50) {
 
-        if (VIDEO::OSD & 0x04) {
+            if (VIDEO::OSD & 0x04) {
 
-            // printf("Vol. OSD out -> Framecnt: %d\n", VIDEO::framecnt);
+                // printf("Vol. OSD out -> Framecnt: %d\n", VIDEO::framecnt);
 
-            if (VIDEO::framecnt >= 100) {
+                if (VIDEO::framecnt >= 100) {
 
-                // Save selected volume if not in tape player mode
-                if (!Config::tape_player) {
-                    Config::volume = aud_volume;
-                    Config::save("volume");
-                }
+                    // Save selected volume if not in tape player mode
+                    if (!Config::tape_player) {
+                        Config::volume = aud_volume;
+                        Config::save("volume");
+                    }
 
-                VIDEO::OSD &= 0xfb;
+                    VIDEO::OSD &= 0xfb;
 
-                if (VIDEO::OSD == 0) {
+                    if (VIDEO::OSD == 0) {
 
-                    if (Config::aspect_16_9)
-                        VIDEO::Draw_OSD169 = VIDEO::MainScreen;
-                    else
-                        VIDEO::Draw_OSD43 = Z80Ops::isPentagon ? VIDEO::BottomBorder_Pentagon :  VIDEO::BottomBorder;
+                        if (Config::aspect_16_9)
+                            VIDEO::Draw_OSD169 = VIDEO::MainScreen;
+                        else
+                            VIDEO::Draw_OSD43 = Z80Ops::isPentagon ? VIDEO::BottomBorder_Pentagon :  VIDEO::BottomBorder;
 
-                    VIDEO::brdnextframe = true;
+                        VIDEO::brdnextframe = true;
+
+                    }
 
                 }
 
             }
 
-        }
+            if ((VIDEO::OSD & 0x04) == 0) {
 
-        if ((VIDEO::OSD & 0x04) == 0) {
+                if (VIDEO::OSD == 1 && Tape::tapeStatus==TAPE_LOADING) {
 
-            if (VIDEO::OSD == 1 && Tape::tapeStatus==TAPE_LOADING) {
+                    snprintf(OSD::stats_lin1, sizeof(OSD::stats_lin1), " %-12s %04d/%04d ", Tape::tapeFileName.substr(0 + ESPectrum::TapeNameScroller, 12).c_str(), Tape::tapeCurBlock + 1, Tape::tapeNumBlocks);
 
-                snprintf(OSD::stats_lin1, sizeof(OSD::stats_lin1), " %-12s %04d/%04d ", Tape::tapeFileName.substr(0 + ESPectrum::TapeNameScroller, 12).c_str(), Tape::tapeCurBlock + 1, Tape::tapeNumBlocks);
+                    float percent = (float)((Tape::tapebufByteCount + Tape::tapePlayOffset) * 100) / (float)Tape::tapeFileSize;
+                    snprintf(OSD::stats_lin2, sizeof(OSD::stats_lin2), " %05.2f%% %07d%s%07d ", percent, Tape::tapebufByteCount + Tape::tapePlayOffset, "/" , Tape::tapeFileSize);
 
-                float percent = (float)((Tape::tapebufByteCount + Tape::tapePlayOffset) * 100) / (float)Tape::tapeFileSize;
-                snprintf(OSD::stats_lin2, sizeof(OSD::stats_lin2), " %05.2f%% %07d%s%07d ", percent, Tape::tapebufByteCount + Tape::tapePlayOffset, "/" , Tape::tapeFileSize);
+                    if ((++ESPectrum::TapeNameScroller + 12) > Tape::tapeFileName.length()) ESPectrum::TapeNameScroller = 0;
 
-                if ((++ESPectrum::TapeNameScroller + 12) > Tape::tapeFileName.length()) ESPectrum::TapeNameScroller = 0;
+                    OSD::drawStats();
 
-                OSD::drawStats();
+                } else if (VIDEO::OSD == 2) {
 
-            } else if (VIDEO::OSD == 2) {
+                    snprintf(OSD::stats_lin1, sizeof(OSD::stats_lin1), "CPU: %05d / IDL: %05d ", (int)(ESPectrum::elapsed), (int)(ESPectrum::idle));
+                    snprintf(OSD::stats_lin2, sizeof(OSD::stats_lin2), "FPS:%6.2f / FND:%6.2f ", VIDEO::framecnt / (ESPectrum::totalseconds / 1000000), VIDEO::framecnt / (ESPectrum::totalsecondsnodelay / 1000000));
 
-                snprintf(OSD::stats_lin1, sizeof(OSD::stats_lin1), "CPU: %05d / IDL: %05d ", (int)(ESPectrum::elapsed), (int)(ESPectrum::idle));
-                snprintf(OSD::stats_lin2, sizeof(OSD::stats_lin2), "FPS:%6.2f / FND:%6.2f ", VIDEO::framecnt / (ESPectrum::totalseconds / 1000000), VIDEO::framecnt / (ESPectrum::totalsecondsnodelay / 1000000));
+                    OSD::drawStats();
 
-                OSD::drawStats();
+                }
+
+                totalseconds = 0;
+                totalsecondsnodelay = 0;
+                VIDEO::framecnt = 0;
 
             }
 
-            totalseconds = 0;
-            totalsecondsnodelay = 0;
-            VIDEO::framecnt = 0;
-
         }
 
-    }
+        // Flashing flag change
+        if (!(VIDEO::flash_ctr++ & 0x0f)) VIDEO::flashing ^= 0x80;
 
-    // Flashing flag change
-    if (!(VIDEO::flash_ctr++ & 0x0f)) VIDEO::flashing ^= 0x80;
+        #ifdef ESPECTRUM_PSRAM
+        #ifdef TIME_MACHINE_ENABLED
+        // Time machine
+        if (Config::TimeMachine) MemESP::Tm_DoTimeMachine();
+        #endif
+        #endif
 
-    #ifdef ESPECTRUM_PSRAM
-    #ifdef TIME_MACHINE_ENABLED
-    // Time machine
-    if (Config::TimeMachine) MemESP::Tm_DoTimeMachine();
-    #endif
-    #endif
+        elapsed = esp_timer_get_time() - ts_start;
+        idle = target[ESP_delay] - elapsed - ESPoffset; // 100% No turbo
+        // idle = 15974 - elapsed - ESPoffset; // +125% 48k
+        // idle = 13312 - elapsed - ESPoffset; // +150% 48K
+        // idle = 11138 - elapsed - ESPoffset; // +150% TK60
 
-    elapsed = esp_timer_get_time() - ts_start;
-    idle = target[ESP_delay] - elapsed - ESPoffset; // 100% No turbo
-    // idle = 15974 - elapsed - ESPoffset; // +125% 48k
-    // idle = 13312 - elapsed - ESPoffset; // +150% 48K
-    // idle = 11138 - elapsed - ESPoffset; // +150% TK60
+        totalsecondsnodelay += elapsed;
 
-    totalsecondsnodelay += elapsed;
+        if (!ESP_delay) {
+            totalseconds += elapsed;
+            continue;
+        }
 
-    if (!ESP_delay) {
-        totalseconds += elapsed;
-        continue;
-    }
+        if(Config::videomode && !Config::tape_player && ESP_delay == 1) {
 
-    if(Config::videomode && !Config::tape_player && ESP_delay == 1) {
+            if (sync_cnt++ == 0) {
 
-        if (sync_cnt++ == 0) {
+                if (idle > 0)
+                    delayMicroseconds(idle);
 
-            if (idle > 0)
-                delayMicroseconds(idle);
+            } else {
+
+                // Audio sync (once every 128 frames ~ 2,5 seconds)
+                if (sync_cnt & 0x80) {
+                    ESPoffset = 128 - pwm_audio_rbstats();
+                    sync_cnt = 0;
+                }
+
+                // Wait for vertical sync
+                for (;;) {
+                    if (vsync) break;
+                }
+
+                // printf("Vsync!\n");
+
+            }
 
         } else {
 
-            // Audio sync (once every 128 frames ~ 2,5 seconds)
-            if (sync_cnt & 0x80) {
+            if (idle > 0)
+                delayMicroseconds(idle);
+            // else
+            //     printf("Elapsed: %d\n",(int)elapsed);
+
+            // Audio sync
+            if (++sync_cnt & 0x10) {
                 ESPoffset = 128 - pwm_audio_rbstats();
                 sync_cnt = 0;
             }
 
-            // Wait for vertical sync
-            for (;;) {
-                if (vsync) break;
-            }
-
-            // printf("Vsync!\n");
-
         }
 
-    } else {
-
-        if (idle > 0)
-            delayMicroseconds(idle);
-        // else
-        //     printf("Elapsed: %d\n",(int)elapsed);
-
-        // Audio sync
-        if (++sync_cnt & 0x10) {
-            ESPoffset = 128 - pwm_audio_rbstats();
-            sync_cnt = 0;
-        }
+        totalseconds += esp_timer_get_time() - ts_start;
+        // printf("Totalsecond: %f\n",double(esp_timer_get_time() - ts_start));
 
     }
-
-    totalseconds += esp_timer_get_time() - ts_start;
-    // printf("Totalsecond: %f\n",double(esp_timer_get_time() - ts_start));
-
-}
 
 }
