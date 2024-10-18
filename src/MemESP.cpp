@@ -135,6 +135,7 @@ void MemESP::Reset() {
 
     MemESP::pagingLock = Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95" ? 1 : 0;
 
+    #ifndef ESPECTRUM_PSRAM
     if ( MemESP::pagingLock ) { // *48k
         free( MemESP::ram[1] ); MemESP::ram[1] = NULL;
         MemESP::ram[3] = NULL;
@@ -159,6 +160,7 @@ void MemESP::Reset() {
             return;
         }
     }
+    #endif
 
     // Set memory to 0
     for (int i=0; i < 8; i++) if ( MemESP::ram[i] ) memset(MemESP::ram[i],0,0x4000);
