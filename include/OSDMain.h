@@ -142,7 +142,7 @@ public:
     static void menuPrintRow(uint8_t virtual_row_num, uint8_t line_type);
     static void menuRedraw();
     static void WindowDraw();
-    static short menuRun(string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr );
+    static short menuRun(const string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr);
     static unsigned short simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy, uint8_t max_rows, uint8_t max_cols);
     static string fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows);
     static int menuTape(string title);
@@ -156,11 +156,20 @@ public:
     static void click();
     static void statusbarDraw(const string& statusbar);
 
+    static short menuGenericRun(const string title, const string& statusbar = "", void *user_data = nullptr, size_t (*rowCount)(void *) = nullptr, size_t (*colsCount)(void *) = nullptr, void (*menuRedraw)(const string, bool) = nullptr, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr);
+
     // menu callbacks
     static int menuProcessSnapshot(fabgl::VirtualKeyItem Menukey);
     static int menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey);
 
+    static size_t rowCountCheat(void *data);
+    static size_t colsCountCheat(void *data);
+    static void menuRedrawCheat(const string title, bool force = false);
     static int menuProcessCheat(fabgl::VirtualKeyItem Menukey);
+
+    static size_t rowCountPoke(void *data);
+    static size_t colsCountPoke(void *data);
+    static void menuRedrawPoke(const string title, bool force = false);
     static int menuProcessPokeInput(fabgl::VirtualKeyItem Menukey);
 
     static bool browseCheatFiles();
@@ -197,9 +206,9 @@ public:
     static string input(int x, int y, string inputLabel, int maxSize, int maxDisplaySize, uint16_t ink_color, uint16_t paper_color, const string& default_value = "", const string& filterchars = "", uint8_t * result_flags = nullptr, int filterbehavior = FILTER_FORBIDDEN );
 
     // Rows
-    static unsigned short rowCount(string menu);
-    static string rowGet(string menu, unsigned short row_number);
-    static string rowReplace(string menu, unsigned short row, const string& newRowContent);
+    static unsigned short rowCount(string& menu);
+    static string rowGet(string& menu, unsigned short row_number);
+    static string rowReplace(string& menu, unsigned short row, const string& newRowContent);
 
     static void esp_hard_reset();
 
@@ -232,7 +241,7 @@ public:
     static bool fdSearchRefresh;
     static unsigned int fdSearchElements;
 
-    static Cheat* currentCheat;
+    static Cheat currentCheat;
 
 };
 

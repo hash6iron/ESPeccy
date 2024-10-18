@@ -3,159 +3,174 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include "esp_heap_caps.h" // Para heap_caps_malloc
 
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
+// Variables estáticas
+std::string CheatMngr::cheatFilename = "";
+FILE* CheatMngr::cheatFileFP = nullptr;
+Cheat* CheatMngr::cheats = nullptr;
+Poke* CheatMngr::pokes = nullptr;
+uint16_t CheatMngr::cheatCount = 0;
+uint32_t CheatMngr::pokeCount = 0;
+
+static char line[200]; // Buffer para leer líneas
+
+// Función para liberar todos los datos
+void CheatMngr::clearData() {
+    if (cheats) heap_caps_free(cheats);
+    if (pokes) heap_caps_free(pokes);
+    cheats = nullptr;
+    pokes = nullptr;
+    cheatCount = 0;
+    pokeCount = 0;
 }
 
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
+// Función para cerrar el archivo y liberar recursos
+void CheatMngr::closeCheatFile() {
+    clearData();
+    if (cheatFileFP) {
+        fclose(cheatFileFP);
+        cheatFileFP = nullptr;
+    }
 }
 
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    rtrim(s);
-    ltrim(s);
+// Función para contar POKEs y CHEATs
+static void countCheatsAndPokes(FILE* file, uint16_t& cheatCount, uint32_t& pokeCount) {
+    cheatCount = 0;
+    pokeCount = 0;
+
+    rewind(file); // Volver al inicio del archivo
+
+    while (fgets(line, sizeof(line), file)) {
+        if (line[0] == 'N') cheatCount++;
+        else if (line[0] == 'M' || line[0] == 'Z') pokeCount++;
+    }
 }
 
-// trim from start (copying)
-static inline std::string ltrim_copy(std::string s) {
-    ltrim(s);
-    return s;
-}
-
-// trim from end (copying)
-static inline std::string rtrim_copy(std::string s) {
-    rtrim(s);
-    return s;
-}
-
-// trim from both ends (copying)
-static inline std::string trim_copy(std::string s) {
-    trim(s);
-    return s;
-}
-
-std::vector<Cheat> CheatMngr::cheats; // Lista de entrenadores
-
-// Función para cargar un archivo .pok
+// Función para cargar el archivo .pok
 bool CheatMngr::loadCheatFile(const std::string& filename) {
-    FILE* file = fopen(filename.c_str(), "rb");
-    if (!file) {
+    if (cheatFileFP) fclose(cheatFileFP);
+
+    cheatFileFP = fopen(filename.c_str(), "rb");
+    if (!cheatFileFP) {
         printf("Error: Could not open file %s\n", filename.c_str());
         return false;
     }
 
-    clearData(); // Limpiar datos antes de cargar un nuevo archivo
-    parseCheatFile(file);
+    cheatFilename = filename;
+    clearData(); // Limpiar cualquier dato previo
 
-    fclose(file);
+    // 1. Contar cheats y pokes
+    countCheatsAndPokes(cheatFileFP, cheatCount, pokeCount);
+
+    // 2. Reservar memoria alineada para cheats y pokes
+    cheats = (Cheat*)heap_caps_malloc(cheatCount * sizeof(Cheat), MALLOC_CAP_INTERNAL | MALLOC_CAP_32BIT);
+    pokes = (Poke*)heap_caps_malloc(pokeCount * sizeof(Poke), MALLOC_CAP_INTERNAL | MALLOC_CAP_32BIT);
+
+    if (!cheats || !pokes) {
+        printf("Error: Failed to allocate memory\n");
+        closeCheatFile();
+        return false;
+    }
+
+    // 3. Segunda pasada para cargar datos
+    rewind(cheatFileFP);
+
+    uint32_t pokeIdx = 0;
+    uint16_t cheatIdx = 0;
+    Cheat currentCheat = {};
+
+    while (fgets(line, sizeof(line), cheatFileFP)) {
+
+        if (line[0] == 'N') {
+            if (currentCheat.pokeCount > 0) copyCheat(&currentCheat, &cheats[cheatIdx++]);
+            currentCheat = {};
+            currentCheat.nameOffset = ftell(cheatFileFP) - strlen(line);
+            currentCheat.pokeStartIdx = pokeIdx;
+        } else if (line[0] == 'M' || line[0] == 'Z') {
+            Poke poke;
+            uint16_t val;
+            sscanf(line, "%*s %d %d %d %d", &poke.bank, &poke.address, &val, &poke.original);
+            poke.is_input = (val == 256);
+            poke.value = (poke.is_input ? poke.original : (uint8_t) val);
+            copyPoke(&poke, &pokes[pokeIdx++]);
+            if (poke.is_input) currentCheat.inputCount++;
+            currentCheat.pokeCount++;
+        }
+    }
+
+    copyCheat(&currentCheat, &cheats[cheatIdx++]);
+
     return true;
 }
 
-// Función para liberar todos los datos
-void CheatMngr::clearData() {
-    cheats.clear(); // Limpiar el vector de entrenadores
+// Cheat
+
+const Cheat CheatMngr::getCheat(int index) {
+    if (index < 0 || index >= cheatCount) return {};
+    Cheat c;
+    copyCheat(&cheats[index], &c);
+    return c;
 }
 
-// Función para dividir la línea y obtener los tokens
-std::vector<std::string> splitLine(const std::string& line) {
-    std::vector<std::string> tokens;
-    std::string currentToken;
+const Cheat CheatMngr::toggleCheat(int index) {
+    if (index < 0 || index >= cheatCount) return {};
+    Cheat cheat;
+    copyCheat(&cheats[index], &cheat);
+    cheat.enabled = !cheat.enabled;
+    copyCheat(&cheat, &cheats[index]);
+    return cheat;
+}
 
-    for (char ch : line) {
-        if (std::isspace(ch)) { // Si encontramos un espacio
-            if (!currentToken.empty()) { // Si el token actual no está vacío
-                tokens.push_back(currentToken);
-                currentToken.clear(); // Limpiar el token actual
-            }
-        } else {
-            currentToken += ch; // Agregar el carácter al token actual
+// Obtener el nombre del cheat
+std::string CheatMngr::getCheatName(const Cheat& cheat) {
+    if (!cheatFileFP) return "";
+    fseek(cheatFileFP, cheat.nameOffset, SEEK_SET);
+    if (fgets(line, sizeof(line), cheatFileFP)) {
+        char* p = line;
+        while (*p) {
+            if (*p == '\r' || *p == '\n') *p = 0;
+            ++p;
         }
     }
-
-    // Agregar el último token si existe
-    if (!currentToken.empty()) {
-        tokens.push_back(currentToken);
-    }
-
-    return tokens;
+    return std::string(line + 1);
 }
 
-// Función para parsear el archivo .pok
-void CheatMngr::parseCheatFile(FILE* file) {
-    char line[100]; // Buffer para la línea
-    Cheat currentCheat;
-
-    while (fgets(line, sizeof(line), file)) {
-
-        char *p = line; while( *p ) if ( *p == '\r' || *p == '\n' ) *p = 0; else p++;
-
-        if (line[0] == 'N') {
-            if (!currentCheat.name.empty()) {
-                cheats.push_back(currentCheat);
-                currentCheat = Cheat(); // Reiniciar el actual
-            }
-            currentCheat.name = trim_copy(std::string(line + 1)); //.substr(0,30);
-            currentCheat.enabled = false;
-            currentCheat.inputCount = 0; // Reiniciar contador
-        } else if (line[0] == 'M' || line[0] == 'Z') {
-
-            // Dividir la línea en tokens usando nuestra función
-            std::vector<std::string> tokens = splitLine(line);
-
-            Poke poke;
-            poke.bank = std::stoi(tokens[1]); // Convertir el segundo token a int para el bank
-            poke.address = std::stoi(tokens[2]); // Convertir el tercer token a int para la dirección
-            poke.value = std::stoi(tokens[3]); // Convertir el cuarto token a int para el value
-            poke.original = std::stoi(tokens[4]); // Convertir el quinto token a int para el original
-            poke.userDefinedValue = (poke.value == 256) ? poke.original : poke.value; // Valor definido por el usuario
-
-            currentCheat.pokes.push_back(poke);
-
-            if (poke.value == 256) {
-                currentCheat.inputCount++; // Incrementar contador si value es 256
-            }
-        } else if (line[0] == 'Y') {
-            if (!currentCheat.name.empty()) {
-                cheats.push_back(currentCheat);
-            }
-            break; // Salir del loop al encontrar 'Y'
-        }
-    }
+std::string CheatMngr::getCheatFilename() {
+    return cheatFilename;
 }
 
-// Función para obtener un puntero a un Cheat
-Cheat* CheatMngr::getCheat(int index) {
-    if (index < 0 || index >= cheats.size()) {
-        return nullptr; // Indice inválido
-    }
-    return &cheats[index]; // Retornar puntero al Cheat
+uint16_t CheatMngr::getCheatCount() {
+    return cheatCount;
 }
 
-// Función para obtener la cantidad de Cheats
-int CheatMngr::getCheatCount() {
-    return static_cast<int>(cheats.size());
+// Poke
+
+const Poke CheatMngr::getPoke(const Cheat& cheat, size_t pokeIndex) {
+    if (pokeIndex >= cheat.pokeCount) return {};
+    Poke poke;
+    copyPoke(&pokes[cheat.pokeStartIdx + pokeIndex], &poke);
+    return poke;
 }
 
-// Método para obtener puntero a Cheate por índice
-Poke* CheatMngr::getPokeForInput(Cheat *cheat, size_t inputIndex) {
+const Poke CheatMngr::getInputPoke(const Cheat& cheat, size_t inputIndex) {
     size_t count = 0;
-
-    for (auto& poke : cheat->pokes) {
-        if (poke.value == 256) {
-            if (count == inputIndex) {
-                return &poke; // Retornar puntero al Cheate
-            }
+    for (int i = 0; i < cheat.pokeCount; ++i) {
+        Poke poke;
+        copyPoke(&pokes[cheat.pokeStartIdx + i], &poke);
+        if (poke.is_input) {
+            if (count == inputIndex) return poke;
             count++;
         }
     }
+    return {};
+}
 
-    return nullptr; // No se encontró
+const Poke CheatMngr::setPokeValue(const Cheat& cheat, size_t pokeIndex, uint8_t value) {
+    if (pokeIndex >= cheat.pokeCount) return {};
+    Poke poke;
+    copyPoke(&pokes[cheat.pokeStartIdx + pokeIndex], &poke);
+    poke.value = value;
+    copyPoke(&poke, &pokes[cheat.pokeStartIdx + pokeIndex]);
+    return poke;
 }

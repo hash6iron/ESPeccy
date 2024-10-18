@@ -3,41 +3,75 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 // Estructura para almacenar un POKE
-struct Poke {
-    int bank;               // Banco
-    int address;            // Dirección
-    int value;              // Valor a modificar (POKE)
-    int original;           // Valor original
-    int userDefinedValue;   // Valor definido por el usuario (para casos donde value = 256)
+#pragma pack(push, 1)
+typedef struct Poke {
+    uint8_t bank;               // Banco
+    uint16_t address;           // Dirección
+    uint8_t value;              // Valor a modificar (POKE)
+    uint8_t original;           // Valor original
+    bool is_input;              // Si el valor debe ser ingresado por el usuario
+    uint8_t padding[2];         // Relleno manual para alinear a 8 bytes
 };
+#pragma pack(pop)
 
-// Estructura para almacenar un Entrenador (Cheat)
-struct Cheat {
-    std::string name;        // Nombre/Descripción del entrenador
-    std::vector<Poke> pokes; // Lista de POKEs asociados
-    bool enabled;            // Indicador de si el Cheat está habilitado
-    int inputCount;          // Contador de POKEs con value = 256
+// Estructura para almacenar un Cheat
+#pragma pack(push, 1)
+typedef struct Cheat {
+    uint32_t nameOffset;        // Offset del nombre (4 u 8 bytes según la plataforma)
+    uint16_t pokeStartIdx;      // Índice de inicio de los POKEs en memoria alineada
+    uint16_t pokeCount;         // Cantidad de POKEs asociados
+    bool enabled;               // Cheat activado o no
+    uint8_t inputCount;         // Cantidad de entradas necesarias
+    uint8_t padding[2];         // Relleno para alinear a 32 bits
 };
+#pragma pack(pop)
 
-// Clase para parsear archivos .pok
+
+// Clase para gestionar los Cheats
 class CheatMngr {
 public:
     static bool loadCheatFile(const std::string& filename);
     static void clearData();
-    static Cheat* getCheat(int index);
-    static int getCheatCount();
-    static Poke* getPokeForInput(Cheat* cheat, size_t inputIndex);
+    static void closeCheatFile();
 
-    static inline int getInputCount(Cheat* cheat) {
-        if ( !cheat ) return 0;
-        return cheat->inputCount;
-    }
+    static const Cheat getCheat(int index);
+    static const Cheat toggleCheat(int index);
+    static std::string getCheatName(const Cheat& cheat);
+    static std::string getCheatFilename();
+    static uint16_t getCheatCount();
+    static const Poke getPoke(const Cheat& cheat, size_t pokeIndex);
+    static const Poke getInputPoke(const Cheat& cheat, size_t inputIndex);
+    static const Poke setPokeValue(const Cheat& cheat, size_t pokeIndex, uint8_t value);
 
 private:
-    static std::vector<Cheat> cheats; // Lista de entrenadores
-    static void parseCheatFile(FILE* file);  // Método para parsear el archivo .pok
+    static std::string cheatFilename;
+    static FILE* cheatFileFP;
+
+    static Cheat* cheats;         // Array de Cheats en memoria alineada
+    static Poke* pokes;           // Array de POKEs en memoria alineada
+    static uint16_t cheatCount;   // Total de Cheats
+    static uint32_t pokeCount;    // Total de POKEs
+
+    static inline void copyPoke(const Poke* src, Poke* dest) {
+        const uint32_t* s = reinterpret_cast<const uint32_t*>(src);
+        uint32_t* d = reinterpret_cast<uint32_t*>(dest);
+
+        *d++ = *s++;  // Copia los primeros 4 bytes
+        *d++ = *s++;  // Copia los segundos 4 bytes
+    }
+
+    static inline void copyCheat(const Cheat* src, Cheat* dest) {
+        const uint32_t* s = reinterpret_cast<const uint32_t*>(src);
+        uint32_t* d = reinterpret_cast<uint32_t*>(dest);
+
+        *d++ = *s++;  // Copia los primeros 4 bytes (nameOffset)
+        *d++ = *s++;  // Copia los siguientes 4 bytes (pokeStartIdx y pokeCount)
+        *d++ = *s++;  // Copia los últimos 4 bytes (enabled, inputCount, padding)
+    }
+
 };
 
 #endif // CheatMngr_H

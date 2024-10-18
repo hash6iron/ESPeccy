@@ -825,7 +825,7 @@ void ESPectrum::setup()
     CPU::reset();
 
     // Clear Cheat data
-    CheatMngr::clearData();
+    CheatMngr::closeCheatFile();
 
     // Load snapshot if present in Config::ram_file
     if (Config::ram_file != NO_RAM_FILE) {
@@ -1170,7 +1170,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                         Config::ram_file = Config::last_ram_file;
                     } else {
                         // Clear Cheat data
-                        CheatMngr::clearData();
+                        CheatMngr::closeCheatFile();
                         ESPectrum::reset();
                     }
                     return;

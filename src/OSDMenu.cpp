@@ -154,7 +154,7 @@ void OSD::WindowDraw() {
     unsigned short rb_paint_x = x + w - 30;
     uint8_t rb_colors[] = {2, 6, 4, 5};
     for (uint8_t c = 0; c < 4; c++) {
-        for (uint8_t i = 0; i < 5; i++) {
+        for (uint8_t i = 0; i < 5; ++i) {
             VIDEO::vga.line(rb_paint_x + i, rb_y, rb_paint_x + 8 + i, rb_y - 8, zxColor(rb_colors[c], 1));
         }
         rb_paint_x += 5;
@@ -294,104 +294,8 @@ int OSD::menuProcessSnapshotSave(fabgl::VirtualKeyItem Menukey) {
 
 }
 
-
-int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
-    int idx = menuRealRowFor( focus );
-
-    if ( menu_level == 0 && ((Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C)) {
-        return 0;
-    } else
-    if (Menukey.vk == fabgl::VK_F2) {
-        return SHRT_MIN;
-    } else
-    if (Menukey.vk == fabgl::VK_SPACE && begin_row - 1 + focus < real_rows) {
-        click();
-
-        Cheat * t = CheatMngr::getCheat(idx - 1);
-
-        t->enabled = !t->enabled;
-
-        string new_row = t->name + "\t ";
-        if ( t->inputCount > 0 ) new_row += ">>>";
-        new_row += "  [" + string(t->enabled ? "*" : " ") + "]";
-
-        OSD::menu = OSD::rowReplace(menu, idx, new_row);
-
-        last_focus = focus - 1; // force redraw
-        menuRedraw();
-
-        // Move cursor to next row
-        if (focus == virtual_rows - 1 && virtual_rows + begin_row - 1 < real_rows) {
-            menuScroll(UP);
-        } else {
-            last_focus = focus;
-            focus++;
-            if (focus > virtual_rows - 1) {
-                focus = 1;
-                last_begin_row = begin_row;
-                begin_row = 1;
-                menuRedraw();
-                menuPrintRow(focus, IS_FOCUSED);
-            }
-            else {
-                menuPrintRow(focus, IS_FOCUSED);
-                menuPrintRow(last_focus, IS_NORMAL);
-            }
-        }
-
-    } else
-    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
-        click();
-
-        Cheat * t = CheatMngr::getCheat(idx - 1);
-
-        if ( CheatMngr::getInputCount(t) > 0 ) {
-            currentCheat = t;
-            return -idx;
-        }
-
-        last_focus = focus - 1; // force redraw
-        menuRedraw();
-
-        return 0;
-
-    }
-
-    return 1;
-}
-
-int OSD::menuProcessPokeInput(fabgl::VirtualKeyItem Menukey) {
-    int idx = menuRealRowFor( focus );
-
-    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
-        click();
-        uint8_t flags = 0;
-
-        Poke * p = CheatMngr::getPokeForInput(currentCheat, idx - 1);
-        string value = to_string( p->userDefinedValue );
-        if ( value != "" ) {
-            string new_value = input(cols - 5, focus, "", 3, 3, zxColor(0,0), zxColor(7,0), value, "0123456789", &flags, FILTER_ALLOWED );
-            if ( !( flags & 1 ) && new_value != "" ) { // if not canceled
-                int nv = stoi(new_value);
-                if ( nv < 256 ) p->userDefinedValue = nv;
-                value = to_string(p->userDefinedValue);
-                string new_row = to_string( idx ) + ":\t " + ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " ";
-                OSD::menu = OSD::rowReplace(menu, idx, new_row);
-            }
-        }
-
-        last_focus = focus - 1; // force redraw
-        menuRedraw();
-
-        return 0;
-
-    }
-
-    return 1;
-}
-
 // Run a new menu
-short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
+short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
 
     fabgl::VirtualKeyItem Menukey;
 
@@ -427,7 +331,7 @@ short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabg
         }
     }
 
-    for ( int i = menu_level + 1; i < 5; i++ ) prev_y[i] = 0;
+    for ( int i = menu_level + 1; i < 5; ++i ) prev_y[i] = 0;
 
     // Rows
     real_rows = rowCount(menu);
@@ -439,7 +343,7 @@ short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabg
     uint8_t col_count = 0, col_count_partial = 0;
     uint8_t cols_title = 0;
     bool with_tab = false;
-    for (unsigned short i = 0; i < menu.length(); i++) {
+    for (unsigned short i = 0; i < menu.length(); ++i) {
         if ((menu.at(i) == ASCII_TAB)) {
             with_tab = true;
             col_count_partial = col_count + 2; // space for el tab
@@ -501,10 +405,12 @@ short OSD::menuRun(string new_menu, const string& statusbar, int (*proc_cb)(fabg
                 if (!Menukey.down) continue;
                 if (proc_cb) {
                     int retcb = proc_cb(Menukey);
+                    // 0 = stop this key process (stop propagation)
+                    // 1 = continue process
+                    // else return with callback return result
                     if (!retcb) continue;
-                    if (retcb < 0) {
+                    if (retcb != 1) {
                         if (menu_level!=0) OSD::restoreBackbufferData(true);
-                        click();
                         use_current_menu_state = false;
                         return retcb;
                     }
@@ -863,12 +769,12 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
         VIDEO::vga.print("ESP");
         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(0, 0));
         VIDEO::vga.print(("ectrum " + Config::arch).c_str());
-        for (uint8_t i = line.length(); i < (cols - margin); i++)
+        for (uint8_t i = line.length(); i < (cols - margin); ++i)
             VIDEO::vga.print(" ");
     } else {
         if (line.length() < cols - margin) {
             VIDEO::vga.print(line.c_str());
-            for (uint8_t i = line.length(); i < (cols - margin); i++)
+            for (uint8_t i = line.length(); i < (cols - margin); ++i)
                 VIDEO::vga.print(" ");
         } else {
             VIDEO::vga.print(line.substr(0, cols - margin).c_str());
@@ -886,7 +792,7 @@ void OSD::tapemenuRedraw(string title, bool force) {
         // Read bunch of rows
         menu = title + "\n";
         if ( Tape::tapeNumBlocks ) {
-            for (int i = begin_row - 1; i < virtual_rows + begin_row - 2; i++) {
+            for (int i = begin_row - 1; i < virtual_rows + begin_row - 2; ++i) {
                 if (i >= Tape::tapeNumBlocks) break;
                 if (Tape::tapeFileType == TAPE_FTYPE_TAP)
                     menu += Tape::tapeBlockReadData(i);
@@ -1013,68 +919,54 @@ int OSD::menuTape(string title) {
                 if (!Menukey.down) continue;
 
                 if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
-                    if (focus == 1 and begin_row > 1) {
-                        if (begin_row > 1) {
-                            last_begin_row = begin_row;
-                            begin_row--;
-                        }
+                    if (focus == 1 && begin_row > 1) {
+                        last_begin_row = begin_row;
+                        begin_row--;
                         tapemenuRedraw(title);
-                        click();
                     } else if (focus > 1) {
                         last_focus = focus;
                         focus--;
                         PrintRow(focus, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + focus) ) ? IS_SELECTED_FOCUSED : IS_FOCUSED);
                         PrintRow(focus + 1, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + focus + 1) ) ? IS_SELECTED : IS_NORMAL);
-                        click();
                     }
+                    click();
                 } else if (Menukey.vk == fabgl::VK_DOWN || Menukey.vk == fabgl::VK_JOY1DOWN || Menukey.vk == fabgl::VK_JOY2DOWN) {
                     if (focus == virtual_rows - 1) {
                         if ((begin_row + virtual_rows - 1 - ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 1 : 0) : 0 ) ) < real_rows) {
                             last_begin_row = begin_row;
                             begin_row++;
                             tapemenuRedraw(title);
-                            click();
                         }
                     } else if (focus < virtual_rows - 1) {
                         last_focus = focus;
                         focus++;
                         PrintRow(focus, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + focus) ) ? IS_SELECTED_FOCUSED : IS_FOCUSED);
                         PrintRow(focus - 1, ( Tape::tapeFileType == TAPE_FTYPE_TAP && !Tape::tapeIsReadOnly && Tape::isSelectedBlock(begin_row - 2 + focus - 1) ) ? IS_SELECTED : IS_NORMAL);
-                        click();
                     }
+                    click();
                 } else if (Menukey.vk == fabgl::VK_PAGEUP || Menukey.vk == fabgl::VK_LEFT || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
-                    // printf("%u\n",begin_row);
+                    last_focus = focus;
+                    last_begin_row = begin_row;
                     if (begin_row > virtual_rows) {
-                        last_focus = focus;
-                        last_begin_row = begin_row;
-                        focus = 1;
                         begin_row -= virtual_rows - 1;
-                        tapemenuRedraw(title);
-                        click();
                     } else {
-                        last_focus = focus;
-                        last_begin_row = begin_row;
-                        focus = 1;
                         begin_row = 1;
-                        tapemenuRedraw(title);
-                        click();
                     }
+                    focus = 1;
+                    tapemenuRedraw(title);
+                    click();
                 } else if (Menukey.vk == fabgl::VK_PAGEDOWN || Menukey.vk == fabgl::VK_RIGHT || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
+                    last_focus = focus;
+                    last_begin_row = begin_row;
                     if (real_rows - begin_row - virtual_rows > virtual_rows) {
-                        last_focus = focus;
-                        last_begin_row = begin_row;
                         focus = 1;
                         begin_row += virtual_rows - 1;
-                        tapemenuRedraw(title);
-                        click();
                     } else {
-                        last_focus = focus;
-                        last_begin_row = begin_row;
                         focus = virtual_rows - 1;
                         begin_row = real_rows - virtual_rows + 1 + ( Tape::tapeFileType == TAPE_FTYPE_TAP ? (!Tape::tapeIsReadOnly ? 1 : 0) : 0 );
-                        tapemenuRedraw(title);
-                        click();
                     }
+                    tapemenuRedraw(title);
+                    click();
                 } else if (Menukey.vk == fabgl::VK_HOME) {
                     last_focus = focus;
                     last_begin_row = begin_row;
@@ -1189,3 +1081,366 @@ int OSD::menuTape(string title) {
     }
 }
 
+
+/* Cheats */
+
+size_t OSD::rowCountCheat(void *data) {
+    return CheatMngr::getCheatCount();
+}
+
+size_t OSD::colsCountCheat(void *data) {
+    // 30 Cheat name
+    // 1 tab
+    // 1 space
+    // 3 [?] or '   ' (3 spaces)
+    // 1 space
+    // 3 [*]
+    // ----
+    // 40 totals
+    return 40;
+}
+
+void OSD::menuRedrawCheat(const string title, bool force) {
+    if ( force || focus != last_focus || begin_row != last_begin_row ) {
+        // Read bunch of rows
+        menu = title + "\n";
+        size_t numRows = CheatMngr::getCheatCount();
+        if ( numRows ) {
+            for (int i = begin_row - 1; i < virtual_rows + begin_row - 2 && i < numRows; ++i) {
+                Cheat cheat = CheatMngr::getCheat(i);
+                if (cheat.pokeCount) { // this allways must be true
+                    menu += CheatMngr::getCheatName(cheat).substr(0,30) + "\t" + ((cheat.inputCount) ? " [?]" : "" ) + " [" + (cheat.enabled ? "*" : " ") + "]\n";
+                }
+            }
+        }
+
+        for (uint8_t row = 1; row < virtual_rows; row++) {
+            PrintRow(row, row == focus ? IS_FOCUSED : IS_NORMAL);
+        }
+
+        menuScrollBar(begin_row);
+
+        last_focus = focus;
+        last_begin_row = begin_row;
+
+    }
+}
+
+int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
+    int idx = menuRealRowFor( focus );
+
+    if ( menu_level == 0 && ((Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C)) {
+        return 0;
+
+    } else
+    if (Menukey.vk == fabgl::VK_F2) {
+        click();
+        return SHRT_MIN;
+
+    } else
+    if (Menukey.vk == fabgl::VK_SPACE && begin_row - 1 + focus < real_rows) {
+        click();
+
+        CheatMngr::toggleCheat(idx - 1);
+
+        // Move cursor to next row
+        if (focus == virtual_rows - 1 && virtual_rows + begin_row - 1 < real_rows) {
+            last_begin_row = begin_row;
+            begin_row++;
+
+        } else {
+            last_focus = focus;
+            focus++;
+            if (focus > virtual_rows - 1) {
+                focus = 1;
+                last_begin_row = begin_row;
+                begin_row = 1;
+            }
+        }
+
+        return SHRT_MAX;
+
+    } else
+    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
+        click();
+
+        Cheat t = CheatMngr::getCheat(idx - 1);
+
+        if ( t.inputCount > 0 ) {
+            currentCheat = t;
+            return -idx;
+        }
+
+        return 0;
+
+    }
+
+    return 1;
+}
+
+size_t OSD::rowCountPoke(void *data) {
+    return currentCheat.inputCount;
+}
+
+size_t OSD::colsCountPoke(void *data) {
+    // 6 poke number
+    // 1 :
+    // 1 tab
+    // 1 space
+    // 4 input
+    // ----
+    // 13 totals
+    return 13;
+}
+
+void OSD::menuRedrawPoke(const string title, bool force) {
+    if ( force || focus != last_focus || begin_row != last_begin_row ) {
+        // Read bunch of rows
+        menu = title + "\n";
+        size_t numRows = currentCheat.inputCount;
+        if ( numRows ) {
+            for (int i = begin_row - 1; i < virtual_rows + begin_row - 2 && i < numRows; ++i) {
+                Poke poke = CheatMngr::getInputPoke(currentCheat, i);
+                string value = to_string(poke.value);
+                menu += to_string( i + 1 ) + ":\t " + ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + "\n";
+            }
+        }
+
+        for (uint8_t row = 1; row < virtual_rows; row++) {
+            PrintRow(row, row == focus ? IS_FOCUSED : IS_NORMAL);
+        }
+
+        menuScrollBar(begin_row);
+
+        last_focus = focus;
+        last_begin_row = begin_row;
+
+    }
+}
+
+int OSD::menuProcessPokeInput(fabgl::VirtualKeyItem Menukey) {
+    int idx = menuRealRowFor( focus );
+
+    if ((Menukey.vk == fabgl::VK_RETURN ||
+        (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) ||
+         Menukey.vk == fabgl::VK_JOY1B ||
+         Menukey.vk == fabgl::VK_JOY1C ||
+         Menukey.vk == fabgl::VK_JOY2B ||
+         Menukey.vk == fabgl::VK_JOY2C )
+                                         && idx - 1 < currentCheat.inputCount) {
+        click();
+        uint8_t flags = 0;
+
+        Poke poke = CheatMngr::getInputPoke(currentCheat, idx - 1);
+//        string value = to_string(poke.value);
+        string new_value = input(cols - 5, focus, "", 3, 3, zxColor(0,0), zxColor(7,0), "", "0123456789", &flags, FILTER_ALLOWED );
+        if ( !( flags & 1 ) && new_value != "" ) { // if not canceled
+            int nv = stoi(new_value);
+            if ( nv < 256 ) poke = CheatMngr::setPokeValue(currentCheat, idx - 1, (uint8_t) nv);
+            string value = to_string(poke.value);
+            string new_row = to_string( idx ) + ":\t " + ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " ";
+            OSD::menu = OSD::rowReplace(menu, idx, new_row);
+        }
+        return 0;
+
+    }
+
+    return 1;
+}
+
+
+// Run a new menu
+short OSD::menuGenericRun(const string title, const string& statusbar, void *user_data, size_t (*rowCount)(void *), size_t (*colsCount)(void *), void (*menuRedraw)(const string, bool), int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
+
+    fabgl::VirtualKeyItem Menukey;
+
+    // CRT Overscan compensation
+    if (Config::videomode == 2) {
+        x = 18;
+        if (menu_level == 0) {
+            if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
+                y = 4;
+            } else {
+                y = 12;
+            }
+        }
+    } else {
+        x = 0;
+        if (menu_level == 0) y = 0;
+    }
+
+    // Position
+    if (menu_level == 0) {
+        x += (Config::aspect_16_9 ? 24 : 8);
+        y += 8;
+        prev_y[0] = 0;
+    } else {
+        x += (Config::aspect_16_9 ? 24 : 8) + (54 /*60*/ * menu_level);
+        if (menu_saverect && !prev_y[menu_level]) {
+            y += (4 + (OSD_FONT_H * menu_prevopt));
+            prev_y[menu_level] = y;
+        } else {
+            y = prev_y[menu_level];
+        }
+    }
+
+    for ( int i = menu_level + 1; i < 5; ++i ) prev_y[i] = 0;
+
+    // Rows
+    real_rows = rowCount(user_data) + 1;
+    virtual_rows = (real_rows > MENU_MAX_ROWS ? MENU_MAX_ROWS : real_rows);
+
+    // Columns
+    cols = colsCount(user_data);
+
+    if (title.size() + 7 > cols) cols = title.size() + 7; // colors bars in title
+
+    int max_cols = (menu_level == 0 ? 41 : 31);
+
+    cols += (real_rows > virtual_rows ? 1 : 0); // For scrollbar
+
+    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
+
+    if (cols > max_cols) cols = max_cols;
+
+    // Size
+    w = (cols * OSD_FONT_W) + 2;
+    h = ((virtual_rows + ( statusbar != "" ? 1 : 0 ) ) * OSD_FONT_H) + 2;
+
+    int rmax = scrW == 320 ? 52 : 55;
+    if ( x + cols * OSD_FONT_W > rmax * OSD_FONT_W ) x = ( rmax - cols ) * OSD_FONT_W;
+
+    menu = title + "\n"; // for row 0 (remember fix this)
+
+    WindowDraw(); // Draw menu outline
+
+    if (!use_current_menu_state) {
+        begin_row = 1;
+        focus = menu_curopt;
+        last_begin_row = last_focus = 0;
+    }
+
+    menuRedraw(title, true); // Draw menu content
+
+    if ( statusbar != "" ) statusbarDraw(statusbar);
+
+    while (1) {
+
+        if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
+
+        ESPectrum::readKbdJoy();
+
+        // Process external keyboard
+        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPectrum::readKbd(&Menukey)) {
+                if (!Menukey.down) continue;
+                if (proc_cb) {
+                    int retcb = proc_cb(Menukey);
+                    // 0 = stop this key process (stop propagation)
+                    // 1 = continue process
+                    // else return with callback return result
+                    if (!retcb) {
+                        menuRedraw(title, true);
+                        continue;
+                    }
+                    if (retcb != 1) {
+                        if (menu_level!=0) OSD::restoreBackbufferData(true);
+                        use_current_menu_state = false;
+                        return retcb;
+                    }
+                }
+                if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
+                    if (focus == 1 && begin_row > 1) {
+                        last_begin_row = begin_row;
+                        begin_row--;
+                        menuRedraw(title, false);
+                    } else {
+                        last_focus = focus;
+                        focus--;
+                        if (focus < 1) {
+                            focus = virtual_rows - 1;
+                            last_begin_row = begin_row;
+                            begin_row = real_rows - virtual_rows + 1;
+                            menuRedraw(title, false);
+                        } else {
+                            PrintRow(last_focus, IS_NORMAL);
+                        }
+                        PrintRow(focus, IS_FOCUSED);
+                    }
+                    click();
+                } else if (Menukey.vk == fabgl::VK_DOWN || Menukey.vk == fabgl::VK_JOY1DOWN || Menukey.vk == fabgl::VK_JOY2DOWN) {
+                    if (focus == virtual_rows - 1 && virtual_rows + begin_row - 1 < real_rows) {
+                        last_begin_row = begin_row;
+                        begin_row++;
+                        menuRedraw(title, false);
+                    } else {
+                        last_focus = focus;
+                        focus++;
+                        if (focus > virtual_rows - 1) {
+                            focus = 1;
+                            last_begin_row = begin_row;
+                            begin_row = 1;
+                            menuRedraw(title, false);
+                        } else {
+                            PrintRow(last_focus, IS_NORMAL);
+                        }
+                        PrintRow(focus, IS_FOCUSED);
+                    }
+                    click();
+                } else if (Menukey.vk == fabgl::VK_PAGEUP || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
+                    if (begin_row > virtual_rows) {
+                        last_focus = focus;
+                        last_begin_row = begin_row;
+                        begin_row -= virtual_rows - 1;
+                    } else {
+                        begin_row = 1;
+                    }
+                    focus = 1;
+                    menuRedraw(title, false);
+                    click();
+                } else if (Menukey.vk == fabgl::VK_PAGEDOWN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
+                    last_focus = focus;
+                    last_begin_row = begin_row;
+                    if (real_rows - begin_row - virtual_rows > virtual_rows) {
+                        focus = 1;
+                        begin_row += virtual_rows - 1;
+                    } else {
+                        focus = virtual_rows - 1;
+                        begin_row = real_rows - virtual_rows + 1;
+                    }
+                    menuRedraw(title, false);
+                    click();
+                } else if (Menukey.vk == fabgl::VK_HOME) {
+                    last_focus = focus;
+                    last_begin_row = begin_row;
+                    focus = 1;
+                    begin_row = 1;
+                    menuRedraw(title, false);
+                    click();
+                } else if (Menukey.vk == fabgl::VK_END) {
+                    last_focus = focus;
+                    last_begin_row = begin_row;
+                    focus = virtual_rows - 1;
+                    begin_row = real_rows - virtual_rows + 1;
+                    menuRedraw(title, false);
+                    click();
+                } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C) {
+                    click();
+                    use_current_menu_state = false;
+                    return begin_row + focus - 1;
+                } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_F1 || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
+                    if (menu_level!=0) OSD::restoreBackbufferData(true);
+                    click();
+                    use_current_menu_state = false;
+                    return 0;
+                }
+
+            }
+
+        }
+
+        vTaskDelay(5 / portTICK_PERIOD_MS);
+
+    }
+
+}

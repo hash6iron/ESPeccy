@@ -814,12 +814,12 @@ void OSD::pref_rom_menu() {
 
 }
 
-Cheat* OSD::currentCheat = nullptr;
+Cheat OSD::currentCheat = {};
 
 void OSD::LoadCheatFile(string snapfile) {
     if ( FileUtils::isSDReady() ) {
         if ( !CheatMngr::loadCheatFile( getSnapshotCheatPath( snapfile ) ) ) {
-            CheatMngr::clearData();
+            CheatMngr::closeCheatFile();
         } else {
             showCheatDialog();
         }
@@ -828,14 +828,16 @@ void OSD::LoadCheatFile(string snapfile) {
 
 bool OSD::browseCheatFiles() {
     if ( FileUtils::isSDReady() ) {
-        uint8_t res = DLG_YES;
+//        string currentFile = CheatMngr::getCheatFilename();
         string mFile = fileDialog(FileUtils::CHT_Path, MENU_CHT_TITLE[Config::lang], DISK_CHTFILE, 51, 12);
         if (mFile != "") {
-//            string fprefix = mFile.substr(0,1);
-            mFile.erase(0, 1);
-            string fname = FileUtils::MountPoint + FileUtils::CHT_Path + "/" + mFile;
+            string fname = FileUtils::MountPoint + FileUtils::CHT_Path + "/" + mFile.substr(1);
             if ( FileUtils::isSDReady() ) CheatMngr::loadCheatFile(fname);
         }
+        /*
+        else {
+            if ( FileUtils::isSDReady() ) CheatMngr::loadCheatFile(currentFile);
+        } */
     }
     return true;
 }
@@ -850,79 +852,54 @@ void OSD::showCheatDialog() {
         OSD::browseCheatFiles();
     }
 
-    if (CheatMngr::getCheatCount()) {
+    uint16_t cheatCounts = CheatMngr::getCheatCount();
+
+    if (cheatCounts) {
         MenuState ms;
         use_current_menu_state = false;
         menu_curopt = 1;
 
         while(true) {
-            // Crear la cadena de menú
-            string menucheat = "Cheats\n"; // Primera línea con el nombre del archivo .pok
-
-            // Iterar sobre los entrenadores y sus POKEs para construir el menú
-            for (size_t i = 0; i < CheatMngr::getCheatCount(); ++i) {
-                Cheat* cheat = CheatMngr::getCheat(i);
-                if (cheat) {
-#if 0
-    multi_heap_info_t info;
-    heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
-    printf(" Total free bytes %d\n",info.total_free_bytes);
-
-    printf("[%s][%s][%d]\n", cheat->name.c_str(), menucheat.c_str(), menucheat.size());
-#endif
-//                    if ( cheat->name.size() > 30 )
-//                        menucheat += cheat->name.substr(0,30) + "\t ";
-//                    else
-                        menucheat += cheat->name + "\t ";
-                    if ( cheat->inputCount > 0 ) menucheat += ">>>";
-                    menucheat += "  [" + string(cheat->enabled ? "*" : " ") + "]\n";
-                }
-            }
-
             string statusbar = Config::lang == 0 ? " F2 Open | ESP Yes/No | ESC End " :
                                Config::lang == 1 ? " F2 Abrir | ESP S\xA1/No | ESC Fin " :
                                                    " F2 Iniciar | ESP Sim/N\x84o | ESC Fim ";
 
-            currentCheat = nullptr;
+            currentCheat = {};
 
             menuRestoreState(ms);
 
             menu_saverect = true;
-            short opt2 = menuRun(menucheat, statusbar, menuProcessCheat);
+
+            short opt = menuGenericRun("Cheats", statusbar, nullptr, rowCountCheat, colsCountCheat, menuRedrawCheat, menuProcessCheat);
 
             menuSaveState(ms);
 
-            if (opt2 == SHRT_MIN) {
+            if (opt == SHRT_MAX) {
+                use_current_menu_state = true;
+                continue;
+            } else
+            if (opt == SHRT_MIN) {
                 OSD::restoreBackbufferData();
                 menu_saverect = true;
                 OSD::browseCheatFiles();
                 use_current_menu_state = false;
                 menu_curopt = 1;
             } else
-            if (opt2 < 0 && currentCheat) {
-
-                string menupokeinput = Config::lang == 0 ? " Enter value/s" :
-                                       Config::lang == 1 ? " Introduzca valor/es" :
-                                                           " Insira o(s) valor(es)";
-
-                menupokeinput += "\n";
-
-                for (int i = 0; i < currentCheat->inputCount; i++ ) {
-                    menupokeinput += to_string( i + 1 ) + ":\t ";
-                    Poke* p = CheatMngr::getPokeForInput(currentCheat, i);
-                    string value = to_string(p->userDefinedValue);
-                    menupokeinput += ((value.size() < 3) ? value.insert(0, 3 - value.size(), ' ') : value ) + " \n";
-                }
+            if (opt < 0 && currentCheat.pokeCount) {
+                const string title =  Config::lang == 0 ? "Enter value/s" :
+                                      Config::lang == 1 ? "Introduzca valor/es" :
+                                                          "Insira o(s) valor(es)";
 
                 menu_saverect = true;
                 menu_level = 1;
                 menu_curopt = 1;
 
-                short opt3 = menuRun(menupokeinput, "", menuProcessPokeInput);
+                short opt2 = menuGenericRun(title, "", nullptr, rowCountPoke, colsCountPoke, menuRedrawPoke, menuProcessPokeInput);
+
                 menu_level = 0;
                 menu_saverect = false;
 
-                menu_curopt = -opt2;
+                menu_curopt = -opt;
                 use_current_menu_state = true;
 
                 continue;
@@ -932,22 +909,21 @@ void OSD::showCheatDialog() {
                 // Apply cheats
                 // Iterar sobre los cheats y sus POKEs
                 for (size_t i = 0; i < CheatMngr::getCheatCount(); ++i) {
-                    Cheat* cheat = CheatMngr::getCheat(i);
-                    if (cheat) {
-                        for (auto& poke : cheat->pokes) {
-                            if (cheat->enabled || (!cheat->enabled && poke.original) ) {
-                                uint8_t value = (!cheat->enabled && poke.original) ? poke.original : poke.userDefinedValue;
-                                // Apply poke
-                                if (poke.bank & 0x08) {
-                                    // Poke address between 16384 and 65535
-                                    MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = value;
-                                } else {
-                                    // Poke address in bank
-                                    MemESP::ram[poke.bank & 0x07][poke.address] = value;
-                                }
+                    Cheat cheat = CheatMngr::getCheat(i);
+                    int tot = cheat.pokeCount;
+                    for (int ii = 0; ii < tot; ii++) {
+                        Poke poke = CheatMngr::getPoke(cheat, ii);
+                        if (cheat.enabled || (!cheat.enabled && poke.original) ) {
+                            uint8_t value = (!cheat.enabled && poke.original) ? poke.original : poke.value;
+                            // Apply poke
+                            if (poke.bank & 0x08) {
+                                // Poke address between 16384 and 65535
+                                MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = value;
+                            } else {
+                                // Poke address in bank
+                                MemESP::ram[poke.bank & 0x07][poke.address] = value;
                             }
                         }
-
                     }
                 }
                 break;
@@ -1093,7 +1069,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 Config::last_ram_file = NO_RAM_FILE;
 
                 // Clear Cheat data
-                CheatMngr::clearData();
+                CheatMngr::closeCheatFile();
 
                 ESPectrum::reset();
 
@@ -1275,7 +1251,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     if ( FileUtils::isSDReady() ) {
                         if ( persistLoad(opt2) ) {
                             // Clear Cheat data
-                            CheatMngr::clearData();
+                            CheatMngr::closeCheatFile();
                         }
                     }
                     menu_curopt = opt2;
@@ -1350,7 +1326,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     Tape::LoadTape(mFile);
                     if (Tape::tape) {
                         // Clear Cheat data
-                        CheatMngr::clearData();
+                        CheatMngr::closeCheatFile();
                     }
                     return;
                 }
@@ -1525,7 +1501,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             Config::last_ram_file = NO_RAM_FILE;
 
             // Clear Cheat data
-            CheatMngr::clearData();
+            CheatMngr::closeCheatFile();
 
             ESPectrum::reset();
         }
@@ -1658,7 +1634,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if (opt2 && FileUtils::isSDReady()) {
                                         if (persistLoad(opt2)) {
                                             // Clear Cheat data
-                                            CheatMngr::clearData();
+                                            CheatMngr::closeCheatFile();
                                             return;
                                         }
                                         menu_saverect = false;
@@ -2131,7 +2107,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
 
                             // Clear Cheat data
-                            CheatMngr::clearData();
+                            CheatMngr::closeCheatFile();
 
                             ESPectrum::reset();
 
@@ -2167,7 +2143,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = Config::last_ram_file;
                         } else {
                             // Clear Cheat data
-                            CheatMngr::clearData();
+                            CheatMngr::closeCheatFile();
 
                             ESPectrum::reset();
                         }
@@ -2193,7 +2169,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         Config::last_ram_file = NO_RAM_FILE;
 
                         // Clear Cheat data
-                        CheatMngr::clearData();
+                        CheatMngr::closeCheatFile();
 
                         ESPectrum::reset();
 
@@ -2951,7 +2927,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                         Config::last_ram_file = NO_RAM_FILE;
 
                                                         // Clear Cheat data
-                                                        CheatMngr::clearData();
+                                                        CheatMngr::closeCheatFile();
 
                                                         ESPectrum::reset();
                                                     }
@@ -3546,7 +3522,7 @@ void OSD::osdCenteredMsg(string msg, uint8_t warn_level, uint16_t millispause) {
 }
 
 // // Count NL chars inside a string, useful to count menu rows
-unsigned short OSD::rowCount(string menu) {
+unsigned short OSD::rowCount(string& menu) {
     unsigned short count = 0;
     for (unsigned short i = 0; i < menu.length(); i++) {
         if (menu.at(i) == ASCII_NL) {
@@ -3557,7 +3533,7 @@ unsigned short OSD::rowCount(string menu) {
 }
 
 // // Get a row text
-string OSD::rowGet(string menu, unsigned short row) {
+string OSD::rowGet(string& menu, unsigned short row) {
     unsigned short count = 0;
     unsigned short last = 0;
     for (unsigned short i = 0; i < menu.length(); i++) {
@@ -3572,7 +3548,7 @@ string OSD::rowGet(string menu, unsigned short row) {
     return "<Unknown menu row>";
 }
 
-string OSD::rowReplace(string menu, unsigned short row, const string& newRowContent) {
+string OSD::rowReplace(string& menu, unsigned short row, const string& newRowContent) {
     unsigned short count = 0;
     unsigned short last = 0;
     string newMenu;
