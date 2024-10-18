@@ -12,7 +12,15 @@ typedef struct Poke {
     uint16_t address;           // Dirección
     uint8_t value;              // Valor a modificar (POKE)
     uint8_t original;           // Valor original
-    bool is_input;              // Si el valor debe ser ingresado por el usuario
+    union {
+        struct {
+            bool is_input : 1;  // Si el valor debe ser ingresado por el usuario
+            bool orig_mem : 1;  // Indica si el valor original fue recuperado de la memoria
+            bool orig_file : 1; // Indica si el valor original provino del archivo .pok
+            uint8_t : 5;        // Bits sin usar para completar el byte
+        };
+        uint8_t flags;          // Acceso directo a los flags
+    };
     uint8_t padding[2];         // Relleno manual para alinear a 8 bytes
 };
 #pragma pack(pop)
@@ -45,6 +53,13 @@ public:
     static const Poke getPoke(const Cheat& cheat, size_t pokeIndex);
     static const Poke getInputPoke(const Cheat& cheat, size_t inputIndex);
     static const Poke setPokeValue(const Cheat& cheat, size_t pokeIndex, uint8_t value);
+
+    static const Poke setPokeOriginal(const Cheat& cheat, size_t pokeIndex, uint8_t value);
+    static const Poke setPokeOrigMemFetched(const Cheat& cheat, size_t pokeIndex, bool value);
+    static const Poke setPokeOrigFileLoaded(const Cheat& cheat, size_t pokeIndex, bool value);
+    static void clearAllPokeOrigMem();
+    static void fetchCheatOriginalValuesFromMem();
+    static void applyCheats();
 
 private:
     static std::string cheatFilename;

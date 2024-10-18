@@ -852,6 +852,9 @@ void OSD::showCheatDialog() {
         OSD::browseCheatFiles();
     }
 
+    // Get original values if not set
+    CheatMngr::fetchCheatOriginalValuesFromMem();
+
     uint16_t cheatCounts = CheatMngr::getCheatCount();
 
     if (cheatCounts) {
@@ -907,25 +910,7 @@ void OSD::showCheatDialog() {
             else
             {
                 // Apply cheats
-                // Iterar sobre los cheats y sus POKEs
-                for (size_t i = 0; i < CheatMngr::getCheatCount(); ++i) {
-                    Cheat cheat = CheatMngr::getCheat(i);
-                    int tot = cheat.pokeCount;
-                    for (int ii = 0; ii < tot; ii++) {
-                        Poke poke = CheatMngr::getPoke(cheat, ii);
-                        if (cheat.enabled || (!cheat.enabled && poke.original) ) {
-                            uint8_t value = (!cheat.enabled && poke.original) ? poke.original : poke.value;
-                            // Apply poke
-                            if (poke.bank & 0x08) {
-                                // Poke address between 16384 and 65535
-                                MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = value;
-                            } else {
-                                // Poke address in bank
-                                MemESP::ram[poke.bank & 0x07][poke.address] = value;
-                            }
-                        }
-                    }
-                }
+                CheatMngr::applyCheats();
                 break;
             }
         }

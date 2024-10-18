@@ -1,8 +1,11 @@
 #include "Cheat.h"
+#include "MemESP.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+
 #include "esp_heap_caps.h" // Para heap_caps_malloc
 
 // Variables estáticas
@@ -92,6 +95,8 @@ bool CheatMngr::loadCheatFile(const std::string& filename) {
             uint16_t val;
             sscanf(line, "%*s %d %d %d %d", &poke.bank, &poke.address, &val, &poke.original);
             poke.is_input = (val == 256);
+            poke.orig_file = (poke.original != 0);
+            poke.orig_mem = false;
             poke.value = (poke.is_input ? poke.original : (uint8_t) val);
             copyPoke(&poke, &pokes[pokeIdx++]);
             if (poke.is_input) currentCheat.inputCount++;
@@ -173,4 +178,95 @@ const Poke CheatMngr::setPokeValue(const Cheat& cheat, size_t pokeIndex, uint8_t
     poke.value = value;
     copyPoke(&poke, &pokes[cheat.pokeStartIdx + pokeIndex]);
     return poke;
+}
+
+const Poke CheatMngr::setPokeOriginal(const Cheat& cheat, size_t pokeIndex, uint8_t value) {
+    if (pokeIndex >= cheat.pokeCount) return {};
+    Poke poke;
+    copyPoke(&pokes[cheat.pokeStartIdx + pokeIndex], &poke);
+    poke.original = value;
+    copyPoke(&poke, &pokes[cheat.pokeStartIdx + pokeIndex]);
+    return poke;
+}
+
+const Poke CheatMngr::setPokeOrigMemFetched(const Cheat& cheat, size_t pokeIndex, bool value) {
+    if (pokeIndex >= cheat.pokeCount) return {};
+    Poke poke;
+    copyPoke(&pokes[cheat.pokeStartIdx + pokeIndex], &poke);
+    poke.orig_mem = value;
+    copyPoke(&poke, &pokes[cheat.pokeStartIdx + pokeIndex]);
+    return poke;
+}
+
+const Poke CheatMngr::setPokeOrigFileLoaded(const Cheat& cheat, size_t pokeIndex, bool value) {
+    if (pokeIndex >= cheat.pokeCount) return {};
+    Poke poke;
+    copyPoke(&pokes[cheat.pokeStartIdx + pokeIndex], &poke);
+    poke.orig_file = value;
+    copyPoke(&poke, &pokes[cheat.pokeStartIdx + pokeIndex]);
+    return poke;
+}
+
+void CheatMngr::clearAllPokeOrigMem() {
+    for (size_t i = 0; i < getCheatCount(); ++i) {
+        Cheat cheat = getCheat(i);
+        for (size_t j = 0; j < cheat.pokeCount; ++j) {
+            setPokeOrigMemFetched(cheat, j, false);
+        }
+    }
+}
+
+void CheatMngr::fetchCheatOriginalValuesFromMem() {
+    for (size_t i = 0; i < getCheatCount(); ++i) {
+        Cheat cheat = getCheat(i);
+        for (size_t j = 0; j < cheat.pokeCount; ++j) {
+            Poke poke = getPoke(cheat, j);
+
+            // Solo setear si no fue cargado desde archivo y no fue obtenido previamente
+            if (!poke.orig_file && !poke.orig_mem) {
+                uint8_t originalValue;
+
+                // Obtener el valor original de la memoria
+                if (poke.bank & 0x08) {
+                    originalValue = MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff];
+                } else {
+                    originalValue = MemESP::ram[poke.bank & 0x07][poke.address];
+                }
+
+                // Setear el valor original y marcar `orig_mem`
+                setPokeOrigMemFetched(cheat, j, true);
+                setPokeOriginal(cheat, j, originalValue);  // Asegura que se guarde el nuevo valor
+            }
+        }
+    }
+}
+
+void CheatMngr::applyCheats() {
+    for (size_t i = 0; i < getCheatCount(); ++i) {
+        Cheat cheat = getCheat(i);
+        for (int j = 0; j < cheat.pokeCount; ++j) {
+            Poke poke = getPoke(cheat, j);
+            if (cheat.enabled) {
+                // Apply poke
+                if (poke.bank & 0x08) {
+                    // Poke address between 16384 and 65535
+                    MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = poke.value;
+                } else {
+                    // Poke address in bank
+                    MemESP::ram[poke.bank & 0x07][poke.address] = poke.value;
+                }
+            } else {
+                // Revert poke
+                if (poke.orig_mem || poke.orig_file) {
+                    if (poke.bank & 0x08) {
+                        // Poke address between 16384 and 65535
+                        MemESP::ramCurrent[poke.address >> 14][poke.address & 0x3fff] = poke.original;
+                    } else {
+                        // Poke address in bank
+                        MemESP::ram[poke.bank & 0x07][poke.address] = poke.original;
+                    }
+                }
+            }
+        }
+    }
 }
