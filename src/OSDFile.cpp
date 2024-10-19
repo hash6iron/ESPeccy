@@ -848,8 +848,8 @@ reset:
             if (timeStartScroll == 125) {
                 timeScroll++;
                 if (timeScroll == 25) {
-                    if (fdScrollStatus==0) fdScrollPos++;
-                    else                   fdScrollPos--;
+                    if (!fdScrollStatus) fdScrollPos++;
+                    else                 fdScrollPos--;
                     fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
                     timeScroll = 0;
                 }
@@ -1062,39 +1062,24 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
 
                 if ( fdScrollPos >= (int) line.length() ) {
                     fdScrollPos = - ( cols - margin - extra_margin );
-#ifdef USE_FONT_6x8
-                    line = string(-fdScrollPos, '\x07') + line;
-#else
-                    line = string(-fdScrollPos, '\xFA') + line;
-#endif
+                    line = string(-fdScrollPos, SCROLL_SEP_CHAR) + line;
                 } else if ( fdScrollPos < 0 ) {
-#ifdef USE_FONT_6x8
-                    line = string(-fdScrollPos, '\x07') + line;
-#else
-                    line = string(-fdScrollPos, '\xFA') + line;
-#endif
+                    line = string(-fdScrollPos, SCROLL_SEP_CHAR) + line;
                 } else {
                     line = line.substr(fdScrollPos);
                     if (!Config::osd_AltRot && line.length() <= cols - margin - extra_margin && full_line.length() > cols - margin - extra_margin) {
-#ifdef USE_FONT_6x8
-                        line += string(cols - margin - extra_margin, '\x07') + full_line;
-#else
-                        line += string(cols - margin - extra_margin, '\xFA') + full_line;
-#endif
+                        line += string(cols - margin - extra_margin, SCROLL_SEP_CHAR) + full_line;
                     }
                 }
 
-                if (fdScrollStatus==0)
-                {
+                if (!fdScrollStatus) {
                     if (fdScrollPos >= 0 && line.length() <= cols - margin - extra_margin) {
                         if (Config::osd_AltRot == 1) {
                             timeStartScroll = 0;
                             fdScrollStatus = 1;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     if (fdScrollPos == 0) {
                         fdScrollPos = -1;
                         timeStartScroll = 0;

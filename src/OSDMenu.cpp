@@ -64,6 +64,11 @@ using namespace std;
 
 extern Font Font6x8;
 
+int8_t OSD::rowScrollPos;
+int8_t OSD::rowScrollStatus;
+int OSD::rowTimeStartScroll;
+int OSD::rowTimeScroll;
+
 void OSD::menuSaveState(MenuState& state) {
     state.begin_row = begin_row;
     state.focus = focus;
@@ -755,9 +760,54 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
     if (line_len_to_tab != line.npos) {
         int line_len_without_tab = line.length() - 1;
         bool safe_limit = cols - margin >= line_len_without_tab;
-        line = line.substr(0, safe_limit ? line_len_to_tab : cols - margin - (line_len_without_tab - line_len_to_tab) - 1)
-             + string(safe_limit ? cols - margin - line_len_without_tab : 1, ' ')
-             + line.substr(line_len_to_tab + 1);
+
+        if ( safe_limit ) {
+            line = line.substr(0, line_len_to_tab) // first column
+                 + string(cols - margin - line_len_without_tab, ' ') // space fill
+                 + line.substr(line_len_to_tab + 1); // second column, fixed part, after tab
+        } else {
+            int second_column_len = line_len_without_tab - line_len_to_tab;
+            int max_first_column_size = cols - margin - second_column_len;
+
+            string first_column;
+
+            if (line_type == IS_FOCUSED || line_type == IS_SELECTED_FOCUSED) {
+                if ( rowScrollPos > line_len_to_tab ) {
+                    rowScrollPos = -max_first_column_size;
+                    first_column = string(-rowScrollPos, SCROLL_SEP_CHAR);
+                } else if ( rowScrollPos < 0 ) {
+                    first_column = string(-rowScrollPos, SCROLL_SEP_CHAR);
+                    if ( max_first_column_size - rowScrollPos > 0 ) first_column += line.substr(0, max_first_column_size + rowScrollPos);
+                } else {
+                    first_column = line.substr(rowScrollPos, std::min(max_first_column_size, line_len_to_tab - rowScrollPos));
+                    if (!Config::osd_AltRot && first_column.length() < max_first_column_size) {
+                        line += string(max_first_column_size - first_column.length(), SCROLL_SEP_CHAR) + first_column;
+                    }
+                }
+
+                if (Config::osd_AltRot == 1) {
+                    if (!rowScrollStatus) {
+                        if (rowScrollPos >= line_len_to_tab - max_first_column_size) {
+                            rowTimeStartScroll = 0;
+                            rowScrollStatus = 1;
+                        }
+                    } else {
+                        if (rowScrollPos == 0) {
+                            rowScrollPos = 0;
+                            rowTimeStartScroll = 0;
+                            rowScrollStatus = 0;
+                        }
+                    }
+                }
+
+            } else {
+                first_column = line.substr(0, cols - margin - second_column_len);
+            }
+
+            line = first_column // first column
+                 + string(max_first_column_size - first_column.length(), SCROLL_SEP_CHAR) // space fill
+                 + line.substr(line_len_to_tab + 1); // second column, fixed part, after tab
+        }
     }
 
     menuAt(virtual_row_num, 0);
@@ -1109,7 +1159,7 @@ void OSD::menuRedrawCheat(const string title, bool force) {
             for (int i = begin_row - 1; i < virtual_rows + begin_row - 2 && i < numRows; ++i) {
                 Cheat cheat = CheatMngr::getCheat(i);
                 if (cheat.pokeCount) { // this allways must be true
-                    menu += CheatMngr::getCheatName(cheat).substr(0,30) + "\t" + ((cheat.inputCount) ? " [?]" : "" ) + " [" + (cheat.enabled ? "*" : " ") + "]\n";
+                    menu += CheatMngr::getCheatName(cheat)/*.substr(0,30)*/ + "\t" + ((cheat.inputCount) ? " +" : "  " ) + " [" + (cheat.enabled ? "*" : " ") + "]\n";
                 }
             }
         }
@@ -1324,6 +1374,11 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     if ( statusbar != "" ) statusbarDraw(statusbar);
 
+    rowScrollPos = 0;
+    rowTimeStartScroll = 0;
+    rowTimeScroll = 0;
+    rowScrollStatus = 0;
+
     while (1) {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
@@ -1332,6 +1387,12 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
         // Process external keyboard
         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+
+            rowScrollPos = 0;
+            rowTimeStartScroll = 0;
+            rowTimeScroll = 0;
+            rowScrollStatus = 0;
+
             if (ESPectrum::readKbd(&Menukey)) {
                 if (!Menukey.down) continue;
                 if (proc_cb) {
@@ -1437,6 +1498,18 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
             }
 
+        } else {
+            if (rowTimeStartScroll < 125) rowTimeStartScroll++;
+        }
+printf("timeStartScroll:%d rowTimeScroll:%d rowScrollPos:%d rowScrollStatus:%d\n", rowTimeStartScroll, rowTimeScroll, rowScrollPos, rowScrollStatus);
+        if (rowTimeStartScroll == 125) {
+            rowTimeScroll++;
+            if (rowTimeScroll == 25) {
+                if (!rowScrollStatus) rowScrollPos++;
+                else                  rowScrollPos--;
+                PrintRow(focus, IS_FOCUSED);
+                rowTimeScroll = 0;
+            }
         }
 
         vTaskDelay(5 / portTICK_PERIOD_MS);

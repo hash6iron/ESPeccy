@@ -80,12 +80,16 @@ using namespace std;
 
 #define MAXSEARCHLEN 8
 
-
 // Input filter behavior
 
 #define FILTER_FORBIDDEN    0
 #define FILTER_ALLOWED      1
 
+#ifdef USE_FONT_6x8
+    #define SCROLL_SEP_CHAR '\x07'
+#else
+    #define SCROLL_SEP_CHAR '\xFA'
+#endif
 
 typedef struct MenuState
 {
@@ -194,6 +198,11 @@ public:
     static int timeScroll;
     static unsigned int elements;
     static unsigned int ndirs;
+
+    static int8_t rowScrollPos;
+    static int8_t rowScrollStatus;
+    static int rowTimeStartScroll;
+    static int rowTimeScroll;
 
     static uint8_t msgDialog(string title, string msg);
 

@@ -3636,6 +3636,9 @@ void OSD::HWInfo() {
     textout = " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n";
     VIDEO::vga.print(textout.c_str());
 
+//    size_t psramfree = info.total_free_bytes;
+//    size_t psramused = info.total_allocated_bytes;
+
     textout = " IDF Version   : " + (string)(esp_get_idf_version()) + "\n";
     VIDEO::vga.print(textout.c_str());
 
@@ -3654,6 +3657,12 @@ void OSD::HWInfo() {
 
     textout = " Free (MALLOC_CAP_32BIT)  : " + to_string(heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_32BIT)) + "\n";
     VIDEO::vga.print(textout.c_str());
+
+//    textout = " PSRAM Free               : " + to_string(psramfree) + "/" + to_string(psramfree + psramused) + "\n";
+//    VIDEO::vga.print(textout.c_str());
+//
+//    textout = " PSRAM Used               : " + to_string(psramused) + "/" + to_string(psramfree + psramused) + "\n";
+//    VIDEO::vga.print(textout.c_str());
 
     UBaseType_t wm;
     wm = uxTaskGetStackHighWaterMark(NULL);
