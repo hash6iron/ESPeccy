@@ -108,6 +108,7 @@ There's also no need to sort files using external utilities: the emulator create
 - SHIFT + F1 Hardware info
 - SHIFT + F2 Save snapshot (SNA, Z80, SP, P)
 - SHIFT + F6 Eject tape
+- SHIFT + F9 Cheats (POK)
 - Pause Pause
 - ScrollLock Switch "Cursor keys as joy" setting
 - PrntScr BMP screen capture (Folder /.c at SDCard)
@@ -118,6 +119,7 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 
 - 1 Main menu
 - 2 Load (SNA,Z80, SP, P)
+- S Save snapshot (SNA, Z80, SP, P)
 - 3 Load custom snapshot
 - 4 Save custom snapshot
 - 5 Select TAP file
@@ -133,6 +135,7 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 - T Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD) and MAX speed (black speed and no sound)
 - I Hardware info
 - O Input poke
+- U Cheats (POK)
 - P Pause
 - K Show current machine keyboard layout
 - Z,X,C,V Screen centering in CRT 15K mode
