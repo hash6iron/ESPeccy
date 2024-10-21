@@ -584,7 +584,7 @@ reset:
                         string new_tap = OSD::input( 1, mf_rows, Config::lang == 0 ? "Name: " :
                                                                  Config::lang == 1 ? "Nomb: " :
                                                                                      "Nome: "
-                                                                , 30
+                                                                , FILENAMELEN - 1
                                                                 , cols - 3 - 6
                                                                 , zxColor(7,1), zxColor(5,0)
                                                                 , ""
