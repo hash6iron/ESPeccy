@@ -186,6 +186,10 @@ void ShowStartMsg() {
     pos_x = OSD::osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
     pos_y = OSD::osdInsideY() + ( 50 - logo_h ) / 2;
 
+#ifdef CANARY_VERSION
+    pos_y -= 4;
+#endif
+
     logo+=8; // Skip header
     for (int i=0; i < logo_h; i++)
         for(int n=0; n<logo_w; n++)
