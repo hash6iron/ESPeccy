@@ -229,12 +229,16 @@ void OSD::drawOSD(bool bottom_info) {
             case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz       " : " Video mode: CRT 50hz       "; break;
         }
 
-//        VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
-
+#ifdef CANARY_VERSION
         VIDEO::vga.print(bottom_line.append(string(getShortBuildDate())+"c ").c_str()); // For Canary
+#else
+        VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
+#endif
     } else {
         VIDEO::vga.print(OSD_BOTTOM);
+#ifdef CANARY_VERSION
         VIDEO::vga.print((string(getShortBuildDate())+"c ").c_str()); // For Canary
+#endif
     }
     osdHome();
 }
@@ -3318,6 +3322,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                 pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
                 pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
+
+#ifdef CANARY_VERSION
+                pos_y -= 4;
+#endif
 
                 logo+=8; // Skip header
                 for (int i=0; i < logo_h; i++)
