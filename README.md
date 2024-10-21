@@ -1,4 +1,4 @@
-![ESPectrum](https://zxespectrum.speccy.org/wp-content/uploads/2023/05/ESPectrum-logo-v02-2.png)
+![ESPectrum](logos/ESPectrumCanary.png)
 
 This is an emulator of the Sinclair ZX Spectrum computer running on Espressif ESP32 SoC powered boards.
 
