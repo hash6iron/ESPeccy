@@ -135,9 +135,9 @@ public:
     static uint32_t audbufcnt;
     static uint32_t audbufcntover;
     static uint32_t audbufcntAY;
-    static uint32_t faudbufcntAY;
+//    static uint32_t faudbufcntAY;
     static int lastaudioBit;
-    static int faudioBit;
+//    static int faudioBit;
     static int samplesPerFrame;
     static bool AY_emu;
     static int Audio_freq[4];

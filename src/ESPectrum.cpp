@@ -85,9 +85,9 @@ signed char ESPectrum::aud_volume = ESP_VOLUME_DEFAULT;
 uint32_t ESPectrum::audbufcnt = 0;
 uint32_t ESPectrum::audbufcntover = 0;
 uint32_t ESPectrum::audbufcntAY = 0;
-uint32_t ESPectrum::faudbufcntAY = 0;
+//uint32_t ESPectrum::faudbufcntAY = 0;
 int ESPectrum::lastaudioBit = 0;
-int ESPectrum::faudioBit = 0;
+//int ESPectrum::faudioBit = 0;
 int ESPectrum::samplesPerFrame;
 bool ESPectrum::AY_emu = false;
 int ESPectrum::Audio_freq[4];
@@ -98,7 +98,7 @@ static int audioBitBuf = 0;
 static unsigned char audioBitbufCount = 0;
 QueueHandle_t audioTaskQueue;
 TaskHandle_t ESPectrum::audioTaskHandle;
-uint8_t *param;
+uint8_t param;
 
 //=======================================================================================
 // TAPE OSD
@@ -708,7 +708,7 @@ void ESPectrum::setup()
     if (overSamplebuf == NULL) printf("Can't allocate oversamplebuffer\n");
 
     // Create Audio task
-    audioTaskQueue = xQueueCreate(1, sizeof(uint8_t *));
+    audioTaskQueue = xQueueCreate(1, sizeof(uint8_t));
     // Latest parameter = Core. In ESPIF, main task runs on core 0 by default. In Arduino, loop() runs on core 1.
     xTaskCreatePinnedToCore(&ESPectrum::audioTask, "audioTask", 2048 /* 1024 /* 1536 */, NULL, configMAX_PRIORITIES - 1, &audioTaskHandle, 1);
 
@@ -1689,6 +1689,8 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
 //=======================================================================================
 IRAM_ATTR void ESPectrum::audioTask(void *unused) {
 
+    uint8_t rxparam;
+
     size_t written;
 
     // PWM Audio Init
@@ -1710,12 +1712,13 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
 
     for (;;) {
 
-        xQueueReceive(audioTaskQueue, &param, portMAX_DELAY);
+        xQueueReceive(audioTaskQueue, &rxparam, portMAX_DELAY);
 
         pwm_audio_write(audioBuffer, samplesPerFrame, &written, 5 / portTICK_PERIOD_MS);
 
-        xQueueReceive(audioTaskQueue, &param, portMAX_DELAY);
+        xQueueReceive(audioTaskQueue, &rxparam, portMAX_DELAY);
 
+#if 0
         // Finish fill of beeper oversampled audio buffers
         for (uint32_t faudbufcnt = audbufcntover * audioSampleDivider + audioBitbufCount;
                       faudbufcnt < (samplesPerFrame * audioSampleDivider);
@@ -1724,25 +1727,25 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
             audioBitBuf += faudioBit;
             if (++audioBitbufCount == audioSampleDivider) {
                 overSamplebuf[audbufcntover++] = audioBitBuf;
+                if ( audbufcntover > samplesPerFrame ) printf("overSamplebuf buffer overflow!\n");
                 audioBitBuf = 0;
                 audioBitbufCount = 0;
             }
         }
+#endif
 
         if (AY_emu) {
-
-            if (faudbufcntAY < samplesPerFrame)
-                AySound::gen_sound(samplesPerFrame - faudbufcntAY , faudbufcntAY);
-
+//            if (faudbufcntAY < samplesPerFrame)
+//                AySound::gen_sound(samplesPerFrame - faudbufcntAY , faudbufcntAY);
             for (int i = 0; i < samplesPerFrame; i++) {
                 int beeper = (overSamplebuf[i] / audioSampleDivider) + AySound::SamplebufAY[i];
                 audioBuffer[i] = beeper > 255 ? 255 : beeper; // Clamp
             }
-
-        } else
-
-            for (int i = 0; i < samplesPerFrame; i++)
+        } else {
+            for (int i = 0; i < samplesPerFrame; i++) {
                 audioBuffer[i] = overSamplebuf[i] / audioSampleDivider;
+            }
+        }
 
     }
 }
@@ -1813,9 +1816,18 @@ IRAM_ATTR void ESPectrum::loop() {
 
         CPU::loop();
 
-        // Process audio buffer
-        faudioBit = lastaudioBit;
-        faudbufcntAY = audbufcntAY;
+        // --- Process audio buffer
+        // Finish fill of beeper oversampled audio buffers
+        for (; audbufcnt < (samplesPerFrame * audioSampleDivider); audbufcnt++) {
+            audioBitBuf += lastaudioBit;
+            if (++audioBitbufCount == audioSampleDivider) {
+                overSamplebuf[audbufcntover++] = audioBitBuf;
+                audioBitBuf = 0;
+                audioBitbufCount = 0;
+            }
+        }
+        if (AY_emu && audbufcntAY < samplesPerFrame) AySound::gen_sound(samplesPerFrame - audbufcntAY, audbufcntAY);
+        // --- Process audio buffer end
 
         if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
 
