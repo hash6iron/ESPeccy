@@ -84,7 +84,6 @@ uint32_t* ESPectrum::overSamplebuf;
 signed char ESPectrum::aud_volume = ESP_VOLUME_DEFAULT;
 uint32_t ESPectrum::audbufcnt = 0;
 uint32_t ESPectrum::audbufcntover = 0;
-uint32_t ESPectrum::faudbufcnt = 0;
 uint32_t ESPectrum::audbufcntAY = 0;
 uint32_t ESPectrum::faudbufcntAY = 0;
 int ESPectrum::lastaudioBit = 0;
@@ -1718,9 +1717,12 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
         xQueueReceive(audioTaskQueue, &param, portMAX_DELAY);
 
         // Finish fill of beeper oversampled audio buffers
-        for (;faudbufcnt < (samplesPerFrame * audioSampleDivider); faudbufcnt++) {
+        for (uint32_t faudbufcnt = audbufcntover * audioSampleDivider + audioBitbufCount;
+                      faudbufcnt < (samplesPerFrame * audioSampleDivider);
+                      faudbufcnt++)
+        {
             audioBitBuf += faudioBit;
-            if(++audioBitbufCount == audioSampleDivider && audbufcntover < ESP_AUDIO_SAMPLES_PENTAGON ) {
+            if (++audioBitbufCount == audioSampleDivider) {
                 overSamplebuf[audbufcntover++] = audioBitBuf;
                 audioBitBuf = 0;
                 audioBitbufCount = 0;
@@ -1749,12 +1751,15 @@ IRAM_ATTR void ESPectrum::BeeperGetSample() {
 
     // Beeper audiobuffer generation (oversample)
     uint32_t audbufpos = CPU::tstates / audioOverSampleDivider;
-    for (;audbufcnt < audbufpos; audbufcnt++) {
-        audioBitBuf += lastaudioBit;
-        if(++audioBitbufCount == audioSampleDivider && audbufcntover < ESP_AUDIO_SAMPLES_PENTAGON ) {
-            overSamplebuf[audbufcntover++] = audioBitBuf;
-            audioBitBuf = 0;
-            audioBitbufCount = 0;
+    if ( audbufcntover < samplesPerFrame ) { // <-- this don't must be needed
+        for (;audbufcnt < audbufpos; audbufcnt++) {
+            audioBitBuf += lastaudioBit;
+            if (++audioBitbufCount == audioSampleDivider) {
+                overSamplebuf[audbufcntover++] = audioBitBuf;
+                audioBitBuf = 0;
+                audioBitbufCount = 0;
+                if (audbufcntover == samplesPerFrame) break; // <-- this don't must be needed
+            }
         }
     }
 
@@ -1809,7 +1814,6 @@ IRAM_ATTR void ESPectrum::loop() {
         CPU::loop();
 
         // Process audio buffer
-        faudbufcnt = audbufcnt;
         faudioBit = lastaudioBit;
         faudbufcntAY = audbufcntAY;
 
