@@ -85,7 +85,7 @@ signed char ESPectrum::aud_volume = ESP_VOLUME_DEFAULT;
 uint32_t ESPectrum::audbufcnt = 0;
 uint32_t ESPectrum::audbufcntover = 0;
 uint32_t ESPectrum::audbufcntAY = 0;
-//uint32_t ESPectrum::faudbufcntAY = 0;
+uint32_t ESPectrum::faudbufcntAY = 0;
 int ESPectrum::lastaudioBit = 0;
 //int ESPectrum::faudioBit = 0;
 int ESPectrum::samplesPerFrame;
@@ -1735,6 +1735,7 @@ IRAM_ATTR void ESPectrum::audioTask(void *unused) {
 #endif
 
         if (AY_emu) {
+            if (faudbufcntAY < samplesPerFrame) AySound::gen_sound(samplesPerFrame - faudbufcntAY, faudbufcntAY);
 //            if (faudbufcntAY < samplesPerFrame)
 //                AySound::gen_sound(samplesPerFrame - faudbufcntAY , faudbufcntAY);
             for (int i = 0; i < samplesPerFrame; i++) {
@@ -1826,7 +1827,7 @@ IRAM_ATTR void ESPectrum::loop() {
                 audioBitbufCount = 0;
             }
         }
-        if (AY_emu && audbufcntAY < samplesPerFrame) AySound::gen_sound(samplesPerFrame - audbufcntAY, audbufcntAY);
+        faudbufcntAY = audbufcntAY;
         // --- Process audio buffer end
 
         if (ESP_delay) xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
