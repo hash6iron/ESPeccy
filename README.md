@@ -1,27 +1,29 @@
-![ESPectrum](logos/ESPeccy.png)
+![ESPeccy](logos/ESPeccy.png)
 
-This is an emulator of the Sinclair ZX Spectrum computer running on Espressif ESP32 SoC powered boards.
+**ESPeccy** is an emulator of the Sinclair ZX Spectrum computer running on Espressif ESP32 SoC powered boards.
 
-Currently, it can be used with Lilygo's TTGo VGA32 board, Antonio Villena's ESPectrum board and ESP32-SBC-FabGL board from Olimex.
+Currently, it can be used with Lilygo's TTGo VGA32 board, Antonio Villena's ESPectrum board, and ESP32-SBC-FabGL board from Olimex.
 
-Just connect a VGA monitor or CRT TV (with special VGA-RGB cable needed), a PS/2 keyboard, prepare a SD Card as needed and power via microUSB.
+To use it, simply connect a VGA monitor or CRT TV (a special VGA-RGB cable is required), a PS/2 keyboard, prepare an SD card as needed, and power it via microUSB.
 
-This project is based on David Crespo excellent work on [ZX-ESPectrum-Wiimote](https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote) which is a fork of the [ZX-ESPectrum](https://github.com/rampa069/ZX-ESPectrum) project by Rampa and Queru which was inspired by Pete's Todd [PaseVGA](https://github.com/retrogubbins/paseVGA) project.
+This project is a fork of the great work of Víctor Iborra [Eremus] on the [ESPectrum](https://github.com/EremusOne/ESPectrum) project, which is based on the excellent work of David Crespo on [ZX-ESPectrum-Wiimote](https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote). The latter is a fork of the [ZX-ESPectrum](https://github.com/rampa069/ZX-ESPectrum) project by Rampa and Queru, inspired by Pete Todd's [PaseVGA](https://github.com/retrogubbins/paseVGA) project.
+
+This fork is maintained and developed by Juan José Ponteprino, known as [SplinterGU].
 
 ## Features
 
-- ZX Spectrum 48K, 128K and Pentagon 128K 100% cycle accurate emulation (no PSRAM needed).
+- ZX Spectrum 48K, 128K, and Pentagon 128K 100% cycle accurate emulation (no PSRAM needed).
 - Microdigital TK90X and TK95 models (w/Microdigital ULA at 50 and 60hz) emulation.
-- State of the art Z80 emulation (Authored by [José Luis Sánchez](https://github.com/jsanchezv/z80cpp))
-- Selectable Sinclair 48K, Sinclair 128K and Amstrad +2 english and spanish ROMs.
-- Selectable TK90X v1, v2 and v3 (Rodolfo Guerra) ROMs.
-- Possibility of using one 48K, one 128K and one TK90X custom ROM with easy flashing procedure from SD card.
-- ZX81+ IF2 ROM by courtesy Paul Farrow with .P file loading from SD card.
-- 6 bpp VGA output in three modes: Standard VGA (60 and 70hz), VGA with every machine real vertical frequency and CRT 15khz with real vert. freq. also.
+- State of the art Z80 emulation (Authored by [José Luis Sánchez](https://github.com/jsanchezv/z80cpp)).
+- Selectable Sinclair 48K, Sinclair 128K, and Amstrad +2 English and Spanish ROMs.
+- Selectable TK90X v1, v2, and v3 (Rodolfo Guerra) ROMs.
+- Possibility of using one 48K, one 128K, and one TK90X custom ROM with easy flashing procedure from SD card.
+- ZX81+ IF2 ROM by courtesy of Paul Farrow with .P file loading from SD card.
+- 6 bpp VGA output in three modes: Standard VGA (60 and 70hz), VGA with every machine's real vertical frequency, and CRT 15khz with real vert. freq. also.
 - VGA fake scanlines effect.
-- Support for two aspect ratios: 16:9 or 4:3 monitors (using 360x200 or 320x240 modes)
+- Support for two aspect ratios: 16:9 or 4:3 monitors (using 360x200 or 320x240 modes).
 - Complete overscan supported in CRT 15Khz mode (at 352x272 resolution for 50hz machines and 352x224 for 60hz ones).
-- Multicolor attribute effects emulated (Bifrost*2, Nirvana and Nirvana+ engines).
+- Multicolor attribute effects emulated (Bifrost*2, Nirvana, and Nirvana+ engines).
 - Border effects emulated (Aquaplane, The Sentinel, Overscan demo).
 - Floating bus effect emulated (Arkanoid, Sidewize).
 - Snow effect accurate emulation (as [described](https://spectrumcomputing.co.uk/forums/viewtopic.php?t=8240) by Weiv and MartianGirl).
@@ -29,18 +31,18 @@ This project is based on David Crespo excellent work on [ZX-ESPectrum-Wiimote](h
 - AY-3-8912 sound emulation.
 - Beeper & Mic emulation (Cobra’s Arc).
 - Dual PS/2 keyboard support: you can connect two devices using PS/2 protocol at the same time.
-- PS/2 Joystick emulation (Cursor, Sinclair, Kempston and Fuller).
+- PS/2 Joystick emulation (Cursor, Sinclair, Kempston, and Fuller).
 - Two real joysticks support (Up to 8 button joysticks) using [ESPjoy adapter](https://antoniovillena.es/store/product/espjoy-for-espectrum/) or DIY DB9 to PS/2 converter.
-- Emulation of Betadisk interface with reset to tr-dos option, four drives and TRD (read and write) and SCL (read only) support.
+- Emulation of Betadisk interface with reset to tr-dos option, four drives, and TRD (read and write) and SCL (read only) support.
 - Realtime (with OSD) TZX and TAP file loading.
 - Flashload of TAP files.
-- Rodolfo Guerra's ROMs fast load routines support with on the fly standard speed blocks translation.
-- Virtual tape system with support for SAVE command and block renaming, deleting and moving.
-- SNA, Z80 and SP snapshot saving and loading.
+- Rodolfo Guerra's ROMs fast load routines support with on-the-fly standard speed blocks translation.
+- Virtual tape system with support for the SAVE command and block renaming, deleting, and moving.
+- SNA, Z80, and SP snapshot saving and loading.
 - Persistent snapshot (in slots) saving and loading.
 - Rename and delete persistent snapshot (in slots).
-- Complete file navigation system with autoindexing, folder support and search functions.
-- Complete OSD menu in three languages: English, Spanish and Portuguese.
+- Complete file navigation system with auto-indexing, folder support, and search functions.
+- Complete OSD menu in three languages: English, Spanish, and Portuguese.
 - BMP screen capture to SD Card (thanks David Crespo 😉).
 - Menu navigation with cursor keys.
 - Fullerbox sound in ZX-Spectrum.
@@ -53,25 +55,25 @@ This project is based on David Crespo excellent work on [ZX-ESPectrum-Wiimote](h
 
 ## Installing
 
-You can flash the binaries directly to the board if do not want to mess with code and compilers. Check the [releases section](https://github.com/EremusOne/ZX-ESPectrum-IDF/releases)
+You can flash the binaries directly to the board if you do not want to mess with code and compilers. Check the [releases section](https://github.com/SplinterGU/ESPeccy/releases).
 
 ## Compiling and installing
 
 Quick start from PlatformIO:
-- Clone this repo and Open from VSCode/PlatFormIO
+- Clone this repo and Open from VSCode/PlatformIO
 - Execute task: Upload
 - Enjoy
 
-Windows, GNU/Linux and MacOS/X. This version has been developed using PlatformIO.
+Windows, GNU/Linux, and MacOS/X. This version has been developed using PlatformIO.
 
-#### Install platformIO:
+#### Install PlatformIO:
 
 - There is an extension for Atom and VSCode, please check [this website](https://platformio.org/).
-- Select your board, pico32 which behaves just like the TTGo VGA32.
+- Select your board, pico32, which behaves just like the TTGo VGA32.
 
 #### Compile and flash it
 
-`PlatformIO > Project Tasks > Build `, then
+`PlatformIO > Project Tasks > Build`, then
 
 `PlatformIO > Project Tasks > Upload`.
 
@@ -81,7 +83,7 @@ Run these tasks (`Upload` also does a `Build`) whenever you make any change in t
 
 The SD card should be formatted in FAT16 / FAT32.
 
-Just that: then put your .sna, .z80, .p, .tap, .trd and .scl whenever you like and create and use folders as you need.
+Just that: then put your .sna, .z80, .p, .tap, .trd, and .scl wherever you like and create and use folders as you need.
 
 There's also no need to sort files using external utilities: the emulator creates and updates indexes to sort files in folders by itself.
 
@@ -90,7 +92,7 @@ There's also no need to sort files using external utilities: the emulator create
 - F1 Main menu
 - F2 Load snapshot (SNA, Z80, SP, P)
 - F3 Load custom snapshot
-- F4 Save customn snapshot
+- F4 Save custom snapshot
 - F5 Select TAP file
 - F6 Play/Stop tape
 - F7 Tape Browser
@@ -100,7 +102,7 @@ There's also no need to sort files using external utilities: the emulator create
 - F11 Hard reset
 - F12 Reset ESP32
 - CTRL + F1 Show current machine keyboard layout
-- CTRL + F2 Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD) and MAX speed (black speed and no sound)
+- CTRL + F2 Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD), and MAX speed (black speed and no sound)
 - CTRL + F5..F8 Screen centering in CRT 15K/50hz mode
 - CTRL + F9 Input poke
 - CTRL + F10 NMI
@@ -132,7 +134,7 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 - W Reset ESP32
 - E Eject tape
 - R Reset to TR-DOS
-- T Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD) and MAX speed (black speed and no sound)
+- T Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD), and MAX speed (black speed and no sound)
 - I Hardware info
 - O Input poke
 - U Cheats (POK)
@@ -144,9 +146,9 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 
 ## How to flash custom ROMs
 
-Three custom ROMs can be installed: one for the 48K architecture, another for the 128K architecture and another one for TK90X.
+Three custom ROMs can be installed: one for the 48K architecture, another for the 128K architecture, and another one for TK90X.
 
-The "Update firmware" option is now changed to the "Update" menu with four options: firmware, custom ROM 48K, custom ROM 128K and custom ROM TK90X.
+The "Update firmware" option is now changed to the "Update" menu with four options: firmware, custom ROM 48K, custom ROM 128K, and custom ROM TK90X.
 
 You can put the ROM files (.rom extension) anywhere and select it with the browser.
 
@@ -164,11 +166,7 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 
 ## Project links
 
-- [Website](https://zxespectrum.speccy.org)
-- [Patreon](https://www.patreon.com/ESPectrum)
-- [Youtube Channel](https://www.youtube.com/@ZXESPectrum)
-- [Twitter](https://twitter.com/ZX_ESPectrum)
-- [Telegram](https://t.me/ZXESPectrum)
+*Currently in preparation.*
 
 ## Supported hardware
 
@@ -178,6 +176,7 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 
 ## Thanks to
 
+- Víctor Iborra [Eremus](https://github.com/EremusOne/ESPectrum) for his work on the original ESPectrum project.
 - [David Crespo](https://youtube.com/Davidprograma) for his friendly help and support and his excellent work at his [Youtube Channel](https://youtube.com/Davidprograma) and the [ZX-ESPectrum-Wiimote](https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote) emulator.
 - Pete Todd, developer of the original project [PaseVGA](https://github.com/retrogubbins/paseVGA).
 - Ramón Martínez ["Rampa"](https://github.com/rampa069) and Jorge Fuertes ["Queru"](https://github.com/jorgefuertes) who improved PaseVGA in the first [ZX-ESPectrum](https://github.com/rampa069/ZX-ESPectrum).
@@ -222,3 +221,4 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 - [Lord Alan Michael Sugar](https://en.wikipedia.org/wiki/Alan_Sugar).
 - [Investrónica team](https://es.wikipedia.org/wiki/Investr%C3%B3nica).
 - [Matthew Smith](https://en.wikipedia.org/wiki/Matthew_Smith_(games_programmer)) for [Manic Miner](https://en.wikipedia.org/wiki/Manic_Miner).
+
