@@ -409,6 +409,7 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 #endif
 
 static const char *AboutMsg[NLANGS][5] = {
+	// English
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\r" \
@@ -488,6 +489,7 @@ static const char *AboutMsg[NLANGS][5] = {
 	DEDICATORIA
 #endif
 	},
+	// Español
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\r" \
@@ -567,6 +569,7 @@ static const char *AboutMsg[NLANGS][5] = {
 	DEDICATORIA
 #endif
 	},
+	// Portugues
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\r" \
@@ -575,30 +578,30 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
-	"\nA1Basado en ZX-ESPectrum-Wiimote\r"\
+	"\nA1Baseado no ZX-ESPectrum-Wiimote\r"\
 	"(C)2020-2023 David Crespo"
 	,
-	"\nB1Inspirado en proyectos anteriores\r"\
-	"de Pete Todd y Rampa & Queru\r"\
+	"\nB1Inspirado em projetos anteriores\r"\
+	"de Pete Todd e Rampa & Queru\r"\
 	"\r"\
-	"\nC1Emulaci\xA2n Z80 por J.L. S\xA0nchez\r"\
+	"\nC1Emula\x87\x84o Z80 por J.L. S\xA0nchez\r"\
 	"\nD1Driver VGA por BitLuni\r"\
-	"\nE1Librer\xA1" "a AY-3-8912 por A. Sashnov\r"\
+	"\nE1Livraria AY-3-8912 por A. Sashnov\r"\
 	"\nF1Driver PS2 por Fabrizio di Vittorio"
 	,
 	"\nF1Colaboradores:\r"\
 	"\r"\
-	"\nA1ackerman        \nF1C\xA2" "digo e ideas\r"\
-	"\nB1Armand          \nF1Testing y difusi\xA2n\r"\
-	"\nC1azesmbog        \nF1Testing e ideas\r"\
-	"\nD1Carlo Brini     \nF1ESPectrum en UK ;)\r"\
+	"\nA1ackerman        \nF1C\xA2" "digo e ideias\r"\
+	"\nB1Armand          \nF1Teste e difus\x84o\r"\
+	"\nC1azesmbog        \nF1Teste e ideias\r"\
+	"\nD1Carlo Brini     \nF1ESPectrum em UK ;)\r"\
 	"\nE1David Carri\xA2n   \nF1C\xA2" "digo h/w, teclado ZX\r"\
-	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)\r"\
-	"\nE1Ramon Mart\xA1nez  \nF1Mejoras emulaci\xA2n AY\r"\
-	"\nB1Ron             \nF1Testing y difusi\xA2n\r"\
-	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
-	"\nD1Antonio Villena \nF1Soporte hardware\r"\
-	"\nE1ZjoyKiLer       \nF1Testing e ideas"
+	"\nA1Rodolfo Guerra  \nF1ESPectrum na LATAM ;)\r"\
+	"\nE1Ramon Mart\xA1nez  \nF1Melhorias na emula\x87\x84o AY\r"\
+	"\nB1Ron             \nF1Teste e difus\x84o\r"\
+	"\nC1J.L. S\xA0nchez    \nF1Melhorias no core Z80\r"\
+	"\nD1Antonio Villena \nF1Suporte de hardware\r"\
+	"\nE1ZjoyKiLer       \nF1Teste e ideias"
 #if 0
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
@@ -617,28 +620,28 @@ static const char *AboutMsg[NLANGS][5] = {
 	PATREONS5
 #endif
 	,
-	"\nF1Gracias por su ayuda y donaciones a:\r"\
+	"\nF1Obrigado pela sua ajuda e doa\x87\x94" "es a:\r"\
 	"\r"\
 	"\nA1Abel Bayon @Baycorps \nF1Amstrad Eterno\r"\
 	"\nB1Pablo Forcen Soler \nF1AUA\r"\
 	"\nC1Jordi Ramos Montes\r"
 	"\nD1Tsvetan Usunov \nF1Olimex Ltd.\r"\
 	"\r"\
-	"\nF1ZX81+ ROM incluida por cortes\xA1" "a de:\r"\
+	"\nF1ZX81+ ROM inclu\xA1" "da como cortesia de:\r"\
 	"\r"\
 	"\nA1Paul Farrow"\
 	,
-	"\nF1Gracias tambi\x82n a:\r"\
+	"\nF1Obrigado tamb\x82m a:\r"\
 	"\r"\
-	"\nA1Retrowiki.es \nF1y su magn\xA1" "fica comunidad\r"\
-	"\nB1Ron \nF1por su genial RetroCrypta\r"\
+	"\nA1Retrowiki.es \nF1e sua magn\xA1" "fica comunidade\r"\
+	"\nB1Ron \nF1por sua brilhante RetroCrypta\r"\
 	"\nC1Viejoven FX\nF1, \nD1J.Ortiz \"El Spectrumero\"\r"
 	"\nE1J.C. Gonz\xA0lez Amestoy \nF1por RVM\r"\
 	"\nA1VidaExtraRetro, \nB1C\x82sar Nicol\xA0s-Gonz\xA0lez\r"\
-	"\nC1Rodolfo Guerra, \nD1Todos los creadores en\r"\
-	"el servidor ZXSpectrum en Discord\r"\
+	"\nC1Rodolfo Guerra, \nD1Todos os criadores no\r"\
+	"servidor ZXSpectrum no Discord\r"\
 	"\r"\
-	"\nF1y, por supuesto, a:\r"\
+	"\nF1e, \x82 claro, a:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
 #if 0
