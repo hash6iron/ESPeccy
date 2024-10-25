@@ -4,12 +4,12 @@ import binascii
 
 # Configuración de archivos y nombres de variables
 variables = [
-    ("ESPectrum_logo", "espectrum-logo-canary-cropped.png", "espectrum-logo-cropped.png"),
-    ("Layout_ZX", "Layout_ZX-canary.png", "Layout_ZX.png"),
-    ("Layout_TK", "Layout_TK-canary.png", "Layout_TK.png"),
-    ("ZX_Kbd", "ZX_Kbd-canary.png", "ZX_Kbd.png"),
-    ("PS2_Kbd", "PS2_Kbd-canary.png", "PS2_Kbd.png"),
-    ("Layout_ZX81", "Layout_ZX81-canary.png", "Layout_ZX81.png"),
+    ("ESPectrum_logo", "ESPeccy-logo-cropped.png", "espectrum-logo-cropped.png"),
+    ("Layout_ZX", "Layout_ZX-ESPeccy.png", "Layout_ZX.png"),
+    ("Layout_TK", "Layout_TK-ESPeccy.png", "Layout_TK.png"),
+    ("ZX_Kbd", "ZX_Kbd-ESPeccy.png", "ZX_Kbd.png"),
+    ("PS2_Kbd", "PS2_Kbd-ESPeccy.png", "PS2_Kbd.png"),
+    ("Layout_ZX81", "Layout_ZX81-ESPeccy.png", "Layout_ZX81.png"),
 ]
 
 # Función para ejecutar EBF-convert.py y generar archivos .ebf8
@@ -35,20 +35,20 @@ def hex_dump(ebf8_file):
     return formatted_hex
 
 # Generar el bloque de código C para cada variable
-def generate_include(variable_name, canary_file, normal_file):
+def generate_include(variable_name, ESPeccy_file, normal_file):
     # Generar los archivos .ebf8 para ambas versiones
-    generate_ebf8_files(canary_file)
+    generate_ebf8_files(ESPeccy_file)
     generate_ebf8_files(normal_file)
 
     # Obtener el volcado hexadecimal para ambas versiones
-    canary_hex = hex_dump(canary_file.replace(".png", ".ebf8"))
+    ESPeccy_hex = hex_dump(ESPeccy_file.replace(".png", ".ebf8"))
     normal_hex = hex_dump(normal_file.replace(".png", ".ebf8"))
 
     # Generar el bloque de código C
     return f"""
 const uint8_t {variable_name}[] = {{
-#ifdef CANARY_VERSION
-    {canary_hex}
+#ifdef ESPECCY_VERSION
+    {ESPeccy_hex}
 #else
     {normal_hex}
 #endif
@@ -59,8 +59,8 @@ const uint8_t {variable_name}[] = {{
 def main():
     include = "#ifndef __IMAGES_H\n#define __IMAGES_H\n\n"
 
-    for variable_name, canary_file, normal_file in variables:
-        include += generate_include(variable_name, canary_file, normal_file)
+    for variable_name, ESPeccy_file, normal_file in variables:
+        include += generate_include(variable_name, ESPeccy_file, normal_file)
 
     include += "\n#endif // __IMAGES_H\n"
 

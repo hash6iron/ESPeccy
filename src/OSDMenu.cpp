@@ -814,11 +814,11 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
 
     VIDEO::vga.print(" ");
 
-    if ((!is_menu || virtual_row_num == 0) && line.substr(0,9) == "ESPectrum") {
+    if ((!is_menu || virtual_row_num == 0) && line.substr(0,7) == "ESPeccy") {
         VIDEO::vga.setTextColor(zxColor(16,0), zxColor(0, 0));
         VIDEO::vga.print("ESP");
         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(0, 0));
-        VIDEO::vga.print(("ectrum " + Config::arch).c_str());
+        VIDEO::vga.print(("eccy " + Config::arch).c_str());
         for (uint8_t i = line.length(); i < (cols - margin); ++i)
             VIDEO::vga.print(" ");
     } else {

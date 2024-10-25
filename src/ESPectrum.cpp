@@ -185,10 +185,6 @@ void ShowStartMsg() {
     pos_x = OSD::osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
     pos_y = OSD::osdInsideY() + ( 50 - logo_h ) / 2;
 
-#ifdef CANARY_VERSION
-    pos_y -= 4;
-#endif
-
     logo+=8; // Skip header
     for (int i=0; i < logo_h; i++)
         for(int n=0; n<logo_w; n++)
@@ -196,34 +192,28 @@ void ShowStartMsg() {
 
     OSD::osdAt(7, 1);
     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
-    VIDEO::vga.print(StartMsg[Config::lang]);
 
-    VIDEO::vga.setTextColor(zxColor(16,0), zxColor(1, 0));
-    OSD::osdAt(9, 1);
-    VIDEO::vga.print("ESP");
+    char nextChar;
+    const char *text = StartMsg[Config::lang];
 
-    switch (Config::lang) {
-        case 0: OSD::osdAt(7, 25);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(13, 13);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(17, 4);
-                break;
-        case 1: OSD::osdAt(7, 28);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(13, 13);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(17, 4);
-                break;
-        case 2: OSD::osdAt(7, 27);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(13, 18);
-                VIDEO::vga.print("ESP");
-                OSD::osdAt(17, 15);
+    int osdCol = 0, osdRow = 0;
+
+    for ( int i = 0; i < strlen(text); ++i ) {
+        nextChar = text[i];
+        if (nextChar != 13) {
+            if (nextChar == 10) {
+                char fore = text[++i];
+                char back = text[++i];
+                int foreint = (fore >= 'A') ? (fore - 'A' + 10) : (fore - '0');
+                int backint = (back >= 'A') ? (back - 'A' + 10) : (back - '0');
+                VIDEO::vga.setTextColor(zxColor(foreint & 0x7, foreint >> 3), zxColor(backint & 0x7, backint >> 3));
+                continue;
+            }
+            VIDEO::vga.print((const char)nextChar);
+        } else {
+            VIDEO::vga.print("\n");
+        }
     }
-
-    VIDEO::vga.setTextColor(zxColor(3, 1), zxColor(1, 0));
-    VIDEO::vga.print("patreon.com/ESPectrum");
 
     char msg[38];
     for (int i=START_MSG_DURATION; i >= 0; i--) {

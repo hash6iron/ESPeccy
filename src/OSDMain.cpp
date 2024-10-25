@@ -87,7 +87,7 @@ using namespace std;
 #else
 #define OSD_W (OSD_FONT_W * OSD_COLS + 8)
 #endif
-#define OSD_H 184
+#define OSD_H 192
 #define OSD_MARGIN 4
 
 extern Font Font6x8;
@@ -220,7 +220,7 @@ void OSD::drawOSD(bool bottom_info) {
     VIDEO::vga.setFont(Font6x8);
     osdHome();
     VIDEO::vga.print(OSD_TITLE);
-    osdAt(21, 0);
+    osdAt(22, 0);
     if (bottom_info) {
         string bottom_line;
         switch(Config::videomode) {
@@ -229,15 +229,15 @@ void OSD::drawOSD(bool bottom_info) {
             case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz       " : " Video mode: CRT 50hz       "; break;
         }
 
-#ifdef CANARY_VERSION
-        VIDEO::vga.print(bottom_line.append(string(getShortBuildDate())+"c ").c_str()); // For Canary
+#ifdef ESPECCY_VERSION
+        VIDEO::vga.print(bottom_line.append("      c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
 #else
         VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
 #endif
     } else {
         VIDEO::vga.print(OSD_BOTTOM);
-#ifdef CANARY_VERSION
-        VIDEO::vga.print((string(getShortBuildDate())+"c ").c_str()); // For Canary
+#ifdef ESPECCY_VERSION
+        VIDEO::vga.print(("      c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
 #endif
     }
     osdHome();
@@ -1509,7 +1509,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             // Main menu
             menu_saverect = false;
             menu_level = 0;
-            uint8_t opt = menuRun("ESPectrum " + Config::arch + "\n" + MENU_MAIN[Config::lang]);
+            uint8_t opt = menuRun("ESPeccy " + Config::arch + "\n" + MENU_MAIN[Config::lang]);
 
             if (opt == 1) {
                 // ***********************************************************************************
@@ -3323,10 +3323,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
                 pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
 
-#ifdef CANARY_VERSION
-                pos_y -= 4;
-#endif
-
                 logo+=8; // Skip header
                 for (int i=0; i < logo_h; i++)
                     for(int n=0; n<logo_w; n++)
@@ -3344,11 +3340,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 uint16_t cursorCol2 = zxColor(1,0);
 
                 while (1) {
-
                     if (msgDelay == 0) {
                         nextChar = AboutMsg[Config::lang][msgIndex][msgChar];
-                        if (nextChar != 13) {
-                            if (nextChar == 10) {
+                        if (nextChar != 13) { // \r
+                            if (nextChar == 10) { // \n
                                 char fore = AboutMsg[Config::lang][msgIndex][++msgChar];
                                 char back = AboutMsg[Config::lang][msgIndex][++msgChar];
                                 int foreint = (fore >= 'A') ? (fore - 'A' + 10) : (fore - '0');
@@ -3359,13 +3354,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             } else {
                                 VIDEO::vga.drawChar(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), nextChar);
                             }
-                            msgChar++;
                         } else {
-                            VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, zxColor(1, 0) );
+                            VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W, OSD_FONT_H, zxColor(1, 0) );
                         }
+
                         osdCol++;
-                        if (osdCol == 38) {
-                            if (osdRow == 12) {
+
+                        if (nextChar && nextChar != 13) msgChar++;
+
+                        if (osdCol == OSD_COLS - 2) {
+                            if (osdRow == 13 || !nextChar) {
                                 osdCol--;
                                 msgDelay = 192;
                             } else {

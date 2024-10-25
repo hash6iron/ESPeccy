@@ -65,10 +65,9 @@ static const char *ERR_FS_EXT_FAIL[NLANGS] = { ERR_FS_EXT_FAIL_EN, ERR_FS_EXT_FA
 #define ERR_DIR_OPEN "Cannot open directory!"
 
 // OSD
-#define OSD_TITLE  " ESPectrum - The ESP32 powered emulator "
-// #define OSD_BOTTOM " SCIENCE LEADS TO PROGRESS              "
+#define OSD_TITLE  " ESPeccy - The ESP32 powered emulator       "
 //#define OSD_BOTTOM " zxespectrum.speccy.org     " EMU_VERSION
-#define OSD_BOTTOM " zxespectrum.speccy.org     "
+#define OSD_BOTTOM "                            "
 
 static const char *OSD_MSGDIALOG_YES[NLANGS] = { OSD_MSGDIALOG_YES_EN, OSD_MSGDIALOG_YES_ES, OSD_MSGDIALOG_YES_PT };
 static const char *OSD_MSGDIALOG_NO[NLANGS] = { OSD_MSGDIALOG_NO_EN, OSD_MSGDIALOG_NO_ES, OSD_MSGDIALOG_NO_PT };
@@ -347,7 +346,7 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nF1| |_| |   \nE1| \\  / | __ _ _ __| |_ __ _\r"\
 	"\nF1 \\__, |   \nE1| |\\/| |/ _` | '__| __/ _` |\r"\
 	"\nF1  __/ |   \nE1| |  | | (_| | |  | || (_| |\r"\
-	"\nF1 |___/    \nE1|_|  |_|\\__,_|_|   \\__\\__,_|\r"
+	"\nF1 |___/    \nE1|_|  |_|\\__,_|_|   \\__\\__,_|"
 
 // 38 characters wide for about text
 #define PATREONS "\r"\
@@ -361,7 +360,7 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nE1Juanje \nB1Ra\xA3l Jim\x82nez \nC1Juanma Mart\xA1n\r"\
 	"\nD1Seraf\xA1n Morat\xA2n \nE1Eduard Ruiz\r"\
 	"\nB1Igor Peruchi \nC1In\xA0" "cio Santos\r"\
-	"\nD1Destroyer\r"
+	"\nD1Destroyer"
 
 #define PATREONS2 "\r"\
 	"\nA1The Manic Miners:\r"\
@@ -374,7 +373,7 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nE1Luis Maldonado \nB1Mananuk \nC1Ignacio Monge\r"\
 	"\nD1Vicente Morales \nE1Pablo Mu\xA4oz\r"\
 	"\nB1Javi Ortiz \nC1Miguel Angel P\x82rez\r"\
-	"\nD1Pascual P\x82rez \nE1Juan Jos\x82 Piernas\r"\
+	"\nD1Pascual P\x82rez \nE1Juan Jos\x82 Piernas"\
 
 #define PATREONS3 "\r"\
 	"\nA1The Manic Miners:\r"\
@@ -387,7 +386,7 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nE1Radek Wojciechowski \nB1Jes\xA3s Mu\xA4oz\r"\
 	"\nC1Antonio Jes\xA3s S\xA0nchez \nD1Gregorio P\x82rez\r"\
 	"\nE1Leonardo Coca\xA4" "a \nB1Manuel Cuenca\r"\
-	"\nC1Ovi P. \nD1Jos\x82 Medina \nE1Miguel A. Montejo\r"
+	"\nC1Ovi P. \nD1Jos\x82 Medina \nE1Miguel A. Montejo"
 
 #define PATREONS4 "\r"\
 	"\nA1The Manic Miners:\r"\
@@ -400,23 +399,18 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nE1Denis Estevez \nB1Fasih Rehman\r"\
 	"\nC1Fernando Mirones \nD1Ismael Salvador\r"\
 	"\nE1Jorge Plazas \nB1Juan A. Rubio\r"\
-	"\nC1Lucio Rial \nD1Mark Cohen\r"
+	"\nC1Lucio Rial \nD1Mark Cohen"
 
 #define PATREONS5 "\r"\
 	"\nA1The Manic Miners:\r"\
 	"\r"\
 	"\nB1Mike van der Lee \nC1Monica Compa\xA4\r"\
 	"\nD1Roberto Paciello \nE1Ronny Verminck\r"\
-	"\nB1Trevor Boys \nC1Wayne Burton\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nB1Trevor Boys \nC1Wayne Burton"
 
 static const char *AboutMsg[NLANGS][11] = {
 	{
+	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
@@ -429,7 +423,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1Z80 emulation by J.L. S\xA0nchez\r"\
 	"\nD1VGA driver by BitLuni\r"\
 	"\nE1AY-3-8912 library by A. Sashnov\r"\
-	"\nF1PS2 driver by Fabrizio di Vittorio\r"
+	"\nF1PS2 driver by Fabrizio di Vittorio"
 	,
 	"\nF1Collaborators:\r"\
 	"\r"\
@@ -439,26 +433,15 @@ static const char *AboutMsg[NLANGS][11] = {
 
 	"\nD1Carlo Brini     \nF1Our UK guy ;)\r"\
 	"\nE1David Carri\xA2n   \nF1H/W code, ZX kbd\r"\
-	"\nA1Rodolfo Guerra  \nF1Our LATAM guy ;)\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Rodolfo Guerra  \nF1Our LATAM guy ;)"
 	,
 	"\nF1Collaborators:\r"\
 	"\r"\
 	"\nB1Ram\xA2n Mart\xA1nez  \nF1AY emul. improvements\r"\
-	"\nC1J.J. Ponteprino \nF1Code & improvements\r"\
 	"\nD1Ron             \nF1Testing & broadcasting\r"\
 	"\nE1J.L. S\xA0nchez    \nF1Z80 core improvements\r"\
 	"\nA1Antonio Villena \nF1Hardware support\r"\
-	"\nB1ZjoyKiLer       \nF1Testing & ideas\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nB1ZjoyKiLer       \nF1Testing & ideas"
 	,
 	"\nF1Big thanks to our Patreons:\r"\
 	PATREONS
@@ -484,10 +467,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1ZX81+ ROM included courtesy of:\r"\
 	"\r"\
-	"\nA1Paul Farrow\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Paul Farrow"
 	,
 	"\nF1Thanks also to:\r"\
 	"\r"\
@@ -501,11 +481,12 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1and, of course, to:\r"\
 	"\r"\
-	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h\r"
+	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
 	,
 	DEDICATORIA
 	},
 	{
+	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
@@ -518,7 +499,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1Emulaci\xA2n Z80 por J.L. S\xA0nchez\r"\
 	"\nD1Driver VGA por BitLuni\r"\
 	"\nE1Librer\xA1" "a AY-3-8912 por A. Sashnov\r"\
-	"\nF1Driver PS2 por Fabrizio di Vittorio\r"
+	"\nF1Driver PS2 por Fabrizio di Vittorio"
 	,
 	"\nF1Colaboradores:\r"\
 	"\r"\
@@ -527,27 +508,15 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1azesmbog        \nF1Testing e ideas\r"\
 	"\nD1Carlo Brini     \nF1ESPectrum en UK ;)\r"\
 	"\nE1David Carri\xA2n   \nF1C\xA2" "digo h/w, teclado ZX\r"\
-	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)"\
 	,
 	"\nF1Colaboradores:\r"\
 	"\r"\
 	"\nE1Ramon Mart\xA1nez  \nF1Mejoras emulaci\xA2n AY\r"\
-	"\nA1J.J. Ponteprino \nF1C\xA2" "digo y mejoras\r"\
 	"\nB1Ron             \nF1Testing y difusi\xA2n\r"\
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
-	"\nE1ZjoyKiLer       \nF1Testing e ideas\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nE1ZjoyKiLer       \nF1Testing e ideas"\
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -573,10 +542,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1ZX81+ ROM incluida por cortes\xA1" "a de:\r"\
 	"\r"\
-	"\nA1Paul Farrow\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Paul Farrow"\
 	,
 	"\nF1Gracias tambi\x82n a:\r"\
 	"\r"\
@@ -590,11 +556,12 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
-	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h\r"
+	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
 	,
 	DEDICATORIA
 	},
 	{
+	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
@@ -607,7 +574,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1Emulaci\xA2n Z80 por J.L. S\xA0nchez\r"\
 	"\nD1Driver VGA por BitLuni\r"\
 	"\nE1Librer\xA1" "a AY-3-8912 por A. Sashnov\r"\
-	"\nF1Driver PS2 por Fabrizio di Vittorio\r"
+	"\nF1Driver PS2 por Fabrizio di Vittorio"
 	,
 	"\nF1Colaboradores:\r"\
 	"\r"\
@@ -616,27 +583,15 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1azesmbog        \nF1Testing e ideas\r"\
 	"\nD1Carlo Brini     \nF1ESPectrum en UK ;)\r"\
 	"\nE1David Carri\xA2n   \nF1C\xA2" "digo h/w, teclado ZX\r"\
-	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)"\
 	,
 	"\nF1Colaboradores:\r"\
 	"\r"\
 	"\nE1Ramon Mart\xA1nez  \nF1Mejoras emulaci\xA2n AY\r"\
-	"\nA1J.J. Ponteprino \nF1C\xA2" "digo y mejoras\r"\
 	"\nB1Ron             \nF1Testing y difusi\xA2n\r"\
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
-	"\nE1ZjoyKiLer       \nF1Testing e ideas\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nE1ZjoyKiLer       \nF1Testing e ideas"\
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -662,10 +617,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1ZX81+ ROM incluida por cortes\xA1" "a de:\r"\
 	"\r"\
-	"\nA1Paul Farrow\r"\
-	"\r"\
-	"\r"\
-	"\r"
+	"\nA1Paul Farrow"\
 	,
 	"\nF1Gracias tambi\x82n a:\r"\
 	"\r"\
@@ -679,7 +631,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\r"\
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
-	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h\r"
+	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
 	,
 	DEDICATORIA
 	}
@@ -778,41 +730,41 @@ static const char *AboutMsg[NLANGS][11] = {
 //     " [S]       Captura BMP (Carpeta /.c)\n"
 
 static const char *StartMsg[NLANGS] = {
-	"Hi! Thanks for choosing    ectrum!\n"\
-	"\n"\
-	"   ectrum is open source sofware\n"\
-	"licensed under GPL v3, you can use,\n"\
-	"modify and share it for free.\n"\
-	"\n"\
-	"If you like    ectrum consider\n"\
-	"becoming Patreon. Your support help\n"\
-	"us to maintain and improve the project\n"\
-	"for all users. You can do it\n"\
-	"at\n"
+    "Hi! Thanks for choosing \nA1ESP\nF1eccy!\r"\
+    "\r"\
+    "\nA1ESP\nF1eccy is open source software\r"\
+    "licensed under GPL v3. You can use,\r"\
+    "modify, and share it for free.\r"\
+    "\r"\
+    "\r"\
+    "\r"\
+    "\r"\
+    "This project is powered by \nA1ESP\nF1ectrum\r"\
+    "(https://zxespectrum.speccy.org/)\r"
 	,
-	"\xAD" "Hola! \xADGracias por elegir    ectrum!\n"\
-	"\n"\
-	"   ectrum es software de c\xA2" "digo abier-\n"\
-	"to bajo licencia GPL v3, puedes usarlo\n"\
-	"modificarlo y compartirlo gratis.\n"\
-	"\n"\
-	"Si te gusta    ectrum considera hacer-\n"\
-	"te patrocinador. Tu apoyo nos ayuda a\n"\
-	"mantener y mejorar el proyecto para\n"\
-	"todos los usuarios. Puedes hacerlo\n"\
-	"en\n"
+	"\xAD" "Hola! \xADGracias por elegir \nA1ESP\nF1eccy!\r"\
+	"\r"\
+	"\nA1ESP\nF1eccy es software de c\xA2" "digo abier-\r"\
+	"to bajo licencia GPL v3, puedes usarlo\r"\
+	"modificarlo y compartirlo gratis.\r"\
+	"\r"\
+    "\r"\
+    "\r"\
+    "\r"\
+	"Proyecto impulsado por \nA1ESP\nF1ectrum\r"\
+    "(https://zxespectrum.speccy.org/)\r"
 	,
-	"Oi! Obrigado por escolher    ectrum!\n"\
-	"\n"\
-	"   ectrum \x82 software de c" "\xA2" "digo aberto\n"\
-	"sob licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\n"\
-	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\n"\
-	"\n"\
-	"Se voc\x88 gosta de    ectrum considere\n"\
-	"se tornar um patrocinador. Seu apoio\n"\
-	"ajuda a manter e melhorar o projeto\n"\
-	"para todos os usu\xa0rios. Voc\x88 pode\n"\
-	"fazer isso em\n"
+	"Oi! Obrigado por escolher \nA1ESP\nF1eccy!\r"\
+	"\r"\
+	"\nA1ESP\nF1eccy \x82 software de c" "\xA2" "digo aberto\r"\
+	"sob licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\r"\
+	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\r"\
+	"\r"\
+    "\r"\
+    "\r"\
+    "\r"\
+	"Projeto impulsionado pelo ESPectrum\n"\
+    "(https://zxespectrum.speccy.org/)\r"
 };
 
 static const char *STARTMSG_CLOSE[NLANGS] = { "This message will close in %02ds",

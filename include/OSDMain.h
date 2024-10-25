@@ -63,7 +63,7 @@ using namespace std;
 #define OSD_FONT_H 8
 #endif
 
-#define OSD_COLS    40
+#define OSD_COLS    46
 
 #define LEVEL_INFO 0
 #define LEVEL_OK 1
