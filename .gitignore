@@ -15,3 +15,4 @@ downloaded_fs*.bin
 /releases/**
 dependencies.lock
 build/*
+tmp
