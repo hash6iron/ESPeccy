@@ -600,7 +600,7 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\nE1Ramon Mart\xA1nez  \nF1Melhorias na emula\x87\x84o AY\r"\
 	"\nB1Ron             \nF1Teste e difus\x84o\r"\
 	"\nC1J.L. S\xA0nchez    \nF1Melhorias no core Z80\r"\
-	"\nD1Antonio Villena \nF1Suporte de hardware\r"\
+	"\nD1Antonio Villena \nF1Suporte do hardware\r"\
 	"\nE1ZjoyKiLer       \nF1Teste e ideias"
 #if 0
 	,
