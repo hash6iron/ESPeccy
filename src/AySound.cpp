@@ -1,22 +1,21 @@
 /*
 
-ESPectrum, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
+ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
 
-AY SOUND EMULATION, based on libayemu by:
-Sashnov Alexander <sashnov@ngs.ru> and Roman Scherbakov <v_soft@nm.ru> 
-
-Copyright (c) 2023, 2024 Víctor Iborra [Eremus] and 2023 David Crespo [dcrespo3d]
+This project is a fork of ESPectrum.
+ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
 https://github.com/EremusOne/ZX-ESPectrum-IDF
 
-Based on ZX-ESPectrum-Wiimote
-Copyright (c) 2020, 2022 David Crespo [dcrespo3d]
-https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+Based on previous work:
+- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
+  https://github.com/rampa069/ZX-ESPectrum
+- Original project by Pete Todd
+  https://github.com/retrogubbins/paseVGA
 
-Based on previous work by Ramón Martinez and Jorge Fuertes
-https://github.com/rampa069/ZX-ESPectrum
-
-Original project by Pete Todd
-https://github.com/retrogubbins/paseVGA
+Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
+https://github.com/SplinterGU/ESPeccy
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,9 +29,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-To Contact the dev team you can write to zxespectrum@gmail.com or 
-visit https://zxespectrum.speccy.org/contacto
 
 */
 

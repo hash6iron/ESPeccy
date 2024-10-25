@@ -1,3 +1,37 @@
+"""
+
+ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
+
+Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
+https://github.com/SplinterGU/ESPeccy
+
+This project is a fork of ESPectrum.
+ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
+https://github.com/EremusOne/ZX-ESPectrum-IDF
+
+Based on previous work:
+- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
+  https://github.com/rampa069/ZX-ESPectrum
+- Original project by Pete Todd
+  https://github.com/retrogubbins/paseVGA
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+"""
+
 import os
 import subprocess
 import binascii
@@ -57,7 +91,7 @@ const uint8_t {variable_name}[] = {{
 
 # Construir todo el include completo
 def main():
-    include = "#ifndef __IMAGES_H\n#define __IMAGES_H\n\n"
+    include = "/*\n\nESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC\n\nCopyright (c) 2024 Juan José Ponteprino [SplinterGU]\nhttps://github.com/SplinterGU/ESPeccy\n\nThis project is a fork of ESPectrum.\nESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]\nhttps://github.com/EremusOne/ZX-ESPectrum-IDF\n\nBased on previous work:\n- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]\n  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote\n- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes\n  https://github.com/rampa069/ZX-ESPectrum\n- Original project by Pete Todd\n  https://github.com/retrogubbins/paseVGA\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <https://www.gnu.org/licenses/>.\n\n*/\n\n#ifndef __IMAGES_H\n#define __IMAGES_H\n"
 
     for variable_name, ESPeccy_file, normal_file in variables:
         include += generate_include(variable_name, ESPeccy_file, normal_file)
