@@ -332,7 +332,7 @@ static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
 static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
-
+#if 0
 #define DEDICATORIA "\nF1Dedicado especialmente a:\r"\
 	"\nB1      _       _ _\r"\
 	"\nB1     | |     | (_)          \nA1d88b d88b\r"\
@@ -406,16 +406,20 @@ static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 	"\nB1Mike van der Lee \nC1Monica Compa\xA4\r"\
 	"\nD1Roberto Paciello \nE1Ronny Verminck\r"\
 	"\nB1Trevor Boys \nC1Wayne Burton"
+#endif
 
-static const char *AboutMsg[NLANGS][11] = {
+static const char *AboutMsg[NLANGS][5] = {
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
+	"\r" \
+	"\nF1This project is a fork of ESPectrum.\r"\
+	"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
 	"\nA1Based on ZX-ESPectrum-Wiimote\r"\
-	"(C)2020-2023 David Crespo\r"\
-	"\r"\
+	"(C)2020-2023 David Crespo"
+	,
 	"\nB1Inspired by previous projects\r"\
 	"from Pete Todd and Rampa & Queru\r"\
 	"\r"\
@@ -429,18 +433,15 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nA1ackerman        \nF1Code & ideas\r"\
 	"\nB1Armand          \nF1Testing & broadcasting\r"\
 	"\nC1azesmbog        \nF1Testing & ideas\r"\
-
 	"\nD1Carlo Brini     \nF1Our UK guy ;)\r"\
 	"\nE1David Carri\xA2n   \nF1H/W code, ZX kbd\r"\
-	"\nA1Rodolfo Guerra  \nF1Our LATAM guy ;)"
-	,
-	"\nF1Collaborators:\r"\
-	"\r"\
+	"\nA1Rodolfo Guerra  \nF1Our LATAM guy ;)\r"
 	"\nB1Ram\xA2n Mart\xA1nez  \nF1AY emul. improvements\r"\
 	"\nD1Ron             \nF1Testing & broadcasting\r"\
 	"\nE1J.L. S\xA0nchez    \nF1Z80 core improvements\r"\
 	"\nA1Antonio Villena \nF1Hardware support\r"\
 	"\nB1ZjoyKiLer       \nF1Testing & ideas"
+#if 0
 	,
 	"\nF1Big thanks to our Patreons:\r"\
 	PATREONS
@@ -456,7 +457,8 @@ static const char *AboutMsg[NLANGS][11] = {
 	,
 	"\nF1Big thanks to our Patreons:\r"\
 	PATREONS5
-	,
+#endif
+ 	,
 	"\nF1Thanks for help and donations to:\r"\
 	"\r"\
 	"\nA1Abel Bayon @Baycorps \nF1Amstrad Eterno\r"\
@@ -481,17 +483,22 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nF1and, of course, to:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
+#if 0
 	,
 	DEDICATORIA
+#endif
 	},
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
+	"\r" \
+	"\nF1Este proyecto es un fork de ESPectrum.\r"\
+	"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
 	"\nA1Basado en ZX-ESPectrum-Wiimote\r"\
-	"(C)2020-2023 David Crespo\r"\
-	"\r"\
+	"(C)2020-2023 David Crespo"
+	,
 	"\nB1Inspirado en proyectos anteriores\r"\
 	"de Pete Todd y Rampa & Queru\r"\
 	"\r"\
@@ -507,15 +514,13 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1azesmbog        \nF1Testing e ideas\r"\
 	"\nD1Carlo Brini     \nF1ESPectrum en UK ;)\r"\
 	"\nE1David Carri\xA2n   \nF1C\xA2" "digo h/w, teclado ZX\r"\
-	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)"\
-	,
-	"\nF1Colaboradores:\r"\
-	"\r"\
+	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)\r"\
 	"\nE1Ramon Mart\xA1nez  \nF1Mejoras emulaci\xA2n AY\r"\
 	"\nB1Ron             \nF1Testing y difusi\xA2n\r"\
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
-	"\nE1ZjoyKiLer       \nF1Testing e ideas"\
+	"\nE1ZjoyKiLer       \nF1Testing e ideas"
+#if 0
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -531,6 +536,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS5
+#endif
 	,
 	"\nF1Gracias por su ayuda y donaciones a:\r"\
 	"\r"\
@@ -556,17 +562,22 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
+#if 0
 	,
 	DEDICATORIA
+#endif
 	},
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"\
+	"\r" \
+	"\nF1Este projeto \x82 um fork do ESPectrum.\r"\
+	"\r"\
 	"\nF1(C)2023-24 V\xA1" "ctor Iborra \"Eremus\"\r"\
 	"   2023 David Crespo  \"dcrespo3d\"\r"\
 	"\r"\
 	"\nA1Basado en ZX-ESPectrum-Wiimote\r"\
-	"(C)2020-2023 David Crespo\r"\
-	"\r"\
+	"(C)2020-2023 David Crespo"
+	,
 	"\nB1Inspirado en proyectos anteriores\r"\
 	"de Pete Todd y Rampa & Queru\r"\
 	"\r"\
@@ -582,15 +593,13 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nC1azesmbog        \nF1Testing e ideas\r"\
 	"\nD1Carlo Brini     \nF1ESPectrum en UK ;)\r"\
 	"\nE1David Carri\xA2n   \nF1C\xA2" "digo h/w, teclado ZX\r"\
-	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)"\
-	,
-	"\nF1Colaboradores:\r"\
-	"\r"\
+	"\nA1Rodolfo Guerra  \nF1ESPectrum en LATAM ;)\r"\
 	"\nE1Ramon Mart\xA1nez  \nF1Mejoras emulaci\xA2n AY\r"\
 	"\nB1Ron             \nF1Testing y difusi\xA2n\r"\
 	"\nC1J.L. S\xA0nchez    \nF1Mejoras core Z80\r"\
 	"\nD1Antonio Villena \nF1Soporte hardware\r"\
-	"\nE1ZjoyKiLer       \nF1Testing e ideas"\
+	"\nE1ZjoyKiLer       \nF1Testing e ideas"
+#if 0
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS
@@ -606,6 +615,7 @@ static const char *AboutMsg[NLANGS][11] = {
 	,
 	"\nF1Muchas gracias a nuestros Patreons:\r"\
 	PATREONS5
+#endif
 	,
 	"\nF1Gracias por su ayuda y donaciones a:\r"\
 	"\r"\
@@ -631,8 +641,10 @@ static const char *AboutMsg[NLANGS][11] = {
 	"\nF1y, por supuesto, a:\r"\
 	"\r"\
 	"\nD1Sir Clive Sinclair \nF1& \nA1M\nE1a\nC1t\nD1t\nB1h\nA1e\nE1w \nC1S\nD1m\nB1i\nA1t\nE1h"
+#if 0
 	,
 	DEDICATORIA
+#endif
 	}
 };
 

@@ -75,7 +75,7 @@ DISK_FTYPE FileUtils::fileTypes[6] = {
     {"trd,scl",".d",2,2,0,""},
     {"rom",".r",2,2,0,""},
     {"esp",".e",2,2,0,""},
-    {"pok",".c.idx",2,2,0,""}
+    {"pok",".p",2,2,0,""}
 };
 
 string toLower(const std::string& str) {
