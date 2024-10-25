@@ -64,9 +64,9 @@ static const char *ERR_FS_EXT_FAIL[NLANGS] = { ERR_FS_EXT_FAIL_EN, ERR_FS_EXT_FA
 #define ERR_DIR_OPEN "Cannot open directory!"
 
 // OSD
-#define OSD_TITLE  " ESPeccy - The ESP32 powered emulator       "
+#define OSD_TITLE  " ESPeccy - The ESP32 powered emulator         "
 //#define OSD_BOTTOM " zxespectrum.speccy.org     " EMU_VERSION
-#define OSD_BOTTOM "                            "
+#define OSD_BOTTOM " github.com/SplinterGU/ESPeccy "
 
 static const char *OSD_MSGDIALOG_YES[NLANGS] = { OSD_MSGDIALOG_YES_EN, OSD_MSGDIALOG_YES_ES, OSD_MSGDIALOG_YES_PT };
 static const char *OSD_MSGDIALOG_NO[NLANGS] = { OSD_MSGDIALOG_NO_EN, OSD_MSGDIALOG_NO_ES, OSD_MSGDIALOG_NO_PT };
@@ -735,9 +735,6 @@ static const char *StartMsg[NLANGS] = {
     "licensed under GPL v3. You can use,\r"\
     "modify, and share it for free.\r"\
     "\r"\
-    "\r"\
-    "\r"\
-    "\r"\
     "This project is powered by \nA1ESP\nF1ectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
 	,
@@ -746,9 +743,6 @@ static const char *StartMsg[NLANGS] = {
 	"\nA1ESP\nF1eccy es software de c\xA2" "digo abier-\r"\
 	"to bajo licencia GPL v3, puedes usarlo\r"\
 	"modificarlo y compartirlo gratis.\r"\
-	"\r"\
-    "\r"\
-    "\r"\
     "\r"\
 	"Proyecto impulsado por \nA1ESP\nF1ectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
@@ -758,9 +752,6 @@ static const char *StartMsg[NLANGS] = {
 	"\nA1ESP\nF1eccy \x82 software de c" "\xA2" "digo aberto\r"\
 	"sob licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\r"\
 	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\r"\
-	"\r"\
-    "\r"\
-    "\r"\
     "\r"\
 	"Projeto impulsionado pelo ESPectrum\n"\
     "(https://zxespectrum.speccy.org/)\r"

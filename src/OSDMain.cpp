@@ -223,20 +223,20 @@ void OSD::drawOSD(bool bottom_info) {
     if (bottom_info) {
         string bottom_line;
         switch(Config::videomode) {
-            case 0: bottom_line = " Video mode: Standard VGA   "; break;
-            case 1: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: VGA 60hz       " : " Video mode: VGA 50hz       "; break;
-            case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz       " : " Video mode: CRT 50hz       "; break;
+            case 0: bottom_line = " Video mode: Standard VGA      "; break;
+            case 1: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: VGA 60hz          " : " Video mode: VGA 50hz          "; break;
+            case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz          " : " Video mode: CRT 50hz          "; break;
         }
 
 #ifdef ESPECCY_VERSION
-        VIDEO::vga.print(bottom_line.append("      c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
+        VIDEO::vga.print(bottom_line.append("   c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
 #else
         VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
 #endif
     } else {
         VIDEO::vga.print(OSD_BOTTOM);
 #ifdef ESPECCY_VERSION
-        VIDEO::vga.print(("      c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
+        VIDEO::vga.print(("   c"+string(getShortBuildDate())+" ").c_str()); // For ESPeccy
 #endif
     }
     osdHome();
