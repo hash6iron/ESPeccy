@@ -209,6 +209,42 @@ void OSD::drawWindow(uint16_t width, uint16_t height, string top, string bottom,
 
 }
 
+
+#define REP_MARKER 0xAA  // Marca para las secuencias repetidas
+
+void OSD::drawCompressedBMP(int x, int y, const uint8_t * bmp) {
+
+    int l_w = (bmp[5] << 8) + bmp[4]; // Get Width
+    int l_h = (bmp[7] << 8) + bmp[6]; // Get Height
+    bmp += 8; // Skip header
+
+    size_t cix = 0;
+    uint8_t run_length = 0;
+    uint8_t color;
+
+    for (int i = 0; i < l_h; i++)
+        for(int n = 0; n < l_w; n++) {
+
+            if (run_length) {
+                --run_length;
+            } else {
+                if (bmp[cix] == REP_MARKER && cix + 3 < l_w * l_h && bmp[cix + 1] == REP_MARKER) {
+                    // Read length and value
+                    run_length = bmp[cix + 2] - 1;
+                    color = bmp[cix + 3];
+                    cix += 4;
+                } else {
+                    // Copy non-repeated bytes
+                    color = bmp[cix++];
+                }
+
+            }
+
+            VIDEO::vga.dotFast(x + n, y + i, color);
+        }
+}
+
+
 void OSD::drawOSD(bool bottom_info) {
     unsigned short x = scrAlignCenterX(OSD_W);
     unsigned short y = scrAlignCenterY(OSD_H);
@@ -313,12 +349,7 @@ void OSD::drawKbdLayout(uint8_t layout) {
 
         }
 
-        int l_w = (layoutdata[5] << 8) + layoutdata[4]; // Get Width
-        int l_h = (layoutdata[7] << 8) + layoutdata[6]; // Get Height
-        layoutdata += 8; // Skip header
-        for (int i=0; i < l_h; i++)
-            for(int n=0; n<l_w; n++)
-                VIDEO::vga.dotFast(pos_x + n,pos_y + i,layoutdata[n+(i*l_w)]);
+        drawCompressedBMP(pos_x, pos_y, layoutdata);
 
         while (1) {
 
@@ -3310,22 +3341,15 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 // About
                 drawOSD(false);
 
-                // Decode Logo in EBF8 format
-                uint8_t *logo = (uint8_t *)ESPectrum_logo;
-
-                int pos_x, pos_y;
                 VIDEO::vga.fillRect(osdInsideX(), osdInsideY(), OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
-                int logo_w = (logo[5] << 8) + logo[4]; // Get Width
-                int logo_h = (logo[7] << 8) + logo[6]; // Get Height
+                // Decode Logo in EBF8 format
+                int logo_w = (ESPectrum_logo[5] << 8) + ESPectrum_logo[4]; // Get Width
+                int logo_h = (ESPectrum_logo[7] << 8) + ESPectrum_logo[6]; // Get Height
+                int pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
+                int pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
 
-                pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
-                pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
-
-                logo+=8; // Skip header
-                for (int i=0; i < logo_h; i++)
-                    for(int n=0; n<logo_w; n++)
-                        VIDEO::vga.dotFast(pos_x + n,pos_y + i,logo[n+(i*logo_w)]);
+                drawCompressedBMP(pos_x, pos_y, ESPectrum_logo);
 
                 VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
 

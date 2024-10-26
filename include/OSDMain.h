@@ -159,6 +159,8 @@ public:
     static void click();
     static void statusbarDraw(const string& statusbar);
 
+    static void drawCompressedBMP(int x, int y, const uint8_t * bmp);
+
     static short menuGenericRun(const string title, const string& statusbar = "", void *user_data = nullptr, size_t (*rowCount)(void *) = nullptr, size_t (*colsCount)(void *) = nullptr, void (*menuRedraw)(const string, bool) = nullptr, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr);
 
     // menu callbacks

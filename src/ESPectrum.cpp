@@ -172,22 +172,15 @@ void ShowStartMsg() {
 
     OSD::drawOSD(false);
 
-    int pos_x, pos_y;
-
     VIDEO::vga.fillRect(OSD::osdInsideX(), OSD::osdInsideY(), OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
     // Decode Logo in EBF8 format
-    uint8_t *logo = (uint8_t *)ESPectrum_logo;
-    int logo_w = (logo[5] << 8) + logo[4]; // Get Width
-    int logo_h = (logo[7] << 8) + logo[6]; // Get Height
+    int logo_w = (ESPectrum_logo[5] << 8) + ESPectrum_logo[4]; // Get Width
+    int logo_h = (ESPectrum_logo[7] << 8) + ESPectrum_logo[6]; // Get Height
+    int pos_x = OSD::osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
+    int pos_y = OSD::osdInsideY() + ( 50 - logo_h ) / 2;
 
-    pos_x = OSD::osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
-    pos_y = OSD::osdInsideY() + ( 50 - logo_h ) / 2;
-
-    logo+=8; // Skip header
-    for (int i=0; i < logo_h; i++)
-        for(int n=0; n<logo_w; n++)
-            VIDEO::vga.dotFast(pos_x + n,pos_y + i,logo[n+(i*logo_w)]);
+    OSD::drawCompressedBMP(pos_x, pos_y, ESPectrum_logo);
 
     OSD::osdAt(7, 1);
     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
