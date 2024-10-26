@@ -3606,7 +3606,7 @@ void OSD::HWInfo() {
     esp_chip_info(&chip_info);
 
     VIDEO::vga.print(" Hardware info\n");
-    VIDEO::vga.print(" --------------------------------------\n");
+    VIDEO::vga.print(" --------------------------------------------\n");
 
     // string chipmodel[6]={"","ESP32","ESP32-S2","","ESP32-S3","ESP32-C3"};
     // string textout = " Chip model    : " + chipmodel[chip_info.model] + "\n";
@@ -3672,7 +3672,7 @@ void OSD::HWInfo() {
     VIDEO::vga.print(textout.c_str());
 
     VIDEO::vga.print("\n Memory info\n");
-    VIDEO::vga.print(" --------------------------------------\n");
+    VIDEO::vga.print(" --------------------------------------------\n");
 
     heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
     textout = " Total free bytes         : " + to_string(info.total_free_bytes) + "\n";
