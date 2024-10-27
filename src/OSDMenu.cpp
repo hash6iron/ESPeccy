@@ -1500,7 +1500,7 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
         } else {
             if (rowTimeStartScroll < 125) rowTimeStartScroll++;
         }
-printf("timeStartScroll:%d rowTimeScroll:%d rowScrollPos:%d rowScrollStatus:%d\n", rowTimeStartScroll, rowTimeScroll, rowScrollPos, rowScrollStatus);
+
         if (rowTimeStartScroll == 125) {
             rowTimeScroll++;
             if (rowTimeScroll == 25) {
