@@ -418,13 +418,13 @@ void ESPectrum::bootKeyboard() {
 
         }
 
-        if (s.find('0') == std::string::npos || (factory_reset & 0x04) == 0x04) break;
+        if (s.find('0') == std::string::npos || (factory_reset & 0x07) == 0x07) break;
 
         delayMicroseconds(1000);
 
     }
 
-    if ((factory_reset & 0x04) == 0x04) {
+    if ((factory_reset & 0x07) == 0x07) {
         // wait confirm or cancel
 
         bool numLock, capsLock, scrollLock;

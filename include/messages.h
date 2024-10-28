@@ -332,82 +332,6 @@ static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
 static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n"};
 
-#if 0
-#define DEDICATORIA "\nF1Dedicado especialmente a:\r"
-	"\nB1      _       _ _\r"
-	"\nB1     | |     | (_)          \nA1d88b d88b\r"
-	"\nB1     | |_   _| |_  __ _    \nA188888888888\r"
-	"\nB1 _   | | | | | | |/ _` |   \nA1`Y8888888Y'\r"
-	"\nB1| |__| | |_| | | | (_| |     \nA1`Y888Y'\r"
-	"\nB1 \\____/ \\___/|_|_|\\__,_|       \nA1`Y'\r"
-	"\nF1 _   _    \nE1 __  __            _ \r"
-	"\nF1| | | |   \nE1|  \\/  |          | |\r"
-	"\nF1| |_| |   \nE1| \\  / | __ _ _ __| |_ __ _\r"
-	"\nF1 \\__, |   \nE1| |\\/| |/ _` | '__| __/ _` |\r"
-	"\nF1  __/ |   \nE1| |  | | (_| | |  | || (_| |\r"
-	"\nF1 |___/    \nE1|_|  |_|\\__,_|_|   \\__\\__,_|"
-
-// 38 characters wide for about text
-#define PATREONS "\r"
-	"\nA1The Mega Trees:\r"
-	"\r"
-	"\nB1V\xA1" "ctor Llamazares \nC1Antonio Villena\r"
-	"\r"
-	"\nA1The Jet Set Willys:\r"
-	"\r"
-	"\nB1DopierRex \nC1Germ\xA0n Filera \nD1Juan C. Galea\r"
-	"\nE1Juanje \nB1Ra\xA3l Jim\x82nez \nC1Juanma Mart\xA1n\r"
-	"\nD1Seraf\xA1n Morat\xA2n \nE1Eduard Ruiz\r"
-	"\nB1Igor Peruchi \nC1In\xA0" "cio Santos\r"
-	"\nD1Destroyer"
-
-#define PATREONS2 "\r"
-	"\nA1The Manic Miners:\r"
-	"\r"
-	"\nB1Lencio Asimov \nC1Fernando Bonilla\r"
-	"\nD1Juan Conde Luque \nE1Fidel Fern\xA0ndez\r"
-	"\nB1Alberto Garc\xA1" "a \nC1Francisco Garc\xA1" "a\r"
-	"\nD1Jorge Garc\xA1" "a \nE1Jos\x82 Luis Garc\xA1" "a\r"
-	"\nB1Nacho Izquierdo \nC1kounch \nD1V\xA1" "ctor Lorenzo\r"
-	"\nE1Luis Maldonado \nB1Mananuk \nC1Ignacio Monge\r"
-	"\nD1Vicente Morales \nE1Pablo Mu\xA4oz\r"
-	"\nB1Javi Ortiz \nC1Miguel Angel P\x82rez\r"
-	"\nD1Pascual P\x82rez \nE1Juan Jos\x82 Piernas"\
-
-#define PATREONS3 "\r"
-	"\nA1The Manic Miners:\r"
-	"\r"
-	"\nB1Radastan \nC1Jordi Ramos \nD1Gustavo Reynaga\r"
-	"\nE1Jos\x82 M. Rodr\xA1guez \nB1Marco A. Rodr\xA1guez\r"
-	"\nC1Santiago Romero \nD1Julia Salvador\r"
-	"\nE1Juan Diego S\xA0nchez \nB1Marta Sicilia\r"
-	"\nC1Fco. Jos\x82 Soldado \nD1Vida Extra Retro\r"
-	"\nE1Radek Wojciechowski \nB1Jes\xA3s Mu\xA4oz\r"
-	"\nC1Antonio Jes\xA3s S\xA0nchez \nD1Gregorio P\x82rez\r"
-	"\nE1Leonardo Coca\xA4" "a \nB1Manuel Cuenca\r"
-	"\nC1Ovi P. \nD1Jos\x82 Medina \nE1Miguel A. Montejo"
-
-#define PATREONS4 "\r"
-	"\nA1The Manic Miners:\r"
-	"\r"
-	"\nB1Jakub Rzepecki \nC1Seb \nD1Sim\xA2n G\xA2mez\r"
-	"\nE1V\xA1" "ctor Salado \nB1Miguel A. Gonz\xA0lez\r"
-	"\nC1Alberto Navarro \nD1Alejandro Molina\r"
-	"\nE1Alfonso D\xA1" "az \nB1Carlos Mart\xA1" "nez\r"
-	"\nC1Clovis Friolani \nD1Daniel S\xA0" "ez\r"
-	"\nE1Denis Estevez \nB1Fasih Rehman\r"
-	"\nC1Fernando Mirones \nD1Ismael Salvador\r"
-	"\nE1Jorge Plazas \nB1Juan A. Rubio\r"
-	"\nC1Lucio Rial \nD1Mark Cohen"
-
-#define PATREONS5 "\r"
-	"\nA1The Manic Miners:\r"
-	"\r"
-	"\nB1Mike van der Lee \nC1Monica Compa\xA4\r"
-	"\nD1Roberto Paciello \nE1Ronny Verminck\r"
-	"\nB1Trevor Boys \nC1Wayne Burton"
-#endif
-
 static const char *AboutMsg[NLANGS][5] = {
 	// English
 	{
@@ -443,23 +367,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n51J.L. S\xA0nchez        \n71Z80 core improvements\r"
 	"\n61Antonio Villena     \n71Hardware support\r"
 	"\n21ZjoyKiLer           \n71Testing & ideas"
-#if 0
-	,
-	"\nF1Big thanks to our Patreons:\r"
-	PATREONS
-	,
-	"\nF1Big thanks to our Patreons:\r"
-	PATREONS2
-	,
-	"\nF1Big thanks to our Patreons:\r"
-	PATREONS3
-	,
-	"\nF1Big thanks to our Patreons:\r"
-	PATREONS4
-	,
-	"\nF1Big thanks to our Patreons:\r"
-	PATREONS5
-#endif
  	,
 	"\n71Thanks for help and donations to:\r"
 	"\r"
@@ -485,10 +392,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71and, of course, to:\r"
 	"\r"
 	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
-#if 0
-	,
-	DEDICATORIA
-#endif
 	},
 	// Español
 	{
@@ -524,23 +427,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n51J.L. S\xA0nchez        \n71Mejoras core Z80\r"
 	"\n61Antonio Villena     \n71Soporte hardware\r"
 	"\n21ZjoyKiLer           \n71Testing e ideas"
-#if 0
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS2
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS3
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS4
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS5
-#endif
 	,
 	"\n71Gracias por su ayuda y donaciones a:\r"
 	"\r"
@@ -566,10 +452,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71y, por supuesto, a:\r"
 	"\r"
 	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
-#if 0
-	,
-	DEDICATORIA
-#endif
 	},
 	// Portugues
 	{
@@ -605,23 +487,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n51J.L. S\xA0nchez        \n71Melhorias no core Z80\r"
 	"\n61Antonio Villena     \n71Suporte do hardware\r"
 	"\n21ZjoyKiLer           \n71Teste e ideias"
-#if 0
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS2
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS3
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS4
-	,
-	"\nF1Muchas gracias a nuestros Patreons:\r"
-	PATREONS5
-#endif
 	,
 	"\n71Obrigado pela sua ajuda e doa\x87\x94" "es a:\r"
 	"\r"
@@ -647,10 +512,6 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71e, \x82 claro, a:\r"
 	"\r"
 	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
-#if 0
-	,
-	DEDICATORIA
-#endif
 	}
 };
 
