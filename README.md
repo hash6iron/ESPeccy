@@ -46,7 +46,7 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - BMP screen capture to SD Card (thanks David Crespo 😉).
 - Menu navigation with cursor keys.
 - Fullerbox sound in ZX-Spectrum.
-- Zon-X sound emulation in ZX80+.
+- Zon-X sound emulation in ZX81.
 
 ## Work in progress
 
@@ -192,7 +192,6 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 - [Mark Woodmass](https://specemu.zxe.io) and [Juan Carlos González Amestoy](https://www.retrovirtualmachine.org) for his excellent emulators and his help with wd1793 emulation and many other things.
 - Magnus Krook for [SoftSpectrum 48](https://softspectrum48.weebly.com), an excellent emulator which together with his complete and well documented website was of great help and inspiration.
 - [Rodolfo Guerra](https://sites.google.com/view/rodolfoguerra) for his wonderful enhanced ROMs and his help for adding tape load turbo mode support to the emulator.
-- [Juanjo Ponteprino](https://github.com/SplinterGU) for his help and contributions to ESPectrum
 - Weiv and [MartianGirl](https://github.com/MartianGirl) for his detailed analysis of Snow effect.
 - [Antonio Villena](https://antoniovillena.es/store) for creating the ESPectrum board.
 - Tsvetan Usunov from [Olimex Ltd](https://www.olimex.com).
