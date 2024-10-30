@@ -505,8 +505,8 @@ void ESPectrum::showBIOS() {
         VIDEO::vga.print("\x18 \x19 Select Item\n");
         VIDEO::vga.print("Enter: Select/Chg.\n");
         if ( ZXKeyb::Exists ) {
-            VIDEO::vga.print("S: Save & Exit\n");
-            VIDEO::vga.print("X: Exit\n");
+            VIDEO::vga.print("SS+S: Save & Exit\n");
+            VIDEO::vga.print("BREAK: Exit\n");
         } else {
             VIDEO::vga.print("F10: Save & Exit\n");
             VIDEO::vga.print("ESC: Exit\n");
@@ -516,51 +516,6 @@ void ESPectrum::showBIOS() {
 
     #define BIOS_DLG_ALERT   0
     #define BIOS_DLG_CONFIRM 1
-
-    int zxDelay = 0;
-
-    auto processZXKeyb = [&]() {
-
-        if (ZXKeyb::Exists) { // START - ZXKeyb Exists
-            if (zxDelay > 0)
-                zxDelay--;
-            else
-                // Process physical keyboard
-                ZXKeyb::process();
-
-            if (!bitRead(ZXKeyb::ZXcols[3],4)) { // 5
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_LEFT, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[4],4)) { // 6
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_DOWN, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[4],3)) { // 7
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_UP, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[4],2)) { // 8
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_RIGHT, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[6],0)) { // ENTER
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_RETURN, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[1],1)) { // S -> Save & Exit
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_F10, true, false);
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[0],2)) { // X -> Discard & Exit
-                zxDelay = 15;
-                Kbd->injectVirtualKey(fabgl::VK_ESCAPE, true, false);
-            } else
-                zxDelay = 0;
-
-        }
-
-    };
 
     auto msg_dialog = [&](const char *title, const char *message, int type = BIOS_DLG_ALERT) {
         // Calcular el ancho del título
@@ -659,7 +614,7 @@ void ESPectrum::showBIOS() {
 
         // Esperar la selección del usuario
         while (true) {
-            processZXKeyb();
+            ZXKeyb::ZXKbdRead();
             while (Kbd->virtualKeyAvailable()) {
                 fabgl::VirtualKeyItem NextKey;
                 if (Kbd->getNextVirtualKey(&NextKey) && NextKey.down) {
@@ -775,6 +730,10 @@ void ESPectrum::showBIOS() {
                 }
                 break;
 
+            case fabgl::VK_s:
+            case fabgl::VK_S:
+                if (!ZXKeyb::Exists) break;
+
             case fabgl::VK_F10:
                 if ( msg_dialog("Confirm Save & Exit", "Are you sure you want to save\nchanges and exit?", BIOS_DLG_CONFIRM) ) {
                     Config::save();
@@ -807,7 +766,7 @@ void ESPectrum::showBIOS() {
     while (!exitMenu) {
         int oldSelectedOptions = selectedOption;
 
-        processZXKeyb();
+        ZXKeyb::ZXKbdRead();
         while (Kbd->virtualKeyAvailable()) {
             bool r = Kbd->getNextVirtualKey(&NextKey);
             if (r && NextKey.down) mainMenuNav([](){}, [](){});
@@ -837,7 +796,7 @@ void ESPectrum::showBIOS() {
                     // Lógica para el menú avanzado
                     bool exitAdvancedMenu = false;
                     while (!exitAdvancedMenu) {
-                        processZXKeyb();
+                        ZXKeyb::ZXKbdRead();
                         while (Kbd->virtualKeyAvailable()) {
                             bool r = Kbd->getNextVirtualKey(&NextKey);
                             if (r && NextKey.down) {
@@ -893,7 +852,7 @@ void ESPectrum::showBIOS() {
 
                     bool exitConfigMenu = false;
                     while (!exitConfigMenu) {
-                        processZXKeyb();
+                        ZXKeyb::ZXKbdRead();
                         while (Kbd->virtualKeyAvailable()) {
                             bool r = Kbd->getNextVirtualKey(&NextKey);
                             if (r && NextKey.down) {
@@ -969,7 +928,7 @@ void ESPectrum::showBIOS() {
 
                     bool exitConfigMenu = false;
                     while (!exitConfigMenu) {
-                        processZXKeyb();
+                        ZXKeyb::ZXKbdRead();
                         while (Kbd->virtualKeyAvailable()) {
                             bool r = Kbd->getNextVirtualKey(&NextKey);
                             if (r && NextKey.down) {
