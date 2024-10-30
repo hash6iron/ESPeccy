@@ -1,10 +1,9 @@
 name: Build and Release ESPectrum Firmware
 
 on:
-  create:
-    tags:
-      - '*'
-  workflow_dispatch:  # Permite la ejecución manual del workflow
+  release:
+    types: [created]
+  workflow_dispatch:
 
 jobs:
   build:
