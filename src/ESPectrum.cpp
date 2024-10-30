@@ -2100,7 +2100,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             if (!bitRead(ZXKeyb::ZXcols[5],1)) { // O -> Poke
                 OSD::pokeDialog();
             } else
-            if (!bitRead(ZXKeyb::ZXcols[5],2)) { // U -> Cheats
+            if (!bitRead(ZXKeyb::ZXcols[5],3)) { // U -> Cheats
                 OSD::do_OSD(fabgl::VK_F9,0,true);
             } else
             if (!bitRead(ZXKeyb::ZXcols[7],3)) { // N -> NMI

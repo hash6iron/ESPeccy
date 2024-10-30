@@ -219,23 +219,43 @@ reset:
 
     // Draw shortcut help
     string StatusBar = " ";
-    if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) // Dirty hack
-        StatusBar += Config::lang == 0 ? "F2 New | " :
-                     Config::lang == 1 ? "F2 Nuevo | " :
-                                         "F2 Novo | " ;
+    if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) { // Dirty hack
+        if (ZXKeyb::Exists) {
+            StatusBar += Config::lang == 0 ? "N New | " :
+                         Config::lang == 1 ? "N Nuevo | " :
+                                             "N Novo | ";
+        } else {
+            StatusBar += Config::lang == 0 ? "F2 New | " :
+                         Config::lang == 1 ? "F2 Nuevo | " :
+                                             "F2 Novo | " ;
+        }
+    }
 
-    StatusBar += Config::lang == 0 ? "F3 Search | F8 Delete" :
-                 Config::lang == 1 ? "F3 Buscar | F8 Borrar" :
-                                     "F3 Procurar | F8 Excluir" ;
+    if (ZXKeyb::Exists) {
+        StatusBar += Config::lang == 0 ? "F Search | D Delete" :
+                     Config::lang == 1 ? "F Buscar | D Borrar" :
+                                         "F Procurar | D Excluir" ;
+    } else {
+        StatusBar += Config::lang == 0 ? "F3 Search | F8 Delete" :
+                     Config::lang == 1 ? "F3 Buscar | F8 Borrar" :
+                                         "F3 Procurar | F8 Excluir" ;
+    }
 
     if ( cols <= StatusBar.length() + 11 + 2 ) {
         StatusBar = " ";
         if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) // Dirty hack
-            StatusBar += "F2 | ";
+        {
+            if (ZXKeyb::Exists)
+                StatusBar += "N | ";
+            else
+                StatusBar += "F2 | ";
+        }
 
-        StatusBar += "F3 | F8";
+        if (ZXKeyb::Exists)
+            StatusBar += "F | D";
+        else
+            StatusBar += "F3 | F8";
     }
-
 
     if (cols > StatusBar.length() + 11 + 2 ) { // 11 from elements counter + 2 from borders
         StatusBar += std::string(cols - StatusBar.length() - 12, ' ');

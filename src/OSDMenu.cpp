@@ -866,9 +866,15 @@ void OSD::tapemenuRedraw(string title, bool force) {
         if ( Tape::tapeFileType == TAPE_FTYPE_TAP ) {
             string options;
             if ( !Tape::tapeIsReadOnly ) {
-                options = Config::lang == 0 ? " SPC Select | F2 Rename | F6 Move | F8 Delete" :
-                          Config::lang == 1 ? " ESP Selec. | F2 Renombrar | F6 Mover | F8 Borrar" :
-                                              " ESP Selec. | F2 Renomear | F6 Mover | F8 Excluir";
+                if (ZXKeyb::Exists) {
+                    options = Config::lang == 0 ? " CS+ENT Select | N Rename | M Move | D Delete" :
+                              Config::lang == 1 ? " CS+ENT Selec. | N Renombrar | M Mover | D Borrar" :
+                                                  " CS+ENT Selec. | N Renomear | M Mover | D Excluir";
+                } else {
+                    options = Config::lang == 0 ? " SPC Select | F2 Rename | F6 Move | F8 Delete" :
+                              Config::lang == 1 ? " ESP Selec. | F2 Renombrar | F6 Mover | F8 Borrar" :
+                                                  " ESP Selec. | F2 Renomear | F6 Mover | F8 Excluir";
+                }
             } else {
                 options = Config::lang == 0 ? " [Read-Only TAP]" :
                           Config::lang == 1 ? " [TAP de solo lectura]" :
