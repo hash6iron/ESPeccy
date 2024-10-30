@@ -47,6 +47,11 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - Menu navigation with cursor keys.
 - Fullerbox sound in ZX-Spectrum.
 - Zon-X sound emulation in ZX81.
+- BIOS support with boot-time activation:
+    - PS2 keyboard: F2 for VGA mode, F3 for CRT mode.
+    - ZX Keyboard: 2 for VGA mode, 3 for CRT mode.
+- Configuration backup/restore feature to SD card.
+
 
 ## Work in progress
 
