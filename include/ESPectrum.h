@@ -110,6 +110,10 @@ public:
     static void loop();
     static void reset();
 
+    static void showDisplayMenu();
+    static void showAdvancedMenu();
+    static void showBIOS();
+
     // Kbd
     static void processKeyboard();
     static void bootKeyboard();

@@ -64,6 +64,9 @@ public:
     static void save();
     static void save(string value);
 
+    static bool saveToSD();
+    static bool loadFromSD();
+
     static void requestMachine(string newArch, string newRomSet);
 
     static void setJoyMap(uint8_t joynum, uint8_t joy_type);
@@ -72,13 +75,13 @@ public:
     static string   romSet;
     static string   romSet48;
     static string   romSet128;
-    static string   romSetTK90X;    
-    static string   romSetTK95;        
+    static string   romSetTK90X;
+    static string   romSetTK95;
     static string   pref_arch;
     static string   pref_romSet_48;
     static string   pref_romSet_128;
     static string   pref_romSet_TK90X;
-    static string   pref_romSet_TK95;    
+    static string   pref_romSet_TK95;
     static string   ram_file;
     static string   last_ram_file;
     static uint8_t  esp32rev;
@@ -88,20 +91,20 @@ public:
     static uint8_t  osd_LRNav;
     static uint8_t  osd_AltRot;
     static bool     AY48;
-    static bool     Issue2;    
-    static bool     flashload;    
-    static bool     tape_player;    
-    static bool     tape_timing_rg;    
+    static bool     Issue2;
+    static bool     flashload;
+    static bool     tape_player;
+    static bool     tape_timing_rg;
     static uint8_t  joystick1;
     static uint8_t  joystick2;
     static uint16_t joydef[24];
-    static uint8_t  joyPS2;    
+    static uint8_t  joyPS2;
     static uint8_t  videomode;
     static uint8_t  AluTiming;
     static uint8_t  ps2_dev2;
     static bool CursorAsJoy;
     static int8_t CenterH;
-    static int8_t CenterV;    
+    static int8_t CenterV;
 
     static string   SNA_Path;
     static uint16_t SNA_begin_row;
@@ -122,19 +125,19 @@ public:
     static string   DSK_fileSearch;
 
     static uint8_t scanlines;
-    static uint8_t render;    
+    static uint8_t render;
 
-    static bool TABasfire1; 
+    static bool TABasfire1;
 
-    static bool StartMsg;  
+    static bool StartMsg;
 
-    static uint8_t port254default; // For TK90X v1 ROM -> 0xbf: Spanish, 0x3f: Portuguese      
+    static uint8_t port254default; // For TK90X v1 ROM -> 0xbf: Spanish, 0x3f: Portuguese
 
     static uint8_t ALUTK; // TK ALU -> 0 -> Ferranti, 1 -> Microdigital 50hz, 2 -> Microdigital 60hz
 
     static uint8_t DiskCtrl; // 0 -> None, 1 -> Betadisk
 
-    static bool TimeMachine; 
+    static bool TimeMachine;
 
     static int8_t volume;
 

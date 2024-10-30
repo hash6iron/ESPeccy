@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <string>
+#include <functional>
 
 #include "nvs_flash.h"
 #include "nvs.h"
@@ -67,6 +68,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "esp_efuse.h"
 #include "soc/efuse_reg.h"
 
+#include "BuildDate.h"
+
 using namespace std;
 
 //=======================================================================================
@@ -98,6 +101,8 @@ static unsigned char audioBitbufCount = 0;
 QueueHandle_t audioTaskQueue;
 TaskHandle_t ESPectrum::audioTaskHandle;
 uint8_t param;
+
+int runBios = 0;
 
 //=======================================================================================
 // TAPE OSD
@@ -334,8 +339,6 @@ void ESPectrum::bootKeyboard() {
     auto Kbd = PS2Controller.keyboard();
     fabgl::VirtualKeyItem NextKey;
     int i = 0;
-    string s = "00";
-    uint8_t factory_reset = ZXKeyb::Exists ? 0 : 0x01;
 
     // printf("Boot kbd!\n");
 
@@ -347,34 +350,14 @@ void ESPectrum::bootKeyboard() {
             ZXKeyb::process();
 
             // Detect and process physical kbd menu key combinations
-            if (!bitRead(ZXKeyb::ZXcols[3], 0)) { // 1
-                s[0]='1';
-            } else
             if (!bitRead(ZXKeyb::ZXcols[3], 1)) { // 2
-                s[0]='2';
+                runBios = 1;
+
             } else
             if (!bitRead(ZXKeyb::ZXcols[3], 2)) { // 3
-                s[0]='3';
+                runBios = 3;
             }
 
-            if (!bitRead(ZXKeyb::ZXcols[2], 0)) { // Q
-                s[1]='Q';
-            } else
-            if (!bitRead(ZXKeyb::ZXcols[2], 1)) { // W
-                s[1]='W';
-            }
-
-            if (!bitRead(ZXKeyb::ZXcols[0], 0)) { // SHIFT
-                factory_reset |= 0x01;
-            }
-
-            if (!bitRead(ZXKeyb::ZXcols[2], 3)) { // R
-                factory_reset |= 0x02;
-            }
-
-            if (!bitRead(ZXKeyb::ZXcols[4], 0)) { // 0
-                factory_reset |= 0x04;
-            }
         }
 
         while (Kbd->virtualKeyAvailable()) {
@@ -385,108 +368,660 @@ void ESPectrum::bootKeyboard() {
 
                 // Check keyboard status
                 switch (NextKey.vk) {
-                    case fabgl::VK_1:
-                        s[0] = '1';
+                    case fabgl::VK_F2:
+                        runBios = 1;
                         break;
-                    case fabgl::VK_2:
-                        s[0] = '2';
+                    case fabgl::VK_F3:
+                        runBios = 3;
                         break;
-                    case fabgl::VK_3:
-                        s[0] = '3';
-                        break;
-                    case fabgl::VK_Q:
-                    case fabgl::VK_q:
-                        s[1] = 'Q';
-                        break;
-                    case fabgl::VK_W:
-                    case fabgl::VK_w:
-                        s[1] = 'W';
-                        break;
-
-                    case fabgl::VK_R:
-                    case fabgl::VK_r:
-                        factory_reset |= 0x02;
-                        break;
-
-                    case fabgl::VK_0:
-                        factory_reset |= 0x04;
-                        break;
-
                 }
 
             }
 
         }
 
-        if (s.find('0') == std::string::npos || (factory_reset & 0x07) == 0x07) break;
+        if (runBios) break;
 
         delayMicroseconds(1000);
 
     }
 
-    if ((factory_reset & 0x07) == 0x07) {
-        // wait confirm or cancel
+    if (runBios) {
+        Config::videomode = runBios - 1;
+        Config::aspect_16_9 = false;
+        Config::scanlines = false;
+    }
 
-        bool numLock, capsLock, scrollLock;
+}
 
-        ESPectrum::PS2Controller.keyboard()->getLEDs(&numLock, &capsLock, &scrollLock);
+void ESPectrum::showBIOS() {
 
-        int8_t confirm = (ZXKeyb::Exists) ? 1 : -1;
-        int8_t active_led = 0;
+    Config::load(); // Restore original config values
 
-        for(i = 0; i < 500 && confirm == -1; i++) {
-            if (Kbd->virtualKeyAvailable()) {
-                bool r = Kbd->getNextVirtualKey(&NextKey);
+    auto Kbd = PS2Controller.keyboard();
+    fabgl::VirtualKeyItem NextKey;
 
-                if (r && NextKey.down) {
+    VIDEO::vga.clear(zxColor(7, 0));
 
-                    // Check keyboard status
+    int base_row = OSD_FONT_H * 4;
+    int base_col = OSD_FONT_W * 4;
+    int total_rows = OSD::scrH / OSD_FONT_H - 8;
+    int total_cols = OSD::scrW / OSD_FONT_W - 8;
+
+    #define PRINT_FILLED_ROW(text)  VIDEO::vga.print(text); VIDEO::vga.print(string(total_cols - strlen(text), ' ').c_str())
+    #define PRINT_FILLED_ROW_ALIGN_RIGHT(text)  VIDEO::vga.print(string(total_cols - strlen(text), ' ').c_str()); VIDEO::vga.print(text)
+    #define SET_CURSOR(col,row) VIDEO::vga.setCursor(base_col + (col) * OSD_FONT_W, base_row + (row) * OSD_FONT_H)
+
+    // Opciones del menú
+    const char* menuOptions[] = {"Main", "Advanced", "Config", "Exit"};
+    const int menuCount = sizeof(menuOptions)/sizeof(menuOptions[0]);
+
+    const char* menuAdvanced[] = {"Resolution", "Frequency", "Scanlines"};
+    const int menuAdvancedCount = sizeof(menuAdvanced) / sizeof(menuAdvanced[0]);
+
+    const char* menuConfig[] = {"Backup Settings", "Restore Settings", "Reset Settings"};
+    const int menuConfigCount = sizeof(menuConfig) / sizeof(menuConfig[0]);
+
+    const char* menuExit[] = {"Save Changes & Exit", "Discard Changes & Exit"};
+    const int menuExitCount = sizeof(menuExit) / sizeof(menuExit[0]);
+
+    const char* menuOptionsResolution[] = {"320x240 (4:3)", "360x200 (16:9)"};
+    const int menuOptionsResolutionCount = sizeof(menuOptionsResolution) / sizeof(menuOptionsResolution[0]);
+
+    const char* menuOptionsFrequency[] = {"60Hz (VGA)", "50Hz (VGA)", "15kHz (CRT)"};
+    const int menuOptionsFrequencyCount = sizeof(menuOptionsFrequency) / sizeof(menuOptionsFrequency[0]);
+
+    const char* menuOptionsScanlines[] = {"No", "Yes"};
+    const int menuOptionsScanlinesCount = sizeof(menuOptionsScanlines) / sizeof(menuOptionsScanlines[0]);
+
+    int selectedOption = 0;
+    int selectedAdvancedOption = 0;
+    int selectedConfigOption = 0;
+    int selectedExitOption = 0;
+
+    // Renderizar el menú inicial
+    auto renderMenu = [&](int highlight) {
+        SET_CURSOR(0, 0);
+        int len = 0;
+        for (int i = 0; i < menuCount; ++i) {
+            VIDEO::vga.setTextColor(i == highlight ? zxColor(1, 1) : zxColor(7, 1), i == highlight ? zxColor(7, 1) : zxColor(1, 0));
+            VIDEO::vga.print(" ");
+            VIDEO::vga.print(menuOptions[i]);
+            VIDEO::vga.print(" ");
+            len += strlen(menuOptions[i]) + 2;
+        }
+        VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+        VIDEO::vga.print(string(total_cols - len, ' ').c_str());
+    };
+
+    auto renderOptions = [&](const char *options[], const char *values[], const int optionsCount, int highlight) {
+        SET_CURSOR(1, 2); // Ajustar la posición para el submenú
+        for (int i = 0; i < optionsCount; ++i) {
+            // Color del texto, resaltado para el elemento seleccionado
+            VIDEO::vga.setTextColor(i == highlight ? zxColor(7, 1) : zxColor(1, 0),
+                                    i == highlight ? zxColor(0, 0) : zxColor(7, 0));
+
+            // Imprimir el nombre de la opción
+            VIDEO::vga.print(" ");
+            VIDEO::vga.print(options[i]);
+
+            // Calcular espacios en blanco para alinear valores
+            int padding = total_cols - 19 /* Help Column */ - 2 - strlen(options[i]) -
+                          (values && values[i] ? strlen(values[i]) : 0) - 2; // espacio antes del valor si existe
+
+            // Añadir los espacios para alineación
+            VIDEO::vga.print(string(padding, ' ').c_str());
+
+            // Si hay valores, imprimir el valor alineado a la derecha
+            if (values && values[i]) {
+                VIDEO::vga.print(values[i]);
+            }
+
+            VIDEO::vga.print(" \n");
+        }
+    };
+
+    auto screen_clear = [&](bool fullwidth = false) {
+        int color = zxColor(7, 0);
+        for (int y = base_row + OSD_FONT_H * 2; y < base_row + ( total_rows - 2 ) * OSD_FONT_H; y++)
+            for (int x = base_col + OSD_FONT_W; x < base_col + ( total_cols - ( fullwidth ? 0 : 20 )) * OSD_FONT_W; x++)
+                VIDEO::vga.dotFast(x, y, color);
+
+        const int top = base_row + OSD_FONT_H + OSD_FONT_H / 2;
+        const int buttom = base_row + ( total_rows - 1 ) * OSD_FONT_H - OSD_FONT_H / 2;
+        const int left = base_col + OSD_FONT_W / 2;
+        const int right = base_col + ( total_cols - 1 ) * OSD_FONT_W + OSD_FONT_W / 2;
+
+        VIDEO::vga.line(  left,    top, right,    top, zxColor(1, 0));
+        VIDEO::vga.line(  left, buttom, right, buttom, zxColor(1, 0));
+        VIDEO::vga.line(  left,    top,  left, buttom, zxColor(1, 0));
+        VIDEO::vga.line( right,    top, right, buttom, zxColor(1, 0));
+
+        VIDEO::vga.line( right - 19 * OSD_FONT_W,    top, right - 19 * OSD_FONT_W, buttom, zxColor(1, 0));
+
+        SET_CURSOR(total_cols - 19, total_rows - 7);
+        VIDEO::vga.setTextColor(zxColor(1, 0), zxColor(7, 0));
+        VIDEO::vga.print("\x1A \x1B Select Screen\n");
+        VIDEO::vga.print("\x18 \x19 Select Item\n");
+        VIDEO::vga.print("Enter: Select/Chg.\n");
+        if ( ZXKeyb::Exists ) {
+            VIDEO::vga.print("S: Save & Exit\n");
+            VIDEO::vga.print("X: Exit\n");
+        } else {
+            VIDEO::vga.print("F10: Save & Exit\n");
+            VIDEO::vga.print("ESC: Exit\n");
+        }
+
+    };
+
+    #define BIOS_DLG_ALERT   0
+    #define BIOS_DLG_CONFIRM 1
+
+    int zxDelay = 0;
+
+    auto processZXKeyb = [&]() {
+
+        if (ZXKeyb::Exists) { // START - ZXKeyb Exists
+            if (zxDelay > 0)
+                zxDelay--;
+            else
+                // Process physical keyboard
+                ZXKeyb::process();
+
+            if (!bitRead(ZXKeyb::ZXcols[3],4)) { // 5
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_LEFT, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[4],4)) { // 6
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_DOWN, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[4],3)) { // 7
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_UP, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[4],2)) { // 8
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_RIGHT, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[6],0)) { // ENTER
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_RETURN, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[1],1)) { // S -> Save & Exit
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_F10, true, false);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[0],2)) { // X -> Discard & Exit
+                zxDelay = 15;
+                Kbd->injectVirtualKey(fabgl::VK_ESCAPE, true, false);
+            } else
+                zxDelay = 0;
+
+        }
+
+    };
+
+    auto msg_dialog = [&](const char *title, const char *message, int type = BIOS_DLG_ALERT) {
+        // Calcular el ancho del título
+        int title_length = strlen(title);
+
+        // Inicializar el ancho del diálogo con el ancho del título
+        int dialog_width = title_length;
+
+        // Calcular la altura y el ancho del mensaje
+        int message_height = 0; // Contador de líneas
+        const char *p = message, *pi = message;
+        while(*p) {
+            if (*p == '\n') {
+                if (p - pi > dialog_width) dialog_width = p - pi;
+                pi = p + 1;
+                message_height++;
+            }
+            ++p;
+        }
+
+        if (pi < p && p - pi > dialog_width) dialog_width = p - pi;
+
+        dialog_width += 4; // 2 caracteres de margen a cada lado
+
+        // Ajustar el alto total del diálogo
+        int dialog_height = message_height + 5; // Incluye el título, márgenes y botones
+
+        int left = (total_cols - dialog_width) / 2;
+        int right = left + dialog_width;
+        int top = (total_rows - dialog_height) / 2;
+        int bottom = top + 2 + dialog_height;
+
+        // Limpiar el área del diálogo
+        for (int y = base_row + top * OSD_FONT_H; y < base_row + bottom * OSD_FONT_H; y++) {
+            for (int x = base_col + left * OSD_FONT_W; x < base_col + right * OSD_FONT_W; x++) {
+                VIDEO::vga.dotFast(x, y, zxColor(7, 0));
+            }
+        }
+
+        // Dibujar el borde del diálogo
+        VIDEO::vga.line(base_col +  left * OSD_FONT_W - OSD_FONT_W / 2, base_row +    top * OSD_FONT_H + OSD_FONT_H / 2, base_col + right * OSD_FONT_W + OSD_FONT_W / 2, base_row +    top * OSD_FONT_H + OSD_FONT_H / 2, zxColor(1, 0));
+        VIDEO::vga.line(base_col +  left * OSD_FONT_W - OSD_FONT_W / 2, base_row + bottom * OSD_FONT_H - OSD_FONT_H / 2, base_col + right * OSD_FONT_W + OSD_FONT_W / 2, base_row + bottom * OSD_FONT_H - OSD_FONT_H / 2, zxColor(1, 0));
+        VIDEO::vga.line(base_col +  left * OSD_FONT_W - OSD_FONT_W / 2, base_row +    top * OSD_FONT_H + OSD_FONT_H / 2, base_col +  left * OSD_FONT_W - OSD_FONT_W / 2, base_row + bottom * OSD_FONT_H - OSD_FONT_H / 2, zxColor(1, 0));
+        VIDEO::vga.line(base_col + right * OSD_FONT_W + OSD_FONT_W / 2, base_row +    top * OSD_FONT_H + OSD_FONT_H / 2, base_col + right * OSD_FONT_W + OSD_FONT_W / 2, base_row + bottom * OSD_FONT_H - OSD_FONT_H / 2, zxColor(1, 0));
+
+        VIDEO::vga.fillRect(base_col + left * OSD_FONT_W, base_row + ( top + 1 ) * OSD_FONT_H, dialog_width * OSD_FONT_W, dialog_height * OSD_FONT_H, zxColor(1,0));
+
+        // Mostrar el título en la primera línea dentro del cuadro
+        SET_CURSOR(left + dialog_width / 2 - strlen(title) / 2, top);
+        VIDEO::vga.setTextColor(zxColor(1, 0), zxColor(7, 0));
+        VIDEO::vga.print(title);
+
+        if ( message_height > 0 ) {
+            // Mostrar el mensaje en la tercera línea
+            SET_CURSOR(left + 1, top + 2);
+            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+            VIDEO::vga.print(message);
+        } else {
+            // Mostrar el mensaje en la tercera línea
+            SET_CURSOR(left + 1, top + 2);
+
+            int current_line = 0;
+            pi = p = message;
+            while(*p) {
+                if (*p == '\n') {
+                    SET_CURSOR(left + dialog_width / 2 - (p - pi) / 2, top + 2 + current_line); // +2 por la línea del título y el margen superior
+                    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+                    for(; pi < p - 1; ++pi ) VIDEO::vga.print(*pi);
+                    ++current_line;
+                }
+                ++p;
+            }
+            if (pi < p) {
+                SET_CURSOR(left + dialog_width / 2 - (p - pi) / 2, top + 2 + current_line); // +2 por la línea del título y el margen superior
+                VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+                for(; pi < p - 1; ++pi ) VIDEO::vga.print(*pi);
+            }
+        }
+
+        // Mostrar los botones "OK" y "Cancel" en la quinta línea
+        int selectedButton = 0; // 0 = OK, 1 = CancelDLG_ALERT
+        auto renderButtons = [&](int type = BIOS_DLG_ALERT) {
+            SET_CURSOR(left + dialog_width / 2 - ( ( type == BIOS_DLG_CONFIRM ) ? 11 : 5 ), top + 4 + message_height );
+            VIDEO::vga.setTextColor(selectedButton == 0 ? zxColor(1, 1) : zxColor(7, 0), selectedButton == 0 ? zxColor(7, 1) : zxColor(1, 0));
+            VIDEO::vga.print("[   OK   ]");
+
+            if ( type == BIOS_DLG_CONFIRM ) {
+                VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+                VIDEO::vga.print("  ");
+
+                VIDEO::vga.setTextColor(selectedButton == 1 ? zxColor(1, 1) : zxColor(7, 0), selectedButton == 1 ? zxColor(7, 1) : zxColor(1, 0));
+                VIDEO::vga.print("[ CANCEL ]");
+            }
+        };
+        renderButtons(type);
+
+        // Esperar la selección del usuario
+        while (true) {
+            processZXKeyb();
+            while (Kbd->virtualKeyAvailable()) {
+                fabgl::VirtualKeyItem NextKey;
+                if (Kbd->getNextVirtualKey(&NextKey) && NextKey.down) {
                     switch (NextKey.vk) {
-                        case fabgl::VK_Y:
-                        case fabgl::VK_y:
-                            confirm = 1;
+                        case fabgl::VK_LEFT:
+                        case fabgl::VK_RIGHT:
+                            if (type == BIOS_DLG_CONFIRM) {
+                                selectedButton = 1 - selectedButton; // Cambiar entre 0 y 1
+                                renderButtons(BIOS_DLG_CONFIRM);
+                            }
                             break;
+                        case fabgl::VK_RETURN:
+                        case fabgl::VK_SPACE:
+                            return selectedButton == 0; // Retorna true si seleccionó OK, false si seleccionó Cancel
+                        case fabgl::VK_ESCAPE:
+                            return false;
+                    }
+                }
+            }
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
+    };
 
-                        case fabgl::VK_N:
-                        case fabgl::VK_n:
-                            confirm = 0;
-                            break;
+    // Mostrar información de hardware
+    auto showHardwareInfo = [&]() {
+        screen_clear();
+
+        // Mostrar información de chip
+        SET_CURSOR(1, 2);
+        VIDEO::vga.setTextColor(zxColor(1, 0), zxColor(7, 0));
+
+        // Get chip information
+        esp_chip_info_t chip_info;
+        esp_chip_info(&chip_info);
+
+        // Chip models for ESP32
+        string textout = " Chip model    : ";
+        uint32_t chip_ver = esp_efuse_get_pkg_ver();
+        uint32_t pkg_ver = chip_ver & 0x7;
+        switch (pkg_ver) {
+            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6 :
+                textout += (chip_info.revision == 3) ? "ESP32-D0WDQ6-V3" : "ESP32-D0WDQ6";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5 :
+                textout += (chip_info.revision == 3) ? "ESP32-D0WD-V3" : "ESP32-D0WD";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5 :
+                textout += "ESP32-D2WD";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2 :
+                textout += "ESP32-PICO-D2";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 :
+                textout += "ESP32-PICO-D4";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302 :
+                textout += "ESP32-PICO-V3-02";
+                break;
+            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3 :
+                textout += "ESP32-D0WDR2-V3";
+                break;
+            default:
+                textout += "Unknown";
+        }
+        textout += "\n";
+        VIDEO::vga.print(textout.c_str());
+
+        // Continuar mostrando información del hardware
+
+        textout = " Chip cores    : " + to_string(chip_info.cores) + "\n"; VIDEO::vga.print(textout.c_str());
+        textout = " Chip revision : " + to_string(chip_info.revision) + "\n"; VIDEO::vga.print(textout.c_str());
+        textout = " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n"; VIDEO::vga.print(textout.c_str());
+        multi_heap_info_t info; heap_caps_get_info(&info, MALLOC_CAP_SPIRAM); uint32_t psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
+        textout = " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n"; VIDEO::vga.print(textout.c_str());
+        textout = " IDF Version   : " + (string)(esp_get_idf_version()) + "\n"; VIDEO::vga.print(textout.c_str());
+
+    };
+
+    // Iniciar el menú
+    renderMenu(selectedOption);
+    showHardwareInfo();
+
+    SET_CURSOR(0, total_rows - 1);
+    string footer = "ESPeccy BIOS - commit: " + string(getShortBuildDate()) + " ";
+    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+    PRINT_FILLED_ROW_ALIGN_RIGHT(footer.c_str());
+
+    // Lógica de navegación del menú
+    bool exitMenu = false;
+
+    bool exit_to_main = false;
+
+    auto mainMenuNav = [&](const std::function<void()>& escCancel, const std::function<void()>& f10Cancel) {
+        switch (NextKey.vk) {
+            case fabgl::VK_RIGHT:
+                selectedOption = (selectedOption + 1) % menuCount;
+                renderMenu(selectedOption);
+                exit_to_main = true;
+                break;
+
+            case fabgl::VK_LEFT:
+                selectedOption = (selectedOption - 1 + menuCount) % menuCount;
+                renderMenu(selectedOption);
+                exit_to_main = true;
+                break;
+
+            case fabgl::VK_ESCAPE:
+                if ( msg_dialog("Exit BIOS Setup", "Are you sure you want to exit?\nUnsaved changes will be lost.", BIOS_DLG_CONFIRM) ) {
+                    OSD::esp_hard_reset();
+                } else {
+                    screen_clear(true);
+                    escCancel();
+                }
+                break;
+
+            case fabgl::VK_F10:
+                if ( msg_dialog("Confirm Save & Exit", "Are you sure you want to save\nchanges and exit?", BIOS_DLG_CONFIRM) ) {
+                    Config::save();
+                    OSD::esp_hard_reset();
+                } else {
+                    screen_clear(true);
+                    f10Cancel();
+                }
+                break;
+        }
+    };
+
+
+    auto optionsNav = [&](int &selectedOption, int menuCount, const std::function<void()> &renderMenu) {
+        switch (NextKey.vk) {
+            case fabgl::VK_DOWN:
+                selectedOption = (selectedOption + 1) % menuCount;
+                screen_clear();
+                renderMenu();
+                break;
+
+            case fabgl::VK_UP:
+                selectedOption = (selectedOption - 1 + menuCount) % menuCount;
+                screen_clear();
+                renderMenu();
+                break;
+        }
+    };
+
+    while (!exitMenu) {
+        int oldSelectedOptions = selectedOption;
+
+        processZXKeyb();
+        while (Kbd->virtualKeyAvailable()) {
+            bool r = Kbd->getNextVirtualKey(&NextKey);
+            if (r && NextKey.down) mainMenuNav([](){}, [](){});
+        }
+
+        if (selectedOption != oldSelectedOptions || exit_to_main ) {
+            exit_to_main = false;
+            // Acción según la opción seleccionada
+            switch (selectedOption) {
+                case 0: // Acción para MAIN
+                    screen_clear();
+                    showHardwareInfo();
+                    break;
+                case 1: // Acción para ADVANCED
+                {
+                    selectedAdvancedOption = 0;
+
+                    auto renderAdvancedOptions = [&]() {
+                        const char *valuesAvanced[3] = { menuOptionsResolution[Config::aspect_16_9], menuOptionsFrequency[Config::videomode], menuOptionsScanlines[Config::scanlines] };
+                        renderOptions(menuAdvanced, valuesAvanced, menuAdvancedCount, selectedAdvancedOption);
+                    };
+
+                    // Renderizar menú avanzado
+                    screen_clear();
+                    renderAdvancedOptions();
+
+                    // Lógica para el menú avanzado
+                    bool exitAdvancedMenu = false;
+                    while (!exitAdvancedMenu) {
+                        processZXKeyb();
+                        while (Kbd->virtualKeyAvailable()) {
+                            bool r = Kbd->getNextVirtualKey(&NextKey);
+                            if (r && NextKey.down) {
+
+                                mainMenuNav([&renderAdvancedOptions](){renderAdvancedOptions();}, [&renderAdvancedOptions](){renderAdvancedOptions();});
+                                optionsNav(selectedAdvancedOption, menuAdvancedCount, [&renderAdvancedOptions](){renderAdvancedOptions();});
+
+                                switch (NextKey.vk) {
+                                    case fabgl::VK_RETURN:
+                                    case fabgl::VK_SPACE:
+                                        switch (selectedAdvancedOption) {
+                                            case 0: // Acción para RESOLUTION
+                                                Config::aspect_16_9 = (Config::aspect_16_9 + 1) % 2;
+                                                break;
+                                            case 1: // Acción para FREQUENCY
+                                                Config::videomode = (Config::videomode + 1) % 3;
+                                                break;
+                                            case 2: // Acción para SCANLINES
+                                                Config::scanlines = (Config::scanlines + 1) % 2;
+                                                break;
+                                        }
+
+                                        screen_clear();
+                                        renderAdvancedOptions();
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (exit_to_main) break;
+
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
 
                     }
 
+                    if (exit_to_main) break;
+
+                    screen_clear();
+                    renderAdvancedOptions();
+                    break;
+                }
+                case 2: // Acción para CONFIG
+                {
+                    selectedConfigOption = 0;
+                    // Renderizar menú de visualización
+                    screen_clear();
+                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+
+                    auto remountSD = [&]() {
+                        if ( FileUtils::SDReady && !FileUtils::isMountedSDCard() ) FileUtils::unmountSDCard();
+                        if ( !FileUtils::SDReady ) FileUtils::initFileSystem();
+                    };
+
+                    bool exitConfigMenu = false;
+                    while (!exitConfigMenu) {
+                        processZXKeyb();
+                        while (Kbd->virtualKeyAvailable()) {
+                            bool r = Kbd->getNextVirtualKey(&NextKey);
+                            if (r && NextKey.down) {
+
+                                mainMenuNav([&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);},
+                                            [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
+                                optionsNav(selectedConfigOption, menuConfigCount, [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
+
+                                switch (NextKey.vk) {
+                                    case fabgl::VK_RETURN:
+                                    case fabgl::VK_SPACE:
+                                        switch (selectedConfigOption) {
+                                            case 0: // Acción para BACKUP
+                                            {
+                                                if (msg_dialog("Confirm Backup", "Insert a valid SD card.\nPress OK to save BIOS settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
+                                                    screen_clear(true);
+                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                    remountSD();
+                                                    bool status = !FileUtils::SDReady || Config::saveToSD();
+                                                    if (status) msg_dialog("Backup Error", "Failed to write backup.\nPlease check SD card and try again.");
+                                                    else msg_dialog("Backup Completed", "BIOS settings successfully saved to SD card.");
+                                                }
+                                                screen_clear(true);
+                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                break;
+                                            }
+                                            case 1: // Acción para RESTORE
+                                            {
+                                                if (msg_dialog("Confirm Restore", "Insert the SD card with the backup.\nPress OK to restore settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
+                                                    screen_clear(true);
+                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                    remountSD();
+                                                    bool status = !FileUtils::SDReady || Config::loadFromSD();
+                                                    if (status) msg_dialog("Restore Error", "Failed to restore settings.\nPlease verify SD card and try again.");
+                                                    else msg_dialog("Restore Completed", "BIOS settings successfully restored from SD card.");
+                                                }
+                                                screen_clear(true);
+                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                break;
+                                            }
+                                            case 2: // Acción para RESET
+                                                if (msg_dialog("Reset Configuration & Reboot", "Do you really want to reset all settings?", BIOS_DLG_CONFIRM)) {
+                                                    nvs_flash_erase();
+                                                    OSD::esp_hard_reset();
+                                                } else {
+                                                    screen_clear(true);
+                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (exit_to_main) break;
+
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+
+                    if (exit_to_main) break;
+
+                    screen_clear();
+                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                    break;
+                }
+                case 3:
+                {
+                    selectedExitOption = 0;
+                    // Renderizar menú de visualización
+                    screen_clear();
+                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+
+                    bool exitConfigMenu = false;
+                    while (!exitConfigMenu) {
+                        processZXKeyb();
+                        while (Kbd->virtualKeyAvailable()) {
+                            bool r = Kbd->getNextVirtualKey(&NextKey);
+                            if (r && NextKey.down) {
+
+                                mainMenuNav([&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);},
+                                            [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
+                                optionsNav(selectedExitOption, menuExitCount, [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
+
+                                switch (NextKey.vk) {
+                                    case fabgl::VK_RETURN:
+                                    case fabgl::VK_SPACE:
+                                        switch (selectedExitOption) {
+                                            case 0: // Acción para Save Changes & Exit
+                                                if ( msg_dialog("Confim Save & Exit", "Are you sure you want to save\nchanges and exit?", BIOS_DLG_CONFIRM) ) {
+                                                    Config::save();
+                                                    OSD::esp_hard_reset();
+                                                } else {
+                                                    screen_clear(true);
+                                                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                                                }
+                                                break;
+                                            case 1: // Acción para Discard Changes & Exit
+                                                if ( msg_dialog("Exit BIOS Setup", "Are you sure you want to exit?\nUnsaved changes will be lost.", BIOS_DLG_CONFIRM) ) {
+                                                    OSD::esp_hard_reset();
+                                                } else {
+                                                    screen_clear(true);
+                                                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (exit_to_main) break;
+
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+
+                    if (exit_to_main) break;
+
+                    screen_clear();
+                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                    break;
                 }
             }
-
-            if ( i & 0x04 ) {
-                active_led++;
-                if ( active_led > 3) active_led = 0;
-                ESPectrum::PS2Controller.keyboard()->setLEDs(active_led==1,active_led==2,active_led==3);
-            }
-
-            delayMicroseconds(10000);
         }
-
-        if ( confirm == 1 ) {
-            nvs_flash_erase();
-            OSD::esp_hard_reset();
-        }
-
-        ESPectrum::PS2Controller.keyboard()->setLEDs(numLock, capsLock, scrollLock);
-
-    } else
-    if (i < 200) {
-        Config::videomode = (s[0] == '1') ? 0 : (s[0] == '2') ? 1 : 2;
-        if (Config::videomode == 2)
-            Config::aspect_16_9 = false; // Force 4:3 mode for CRT
-        else
-            Config::aspect_16_9 = (s[1] == 'Q') ? false : true;
-        Config::ram_file="none";
-        Config::save("videomode");
-        Config::save("asp169");
-        Config::save("ram");
-        // printf("%s\n", s.c_str());
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
+    VIDEO::vga.clear(zxColor(7, 0));
 }
 
 //=======================================================================================
@@ -681,6 +1216,12 @@ void ESPectrum::setup()
     FileUtils::initFileSystem();
 
     if (Config::slog_on) showMemInfo("File system started");
+
+    //=======================================================================================
+    // BIOS
+    //=======================================================================================
+
+    if (runBios) showBIOS();
 
     //=======================================================================================
     // AUDIO

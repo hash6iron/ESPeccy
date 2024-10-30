@@ -402,6 +402,87 @@ void Config::save(string value) {
     nvs_close(handle);
 }
 
+// Function to save configuration to SD using fopen
+bool Config::saveToSD() {
+    FILE *file = fopen((FileUtils::MountPoint + "/.ESPeccy.cfg").c_str(), "w");
+    if (!file) {
+        printf("Failed to open .ESPeccy.cfg for writing\n");
+        return true;
+    }
+
+    for (const auto& entry : configEntries) {
+        switch (entry.type) {
+            case CONFIG_TYPE_STRING:
+                fprintf(file, "%s=%s\n", entry.key, static_cast<std::string*>(entry.value)->c_str());
+                break;
+            case CONFIG_TYPE_BOOL:
+                fprintf(file, "%s=%s\n", entry.key, *static_cast<bool*>(entry.value) ? "true" : "false");
+                break;
+            case CONFIG_TYPE_UINT8:
+                fprintf(file, "%s=%u\n", entry.key, *static_cast<uint8_t*>(entry.value));
+                break;
+            case CONFIG_TYPE_UINT16:
+                fprintf(file, "%s=%u\n", entry.key, *static_cast<uint16_t*>(entry.value));
+                break;
+            case CONFIG_TYPE_INT8:
+                fprintf(file, "%s=%d\n", entry.key, *static_cast<int8_t*>(entry.value));
+                break;
+        }
+    }
+
+    fclose(file);
+    return false;
+}
+
+// Function to load configuration from SD using fopen
+bool Config::loadFromSD() {
+    FILE *file = fopen((FileUtils::MountPoint + "/.ESPeccy.cfg").c_str(), "r");
+    if (!file) {
+        printf("Failed to open .ESPeccy.cfg for reading\n");
+        return true;
+    }
+
+    char line[128]; // Buffer para leer cada línea
+    while (fgets(line, sizeof(line), file)) {
+        char *delimiterPos = strchr(line, '=');
+        if (!delimiterPos) continue; // Saltar líneas sin '='
+
+        *delimiterPos = '\0'; // Dividir en campo y valor
+        std::string key = line;
+        std::string valueStr = delimiterPos + 1;
+
+        // Remover salto de línea final si existe
+        valueStr.erase(std::remove(valueStr.begin(), valueStr.end(), '\n'), valueStr.end());
+
+        // Buscamos el campo y actualizamos su valor
+        for (auto& entry : configEntries) {
+            if (entry.key == key) {
+                switch (entry.type) {
+                    case CONFIG_TYPE_STRING:
+                        *static_cast<std::string*>(entry.value) = valueStr;
+                        break;
+                    case CONFIG_TYPE_BOOL:
+                        *static_cast<bool*>(entry.value) = (valueStr == "true");
+                        break;
+                    case CONFIG_TYPE_UINT8:
+                        *static_cast<uint8_t*>(entry.value) = static_cast<uint8_t>(std::stoi(valueStr));
+                        break;
+                    case CONFIG_TYPE_UINT16:
+                        *static_cast<uint16_t*>(entry.value) = static_cast<uint16_t>(std::stoi(valueStr));
+                        break;
+                    case CONFIG_TYPE_INT8:
+                        *static_cast<int8_t*>(entry.value) = static_cast<int8_t>(std::stoi(valueStr));
+                        break;
+                }
+                break;
+            }
+        }
+    }
+
+    fclose(file);
+    return false;
+}
+
 void Config::requestMachine(string newArch, string newRomSet) {
 
     arch = newArch;
