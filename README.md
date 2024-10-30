@@ -171,7 +171,7 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 
 ## Project links
 
-*Currently in preparation.*
+[Telegram](https://t.me/ESPeccy)
 
 ## Supported hardware
 
@@ -226,3 +226,8 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 - [Investrónica team](https://es.wikipedia.org/wiki/Investr%C3%B3nica).
 - [Matthew Smith](https://en.wikipedia.org/wiki/Matthew_Smith_(games_programmer)) for [Manic Miner](https://en.wikipedia.org/wiki/Manic_Miner).
 
+## Support the Project
+
+If you enjoy using **ESPeccy** and would like to show your support, you have the option to make a donation. Thank you for being part of this journey!
+
+[![Donate to this project](https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png)](https://paypal.me/bennugd?country.x=AR&locale.x=es_XC)
