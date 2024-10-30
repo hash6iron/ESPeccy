@@ -65,7 +65,7 @@ jobs:
 
     - name: Update Release
       run: |
-        gh release edit "${{ github.ref }}" --title "Release ${{ github.ref }}"
+        gh release edit "${{ github.ref_name }}" --title "Release ${{ github.ref_name }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
