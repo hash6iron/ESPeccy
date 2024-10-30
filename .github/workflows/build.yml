@@ -60,6 +60,25 @@ jobs:
         name: ESPectrum-firmware-nopsram
         path: ./firmwares/nopsram
 
+    - name: Install GitHub CLI
+      run: sudo apt-get install -y gh
+
+    - name: Login to GitHub CLI
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+    - name: Create or Update Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Intentar crear el release; si ya existe, lo actualiza
+        if gh release view "${{ github.ref }}" >/dev/null 2>&1; then
+          gh release edit "${{ github.ref }}" --title "Release ${{ github.ref }}"
+        else
+          gh release create "${{ github.ref }}" --title "Release ${{ github.ref }}"
+        fi
+
     - name: Install esptool
       run: python -m pip install esptool
 
@@ -82,17 +101,6 @@ jobs:
           0x1000 ./firmwares/nopsram/bootloader.bin \
           0x8000 ./firmwares/nopsram/partitions.bin \
           0x40000 ./firmwares/nopsram/firmware.bin
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload Complete Firmware (psram) to Release
       uses: actions/upload-release-asset@v1
