@@ -293,7 +293,7 @@ void OSD::drawKbdLayout(uint8_t layout) {
         bottom[3] = "SS+4: 48K | SS+T: TK | SS+P PS/2 | SS+8 ZX81"; // ZX kbd help
         bottom[4] = "SS+4: 48K | SS+T: TK | SS+Z ZX | SS+P PS/2"; // ZX81+ layout
     } else {
-        bottom[0] = "P: PS/2 | T: TK |  Z: ZX | 8: ZX81"; // ZX Spectrum 48K layout
+        bottom[0] = "P: PS/2 | T: TK | Z: ZX | 8: ZX81"; // ZX Spectrum 48K layout
         bottom[1] = "4: 48K | P: PS/2 | Z: ZX | 8: ZX81"; // TK 90x layout
         bottom[2] = "4: 48K | T: TK | Z: ZX | 8: ZX81"; // PS/2 kbd help
         bottom[3] = "4: 48K | T: TK | P: PS/2 | 8: ZX81"; // ZX kbd help
