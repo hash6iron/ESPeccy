@@ -569,7 +569,6 @@ void Config::requestMachine(string newArch, string newRomSet) {
             MemESP::rom[0] += 8;
         }
 
-
     } else if (arch == "TK95") {
 
         if (newRomSet=="") romSet = "95es"; else romSet = newRomSet;

@@ -516,6 +516,7 @@ static const char *AboutMsg[NLANGS][5] = {
 };
 
 static const char *StartMsg[NLANGS] = {
+	// English
     "Hi! Thanks for choosing \nA1ESP\nF1eccy!\r"
     "\r"
     "\nA1ESP\nF1eccy is open source software\r"
@@ -525,6 +526,7 @@ static const char *StartMsg[NLANGS] = {
     "\nA1ESP\nF1eccy is powered by \nA1ESP\nF1ectrum\r"
     "(https://zxespectrum.speccy.org/)\r"
 	,
+	// Spanish
 	"\xAD" "Hola! \xADGracias por elegir \nA1ESP\nF1eccy!\r"
 	"\r"
 	"\nA1ESP\nF1eccy es software de c\xA2" "digo abier-\r"
@@ -534,13 +536,14 @@ static const char *StartMsg[NLANGS] = {
 	"\nA1ESP\nF1eccy es impulsado por \nA1ESP\nF1ectrum\r"
     "(https://zxespectrum.speccy.org/)\r"
 	,
+	// Portugues
 	"Oi! Obrigado por escolher \nA1ESP\nF1eccy!\r"
 	"\r"
 	"\nA1ESP\nF1eccy \x82 software de c" "\xA2" "digo aberto\r"
 	"sob licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\r"
 	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\r"
     "\r"
-	"\nA1ESP\nF1eccy \x82 alimentado pelo ESPectrum\n"\
+	"\nA1ESP\nF1eccy \x82 alimentado pelo ESPectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
 };
 

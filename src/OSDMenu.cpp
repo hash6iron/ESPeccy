@@ -63,10 +63,8 @@ using namespace std;
 
 extern Font Font6x8;
 
-int8_t OSD::rowScrollPos;
-int8_t OSD::rowScrollStatus;
-int OSD::rowTimeStartScroll;
-int OSD::rowTimeScroll;
+RowScrollContext OSD::rowScrollCTX;
+RowScrollContext OSD::statusBarScrollCTX;
 
 void OSD::menuSaveState(MenuState& state) {
     state.begin_row = begin_row;
@@ -81,6 +79,85 @@ void OSD::menuRestoreState(const MenuState& state) {
     last_focus = state.last_focus;
     last_begin_row = state.last_begin_row;
 }
+
+void OSD::ResetRowScrollContext(RowScrollContext &context) {
+    context.rowTimeStartScroll = 0;
+    context.rowTimeScroll = 0;
+    context.rowScrollPos = 0;
+    context.rowScrollStatus = false;
+}
+/**
+ * @brief Rotates a string based on the scroll context and rotation type.
+ *
+ * @param line Original string to rotate.
+ * @param context Scroll context containing current scroll position and status.
+ * @param maxLength Maximum length for the output string.
+ * @param startThreshold Threshold for starting the scroll.
+ * @param scrollInterval Interval between scroll steps.
+ * @return std::string Rotated string based on the specified context.
+ */
+std::string OSD::RotateLine(const std::string &line, RowScrollContext *context, int maxLength, int startThreshold, int scrollInterval) {
+    int len = line.length();
+
+    // Si la longitud es menor al maxLength, rellena con espacios al final
+    if (len < maxLength) {
+        return line + std::string(maxLength - len, ' ');
+    }
+
+    // Incrementa el contador de inicio de scroll hasta el umbral
+    if (context->rowTimeStartScroll < startThreshold) {
+        context->rowTimeStartScroll++;
+    }
+
+    // Inicia la rotación solo si se alcanzó el umbral de inicio
+    if (context->rowTimeStartScroll == startThreshold) {
+        context->rowTimeScroll++;
+
+        // Aplica el scroll al alcanzar el intervalo de scroll
+        if (context->rowTimeScroll == scrollInterval) {
+            if (Config::osd_AltRot == 1) {
+                // Rota hacia adelante o hacia atrás según el estado del scroll
+                if (!context->rowScrollStatus) {
+                    context->rowScrollPos++;
+                    if (context->rowScrollPos >= len - maxLength) {
+                        context->rowScrollStatus = true; // Cambia de dirección
+                    }
+                } else {
+                    context->rowScrollPos--;
+                    if (context->rowScrollPos <= 0) {
+                        context->rowScrollStatus = false; // Cambia de dirección
+                    }
+                }
+            } else {
+                context->rowScrollPos = (context->rowScrollPos + 1) % (len + maxLength);
+            }
+            // Reinicia el contador de scroll
+            context->rowTimeScroll = 0;
+        }
+    }
+
+    std::string rotatedLine;
+
+    // Calcula la posición de rotación y genera la cadena rotada
+    int offset = context->rowScrollPos % len;
+
+    // Lógica de rotación según Config::osd_AltRot
+    if (Config::osd_AltRot == 1) {
+        if (offset < 0) offset += len;
+        rotatedLine = line.substr(offset) + line.substr(0, offset);
+    } else {
+        // Calcula la posición de rotación y genera la cadena rotada
+        if ( context->rowScrollPos >= len ) {
+            rotatedLine = std::string(maxLength - (offset % maxLength), SCROLL_SEP_CHAR) + line.substr(0, offset);
+        } else {
+            rotatedLine = line.substr(offset) + std::string(maxLength, SCROLL_SEP_CHAR) + line.substr(0, offset);
+        }
+    }
+
+    // Devuelve la cadena rotada limitada a maxLength
+    return rotatedLine.substr(0, maxLength);
+}
+
 
 int OSD::prepare_checkbox_menu(string &menu, string curopt) {
 
@@ -133,9 +210,9 @@ void OSD::menuPrintRow(uint8_t virtual_row_num, uint8_t line_type) {
 void OSD::statusbarDraw(const string& statusbar) {
     VIDEO::vga.setCursor(x + 1, y + 1 + (virtual_rows * OSD_FONT_H));
     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-    VIDEO::vga.print((statusbar + std::string(cols - statusbar.size(), ' ')).c_str());
+    string text = " " + RotateLine(statusbar, &statusBarScrollCTX, cols - 2, 125, 25) + " ";
+    VIDEO::vga.print(text.c_str());
 }
-
 
 // Draw the complete menu
 void OSD::WindowDraw() {
@@ -372,7 +449,7 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
 
     cols += with_tab ? 1 : 2;
 
-    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
+//    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
 
     if (cols > max_cols) cols = max_cols;
 
@@ -394,6 +471,8 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
     }
 
     menuRedraw(); // Draw menu content
+
+    ResetRowScrollContext(statusBarScrollCTX);
 
     if ( statusbar != "" ) statusbarDraw(statusbar);
 
@@ -500,6 +579,8 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
                 }
             }
         }
+
+        if ( statusbar != "" ) statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 
@@ -754,58 +835,21 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
         margin = (real_rows > virtual_rows ? 3 : 2);
     }
 
-    int line_len_to_tab = line.find(ASCII_TAB);
-
-    if (line_len_to_tab != line.npos) {
+    int tab_pos = line.find(ASCII_TAB);
+    if (tab_pos != line.npos) {
         int line_len_without_tab = line.length() - 1;
-        bool safe_limit = cols - margin >= line_len_without_tab;
-
-        if ( safe_limit ) {
-            line = line.substr(0, line_len_to_tab) // first column
-                 + string(cols - margin - line_len_without_tab, ' ') // space fill
-                 + line.substr(line_len_to_tab + 1); // second column, fixed part, after tab
-        } else {
-            int second_column_len = line_len_without_tab - line_len_to_tab;
-            int max_first_column_size = cols - margin - second_column_len;
-
-            string first_column;
-
+        int space_fill = cols - margin - line_len_without_tab;
+        if ( space_fill < 0 ) {
+            int max_first_column_size = cols - margin - ( line_len_without_tab - tab_pos ) /* second_column_len */;
             if (line_type == IS_FOCUSED || line_type == IS_SELECTED_FOCUSED) {
-                if ( rowScrollPos > line_len_to_tab ) {
-                    rowScrollPos = -max_first_column_size;
-                    first_column = string(-rowScrollPos, SCROLL_SEP_CHAR);
-                } else if ( rowScrollPos < 0 ) {
-                    first_column = string(-rowScrollPos, SCROLL_SEP_CHAR);
-                    if ( max_first_column_size - rowScrollPos > 0 ) first_column += line.substr(0, max_first_column_size + rowScrollPos);
-                } else {
-                    first_column = line.substr(rowScrollPos, std::min(max_first_column_size, line_len_to_tab - rowScrollPos));
-                    if (!Config::osd_AltRot && first_column.length() < max_first_column_size) {
-                        line += string(max_first_column_size - first_column.length(), SCROLL_SEP_CHAR) + first_column;
-                    }
-                }
-
-                if (Config::osd_AltRot == 1) {
-                    if (!rowScrollStatus) {
-                        if (rowScrollPos >= line_len_to_tab - max_first_column_size) {
-                            rowTimeStartScroll = 0;
-                            rowScrollStatus = 1;
-                        }
-                    } else {
-                        if (rowScrollPos == 0) {
-                            rowScrollPos = 0;
-                            rowTimeStartScroll = 0;
-                            rowScrollStatus = 0;
-                        }
-                    }
-                }
-
+                line = RotateLine(line.substr(0, tab_pos), &rowScrollCTX, max_first_column_size, 125, 25) + line.substr(tab_pos + 1);
             } else {
-                first_column = line.substr(0, cols - margin - second_column_len);
+                line = line.substr(0, max_first_column_size) + line.substr(tab_pos + 1);
             }
-
-            line = first_column // first column
-                 + string(max_first_column_size - first_column.length(), SCROLL_SEP_CHAR) // space fill
-                 + line.substr(line_len_to_tab + 1); // second column, fixed part, after tab
+        } else {
+            line = line.substr(0, tab_pos) // first column
+                 + string(space_fill, ' ') // space fill
+                 + line.substr(tab_pos + 1); // second column, fixed part, after tab
         }
     }
 
@@ -822,9 +866,7 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
             VIDEO::vga.print(" ");
     } else {
         if (line.length() < cols - margin) {
-            VIDEO::vga.print(line.c_str());
-            for (uint8_t i = line.length(); i < (cols - margin); ++i)
-                VIDEO::vga.print(" ");
+            VIDEO::vga.print((line + string(cols - margin - line.length(), ' ')).c_str());
         } else {
             VIDEO::vga.print(line.substr(0, cols - margin).c_str());
         }
@@ -833,6 +875,31 @@ void OSD::PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu) {
     VIDEO::vga.print(" ");
 
 }
+
+
+void OSD::tapemenuStatusbarRedraw() {
+    if ( Tape::tapeFileType == TAPE_FTYPE_TAP ) {
+        string options;
+        if ( !Tape::tapeIsReadOnly ) {
+            if (ZXKeyb::Exists) {
+                options = Config::lang == 0 ? "CS+ENT: Select | N: Rename | M: Move | D: Delete " :
+                          Config::lang == 1 ? "CS+ENT: Seleccionar | N: Renombrar | M: Mover | D: Borrar " :
+                                              "CS+ENT: Selecionar | N: Renomear | M: Mover | D: Excluir ";
+            } else {
+                options = Config::lang == 0 ? "SPC: Select | F2: Rename | F6: Move | F8: Delete " :
+                          Config::lang == 1 ? "ESP: Seleccionar | F2: Renombrar | F6: Mover | F8: Borrar " :
+                                              "ESP: Selecionar | F2: Renomear | F6: Mover | F8: Excluir ";
+            }
+        } else {
+            options = Config::lang == 0 ? "[Read-Only TAP]" :
+                      Config::lang == 1 ? "[TAP de solo lectura]" :
+                                          "[TAP somente leitura]";
+        }
+
+        statusbarDraw((const string) options);
+    }
+}
+
 
 // Redraw inside rows
 void OSD::tapemenuRedraw(string title, bool force) {
@@ -863,28 +930,7 @@ void OSD::tapemenuRedraw(string title, bool force) {
             }
         }
 
-        if ( Tape::tapeFileType == TAPE_FTYPE_TAP ) {
-            string options;
-            if ( !Tape::tapeIsReadOnly ) {
-                if (ZXKeyb::Exists) {
-                    options = Config::lang == 0 ? " CS+ENT Select | N Rename | M Move | D Delete" :
-                              Config::lang == 1 ? " CS+ENT Selec. | N Renombrar | M Mover | D Borrar" :
-                                                  " CS+ENT Selec. | N Renomear | M Mover | D Excluir";
-                } else {
-                    options = Config::lang == 0 ? " SPC Select | F2 Rename | F6 Move | F8 Delete" :
-                              Config::lang == 1 ? " ESP Selec. | F2 Renombrar | F6 Mover | F8 Borrar" :
-                                                  " ESP Selec. | F2 Renomear | F6 Mover | F8 Excluir";
-                }
-            } else {
-                options = Config::lang == 0 ? " [Read-Only TAP]" :
-                          Config::lang == 1 ? " [TAP de solo lectura]" :
-                                              " [TAP somente leitura]";
-            }
-
-            VIDEO::vga.setCursor(x + 1, y + 1 + (virtual_rows * OSD_FONT_H));
-            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-            VIDEO::vga.print((options + std::string(cols - options.size(), ' ')).c_str());
-        }
+        tapemenuStatusbarRedraw();
 
         menuScrollBar(begin_row);
 
@@ -958,8 +1004,7 @@ int OSD::menuTape(string title) {
 
     tapemenuRedraw(title);
 
-    // zxDelay = REPDEL;
-    // lastzxKey = 0;
+    ResetRowScrollContext(statusBarScrollCTX);
 
     while (1) {
 
@@ -1131,6 +1176,8 @@ int OSD::menuTape(string title) {
                 }
             }
         }
+
+        tapemenuStatusbarRedraw();
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
     }
@@ -1354,7 +1401,7 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     cols += (real_rows > virtual_rows ? 1 : 0); // For scrollbar
 
-    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
+//    if ( statusbar != "" && cols < statusbar.length() + 1 ) cols = statusbar.length() + 1;
 
     if (cols > max_cols) cols = max_cols;
 
@@ -1377,12 +1424,9 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     menuRedraw(title, true); // Draw menu content
 
-    if ( statusbar != "" ) statusbarDraw(statusbar);
+    ResetRowScrollContext(statusBarScrollCTX);
 
-    rowScrollPos = 0;
-    rowTimeStartScroll = 0;
-    rowTimeScroll = 0;
-    rowScrollStatus = 0;
+    if ( statusbar != "" ) statusbarDraw(statusbar);
 
     while (1) {
 
@@ -1393,10 +1437,7 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
         // Process external keyboard
         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
-            rowScrollPos = 0;
-            rowTimeStartScroll = 0;
-            rowTimeScroll = 0;
-            rowScrollStatus = 0;
+            ResetRowScrollContext(rowScrollCTX);
 
             if (ESPectrum::readKbd(&Menukey)) {
                 if (!Menukey.down) continue;
@@ -1504,18 +1545,11 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
             }
 
         } else {
-            if (rowTimeStartScroll < 125) rowTimeStartScroll++;
+            PrintRow(focus, IS_FOCUSED);
+
         }
 
-        if (rowTimeStartScroll == 125) {
-            rowTimeScroll++;
-            if (rowTimeScroll == 25) {
-                if (!rowScrollStatus) rowScrollPos++;
-                else                  rowScrollPos--;
-                PrintRow(focus, IS_FOCUSED);
-                rowTimeScroll = 0;
-            }
-        }
+        if ( statusbar != "" ) statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 

@@ -59,10 +59,9 @@ FILE *dirfile;
 unsigned int OSD::elements;
 unsigned int OSD::fdSearchElements;
 unsigned int OSD::ndirs;
-int8_t OSD::fdScrollPos;
-int8_t OSD::fdScrollStatus;
-int OSD::timeStartScroll;
-int OSD::timeScroll;
+
+RowScrollContext OSD::fdRowScrollCTX;
+
 uint8_t OSD::fdCursorFlash;
 bool OSD::fdSearchRefresh;
 
@@ -130,6 +129,19 @@ unsigned long getLong(char *buffer) {
     }
 
     return result;
+}
+
+void OSD::fd_StatusbarDraw(const string& statusbar, bool fdMode) {
+    // Print status bar
+    menuAt(mf_rows, 0);
+    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+
+    if (fdMode) {
+        VIDEO::vga.print((" " + std::string(cols - 2, ' ') + " ").c_str());
+    } else {
+        string text = " " + RotateLine(statusbar, &statusBarScrollCTX, cols - 12 - 2, 125, 25) + " ";
+        VIDEO::vga.print(text.c_str());
+    }
 }
 
 // Run a new file menu
@@ -207,6 +219,8 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
     WindowDraw(); // Draw menu outline
     fd_PrintRow(1, IS_INFO);    // Path
 
+    ResetRowScrollContext(statusBarScrollCTX);
+
 reset:
 
     // Draw blank rows
@@ -218,69 +232,43 @@ reset:
     }
 
     // Draw shortcut help
-    string StatusBar = " ";
+    string StatusBar = "";
     if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) { // Dirty hack
         if (ZXKeyb::Exists) {
-            StatusBar += Config::lang == 0 ? "N New | " :
-                         Config::lang == 1 ? "N Nuevo | " :
-                                             "N Novo | ";
+            StatusBar += Config::lang == 0 ? "N: New | " :
+                         Config::lang == 1 ? "N: Nuevo | " :
+                                             "N: Novo | ";
         } else {
-            StatusBar += Config::lang == 0 ? "F2 New | " :
-                         Config::lang == 1 ? "F2 Nuevo | " :
-                                             "F2 Novo | " ;
+            StatusBar += Config::lang == 0 ? "F2: New | " :
+                         Config::lang == 1 ? "F2: Nuevo | " :
+                                             "F2: Novo | " ;
         }
+
+        if ( ftype == DISK_SNAFILE ) {
+            if (ZXKeyb::Exists) {
+                StatusBar += Config::lang == 0 ? "SN: New (with ROM) | " :
+                             Config::lang == 1 ? "SN: Nuevo (con ROM) | " :
+                                                 "SN: Novo (com ROM) | ";
+            } else {
+                StatusBar += Config::lang == 0 ? "SF2: New (with ROM) | " :
+                             Config::lang == 1 ? "SF2: Nuevo (con ROM) | " :
+                                                 "SF2: Novo (com ROM) | " ;
+            }
+        }
+
     }
 
     if (ZXKeyb::Exists) {
-        StatusBar += Config::lang == 0 ? "F Search | D Delete" :
-                     Config::lang == 1 ? "F Buscar | D Borrar" :
-                                         "F Procurar | D Excluir" ;
+        StatusBar += Config::lang == 0 ? "F: Search | D: Delete" :
+                     Config::lang == 1 ? "F: Buscar | D: Borrar" :
+                                         "F: Procurar | D: Excluir" ;
     } else {
-        StatusBar += Config::lang == 0 ? "F3 Search | F8 Delete" :
-                     Config::lang == 1 ? "F3 Buscar | F8 Borrar" :
-                                         "F3 Procurar | F8 Excluir" ;
+        StatusBar += Config::lang == 0 ? "F3: Search | F8: Delete" :
+                     Config::lang == 1 ? "F3: Buscar | F8: Borrar" :
+                                         "F3: Procurar | F8: Excluir" ;
     }
-
-    if ( cols <= StatusBar.length() + 11 + 2 ) {
-        StatusBar = " ";
-        if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) // Dirty hack
-        {
-            if (ZXKeyb::Exists)
-                StatusBar += "N | ";
-            else
-                StatusBar += "F2 | ";
-        }
-
-        if (ZXKeyb::Exists)
-            StatusBar += "F | D";
-        else
-            StatusBar += "F3 | F8";
-    }
-
-    if (cols > StatusBar.length() + 11 + 2 ) { // 11 from elements counter + 2 from borders
-        StatusBar += std::string(cols - StatusBar.length() - 12, ' ');
-    } else {
-        StatusBar = std::string(cols - 12, ' ');
-    }
-
-    // Print status bar
-    menuAt(row, 0);
-    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-
-    if (FileUtils::fileTypes[ftype].fdMode)
-        VIDEO::vga.print(std::string(cols, ' ').c_str());
-    else {
-        VIDEO::vga.print(StatusBar.c_str());
-        VIDEO::vga.print(std::string(12, ' ').c_str());
-    }
-
-
-    // fdSearchRefresh = true;
 
     while(1) {
-
-//        ESPectrum::showMemInfo("file dialog: before checking dir");
-
         fdCursorFlash = 0;
 
         reIndex = false;
@@ -304,7 +292,6 @@ reset:
         std::vector<std::string>().swap(filexts); // free memory
 
         if ( result == -1 ) {
-
             printf("Error opening %s\n",filedir.c_str());
 
             FileUtils::unmountSDCard();
@@ -323,7 +310,6 @@ reset:
             printf("No dir file found: reindexing\n");
             reIndex = true;
         } else {
-            // stat((filedir + FileUtils::fileTypes[ftype].indexFilename).c_str(), &stat_buf);
             fseek(dirfile,0,SEEK_END);
             dirfilesize = ftell(dirfile);
 
@@ -332,7 +318,6 @@ reset:
             char fhash[21];
             memset( fhash, '\0', sizeof(fhash));
             fgets(fhash, sizeof(fhash), dirfile);
-            // printf("File Hash: %s\n",fhash);
 
             // If calc hash and file hash are different refresh dir index
             if ( getLong(fhash) != hash ||
@@ -341,52 +326,16 @@ reset:
             }
         }
 
-//        ESPectrum::showMemInfo("file dialog: after checking dir");
-
-        // Force reindex (for testing)
-        // reIndex = ESPectrum::ESPtestvar ? true : reIndex;
-
         // There was no index or hashes are different: reIndex
         if (reIndex) {
-
-//            ESPectrum::showMemInfo("file dialog: before reindex");
 
             if ( dirfile ) {
                 fclose(dirfile);
                 dirfile = nullptr;
             }
 
-#if 0
-            multi_heap_info_t info;
-            size_t ram_consumption;
-
-            heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
-
-            printf("\n=======================================================\n");
-            printf("ORDENANDO CARPETA\n");
-            printf("=======================================================\n");
-            printf("\nTotal free bytes          : %d\n", info.total_free_bytes);
-            printf("Minimum free ever         : %d\n", info.minimum_free_bytes);
-
-            size_t minimum_before = info.minimum_free_bytes;
-
-            uint32_t time_start = esp_timer_get_time();
-#endif
-
             FileUtils::DirToFile(filedir, ftype, hash, ndirs + elements ); // Prepare filelist
 
-#if 0
-            uint32_t time_elapsed = esp_timer_get_time() - time_start;
-
-            heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
-
-            printf("TIEMPO DE ORDENACION      : %6.2f segundos\n", (float)time_elapsed / 1000000);
-            printf("Total free bytes  despues : %d\n", info.total_free_bytes);
-            printf("Minimum free ever despues : %d\n", info.minimum_free_bytes);
-            printf("Consumo RAM               : %d\n", minimum_before - info.minimum_free_bytes);
-
-            printf("\n=======================================================\n");
-#endif
             // stat((filedir + FileUtils::fileTypes[ftype].indexFilename).c_str(), &stat_buf);
 
             dirfile = fopen((filedir + FileUtils::fileTypes[ftype].indexFilename).c_str(), "r");
@@ -407,16 +356,13 @@ reset:
             // Reset position
             FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
 
-//            ESPectrum::showMemInfo("file dialog: after reindex");
-
         }
 
         if (FileUtils::fileTypes[ftype].fdMode) {
-
             // Clean Status Bar
             menuAt(row, 0);
             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-            VIDEO::vga.print(std::string(StatusBar.length(), ' ').c_str());
+            VIDEO::vga.print(std::string(cols, ' ').c_str());
 
             // Recalc items number
             long prevpos = ftell(dirfile);
@@ -449,9 +395,6 @@ reset:
                 real_rows = foundcount + 2; // Add 2 for title and status bar
                 virtual_rows = (real_rows > mf_rows ? mf_rows : real_rows);
                 last_begin_row = last_focus = 0;
-                // FileUtils::fileTypes[ftype].focus = 2;
-                // FileUtils::fileTypes[ftype].begin_row = 2;
-                // fd_Redraw(title, fdir, ftype);
             } else {
                 fseek(dirfile,prevpos,SEEK_SET);
             }
@@ -460,10 +403,8 @@ reset:
 
         } else {
 
-            // real_rows = (stat_buf.st_size / FILENAMELEN) + 2; // Add 2 for title and status bar
             real_rows = (dirfilesize / FILENAMELEN) + 2; // Add 2 for title and status bar
             virtual_rows = (real_rows > mf_rows ? mf_rows : real_rows);
-            // printf("Real rows: %d; st_size: %d; Virtual rows: %d\n",real_rows,stat_buf.st_size,virtual_rows);
 
             last_begin_row = last_focus = 0;
 
@@ -471,20 +412,19 @@ reset:
 
         }
 
-        // printf("Focus: %d, Begin_row: %d, real_rows: %d, mf_rows: %d\n",(int) FileUtils::fileTypes[ftype].focus,(int) FileUtils::fileTypes[ftype].begin_row,(int) real_rows, (int) mf_rows);
         if ((real_rows > mf_rows) && ((FileUtils::fileTypes[ftype].begin_row + mf_rows - 2) > real_rows)) {
             FileUtils::fileTypes[ftype].focus += (FileUtils::fileTypes[ftype].begin_row + mf_rows - 2) - real_rows;
             FileUtils::fileTypes[ftype].begin_row = real_rows - (mf_rows - 2);
-            // printf("Focus: %d, BeginRow: %d\n",FileUtils::fileTypes[ftype].focus,FileUtils::fileTypes[ftype].begin_row);
         }
 
         fd_Redraw(title, fdir, ftype); // Draw content
 
-        // Focus line scroll position
-        fdScrollPos = 0;
-        timeStartScroll = 0;
-        timeScroll = 0;
-        fdScrollStatus = 0;
+        // First clean statusbar
+        menuAt(row, 0);
+        VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+        VIDEO::vga.print(std::string(cols, ' ').c_str());
+
+        fd_StatusbarDraw(StatusBar, FileUtils::fileTypes[ftype].fdMode);
 
         bool mode_E = false;
 
@@ -500,10 +440,7 @@ reset:
             // Process external keyboard
             if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
-                timeStartScroll = 0;
-                timeScroll = 0;
-                fdScrollPos = 0;
-                fdScrollStatus = 0;
+                ResetRowScrollContext(fdRowScrollCTX);
 
                 // Print elements
                 VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
@@ -533,17 +470,6 @@ reset:
 
                         // fat32 filter
                         if (fat32forbidden.find(fsearch) != std::string::npos) continue;
-
-                        /*
-                        if (Menukey.vk==fabgl::VK_SPACE && FileUtils::fileTypes[ftype].fdMode)
-                            fsearch = ASCII_SPC;
-                        else if (Menukey.vk<=fabgl::VK_9)
-                            fsearch = Menukey.vk + 46;
-                        else if (Menukey.vk<=fabgl::VK_z)
-                            fsearch = Menukey.vk + 75;
-                        else if (Menukey.vk<=fabgl::VK_Z)
-                            fsearch = Menukey.vk + 17;
-                        */
 
                         if (FileUtils::fileTypes[ftype].fdMode) {
 
@@ -626,19 +552,8 @@ reset:
                             return ( save_withrom ? "*" : "N" ) + new_tap + ext;
 
                         } else {
-
-                            menuAt(mf_rows, 0);
-                            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            if (FileUtils::fileTypes[ftype].fdMode) {
-                                VIDEO::vga.print(string(cols - 1, ' ').c_str());
-                            } else {
-                                VIDEO::vga.print(StatusBar.substr(0,cols - 12).c_str());
-                                if ( StatusBar.size() < cols - 12 ) VIDEO::vga.print(string(cols - 12 - StatusBar.size(), ' ').c_str());
-                            }
-
+                            fd_StatusbarDraw(StatusBar, FileUtils::fileTypes[ftype].fdMode);
                         }
-
-//                        fd_Redraw(title, fdir, ftype);
 
                     } else if (Menukey.vk == fabgl::VK_F3) {
 
@@ -649,32 +564,17 @@ reset:
                         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
 
                         if (FileUtils::fileTypes[ftype].fdMode) {
-
                             // Clean status bar
-
-                            VIDEO::vga.print(std::string(StatusBar.length(), ' ').c_str());
-
+                            VIDEO::vga.print(std::string(cols, ' ').c_str());
                             fdCursorFlash = 63;
-
-                            // menuAt(mfrows + (Config::aspect_letterbox ? 0 : 1), 1);
-                            // VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            // VIDEO::vga.print(Config::lang ? "B\xA3sq: " : "Find: ");
-                            // VIDEO::vga.print(FileUtils::fileTypes[ftype].fileSearch.c_str());
-                            // VIDEO::vga.setTextColor(zxColor(5, 0), zxColor(7, 1));
-                            // VIDEO::vga.print("K");
-                            // VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                            // VIDEO::vga.print(std::string(16 - FileUtils::fileTypes[ftype].fileSearch.size(), ' ').c_str());
-
                             fdSearchRefresh = FileUtils::fileTypes[ftype].fileSearch != "";
 
                         } else {
 
                             // Restore status bar
-                            VIDEO::vga.print(StatusBar.substr(0,cols - 12).c_str());
-                            if ( StatusBar.size() < cols - 12 ) VIDEO::vga.print(string(cols - 12 - StatusBar.size(), ' ').c_str());
+                            fd_StatusbarDraw(StatusBar, FileUtils::fileTypes[ftype].fdMode);
 
                             if (FileUtils::fileTypes[ftype].fileSearch != "") {
-                                // FileUtils::fileTypes[ftype].fileSearch="";
                                 real_rows = (dirfilesize / FILENAMELEN) + 2; // Add 2 for title and status bar
                                 virtual_rows = (real_rows > mf_rows ? mf_rows : real_rows);
                                 last_begin_row = last_focus = 0;
@@ -721,7 +621,6 @@ reset:
                             last_focus = FileUtils::fileTypes[ftype].focus;
                             fd_PrintRow(FileUtils::fileTypes[ftype].focus--, IS_NORMAL);
                             fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                            // printf("Focus: %d, Lastfocus: %d\n",FileUtils::fileTypes[ftype].focus,(int) last_focus);
                         }
                         click();
                     } else if (Menukey.vk == fabgl::VK_DOWN || Menukey.vk == fabgl::VK_JOY1DOWN || Menukey.vk == fabgl::VK_JOY2DOWN) {
@@ -733,7 +632,6 @@ reset:
                             last_focus = FileUtils::fileTypes[ftype].focus;
                             fd_PrintRow(FileUtils::fileTypes[ftype].focus++, IS_NORMAL);
                             fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                            // printf("Focus: %d, Lastfocus: %d\n",FileUtils::fileTypes[ftype].focus,(int) last_focus);
                         }
                         click();
                     } else if (Menukey.vk == fabgl::VK_PAGEUP || (Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 0) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
@@ -787,7 +685,6 @@ reset:
                                 fdir = fdir.substr(0,fdir.find_last_of("/") + 1);
 
                                 FileUtils::fileTypes[ftype].begin_row = FileUtils::fileTypes[ftype].focus = 2;
-                                // printf("Fdir: %s\n",fdir.c_str());
 
                                 click();
 
@@ -837,12 +734,9 @@ reset:
                             rtrim(filedir);
                             click();
 
-                            if ((Menukey.CTRL && Menukey.vk == fabgl::VK_RETURN) || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C)
-                                return "S" + filedir;
-                            else
-                                return "R" + filedir;
+                            if ((Menukey.CTRL && Menukey.vk == fabgl::VK_RETURN) || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) return "S" + filedir;
 
-                            // return (Menukey.vk == fabgl::VK_RETURN || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B ? "R" : "S") + filedir;
+                            return "R" + filedir;
 
                         }
 
@@ -855,23 +749,12 @@ reset:
                         click();
                         return "";
                     }
+
                 }
 
             } else {
+                fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
 
-                if (timeStartScroll < 125) timeStartScroll++;
-
-            }
-
-            // Scroll focused line if signaled
-            if (timeStartScroll == 125) {
-                timeScroll++;
-                if (timeScroll == 25) {
-                    if (!fdScrollStatus) fdScrollPos++;
-                    else                 fdScrollPos--;
-                    fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                    timeScroll = 0;
-                }
             }
 
             if (FileUtils::fileTypes[ftype].fdMode) {
@@ -910,14 +793,12 @@ reset:
                         if (feof(dirfile)) break;
                         if (buf[0] == ASCII_SPC) {
                             foundcount++;
-                            // printf("%s",buf);
                         }else {
                             char *p = buf; while(*p) *p++ = toupper(*p);
                             char *pch = strstr(buf, search.c_str());
                             if (pch != NULL) {
                                 foundcount++;
                                 fdSearchElements++;
-                                // printf("%s",buf);
                             }
                         }
                     }
@@ -937,20 +818,9 @@ reset:
                     fdSearchRefresh = false;
                 }
 
-            } /*else {
-
-                if (cols > (Config::lang ? 32 : 28) + 14) {
-
-                    menuAt(mfrows + (Config::aspect_16_9 ? 0 : 1), 1);
-                    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-                    if ( ftype == DISK_TAPFILE ) { // Dirty hack
-                        VIDEO::vga.print(Config::lang ? "F2 Nuevo | " : "F2 New | " );
-                    }
-                    VIDEO::vga.print(Config::lang ? "F3 Buscar | F8 Borrar" : "F3 Find | F8 Delete" );
-
-                }
-
-            }*/
+            } else {
+                fd_StatusbarDraw(StatusBar, FileUtils::fileTypes[ftype].fdMode);
+            }
 
             vTaskDelay(5 / portTICK_PERIOD_MS);
 
@@ -1071,45 +941,24 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
     size_t extra_margin = extra_line.length();
 
     if (line.length() <= cols - margin - extra_margin) {
-        line = line + std::string(cols - margin - extra_margin - line.length(), ' ');
+        line = line + std::string(cols - margin - extra_margin - line.length(), ' ') + extra_line;
     } else {
         if ( !isDir && line_type == IS_INFO ) {
-            line = ".." + line.substr(line.length() - (cols - margin) + 2);
+            line = ".." + line.substr(line.length() - (cols - margin) + 2) + extra_line;
         } else {
-            if (line_type == IS_FOCUSED) {
-                string full_line = line;
-
-                if ( fdScrollPos >= (int) line.length() ) {
-                    fdScrollPos = - ( cols - margin - extra_margin );
-                    line = string(-fdScrollPos, SCROLL_SEP_CHAR) + line;
-                } else if ( fdScrollPos < 0 ) {
-                    line = string(-fdScrollPos, SCROLL_SEP_CHAR) + line;
+            int space_fill = cols - margin - extra_margin - line.length();
+            if ( space_fill < 0 ) {
+                int max_first_column_size = cols - margin - extra_margin;
+                if (line_type == IS_FOCUSED || line_type == IS_SELECTED_FOCUSED) {
+                    line = RotateLine(line, &fdRowScrollCTX, max_first_column_size, 125, 25) + extra_line;
                 } else {
-                    line = line.substr(fdScrollPos);
-                    if (!Config::osd_AltRot && line.length() <= cols - margin - extra_margin && full_line.length() > cols - margin - extra_margin) {
-                        line += string(cols - margin - extra_margin, SCROLL_SEP_CHAR) + full_line;
-                    }
+                    line = line.substr(0, max_first_column_size) + extra_line;
                 }
-
-                if (!fdScrollStatus) {
-                    if (fdScrollPos >= 0 && line.length() <= cols - margin - extra_margin) {
-                        if (Config::osd_AltRot == 1) {
-                            timeStartScroll = 0;
-                            fdScrollStatus = 1;
-                        }
-                    }
-                } else {
-                    if (fdScrollPos == 0) {
-                        fdScrollPos = -1;
-                        timeStartScroll = 0;
-                        fdScrollStatus = 0;
-                    }
-                }
+            } else {
+                line += string(space_fill, ' ') + extra_line; // second column, fixed part, after tab
             }
         }
     }
-
-    line = line.substr(0,cols - margin - extra_margin) + extra_line;
 
     VIDEO::vga.print(line.c_str());
 

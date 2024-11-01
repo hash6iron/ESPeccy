@@ -98,6 +98,13 @@ typedef struct MenuState
     unsigned short last_begin_row;  // To check for changes
 };
 
+// Estructura para almacenar el contexto del scroll
+typedef struct RowScrollContext {
+    int rowTimeStartScroll; // Contador actual del tiempo para iniciar el scroll
+    int rowTimeScroll;      // Contador actual de tiempo entre scrolls
+    int rowScrollPos;       // Posición de scroll actual
+    bool rowScrollStatus;   // Estado del scroll (incremento o decremento)
+};
 
 // OSD Interface
 class OSD {
@@ -152,6 +159,8 @@ public:
     static void menuScroll(bool up);
     static void fd_Redraw(string title, string fdir, uint8_t ftype);
     static void fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type);
+    static void fd_StatusbarDraw(const string& statusbar, bool fdMode);
+    static void tapemenuStatusbarRedraw();
     static void tapemenuRedraw(string title, bool force = true);
     static void PrintRow(uint8_t virtual_row_num, uint8_t line_type, bool is_menu = false);
     static void menuAt(short int row, short int col);
@@ -187,23 +196,16 @@ public:
     // Función para restaurar el estado desde una estructura proporcionada.
     static void menuRestoreState(const MenuState& state);
 
+    static void ResetRowScrollContext(RowScrollContext &context);
+    static string RotateLine(const std::string &line, RowScrollContext *context, int maxLength, int startThreshold, int scrollInterval);
 
     static uint8_t menu_level;
     static bool menu_saverect;
     static unsigned short menu_curopt;
     static unsigned int SaveRectpos;
 
-    static int8_t fdScrollPos;
-    static int8_t fdScrollStatus;
-    static int timeStartScroll;
-    static int timeScroll;
     static unsigned int elements;
     static unsigned int ndirs;
-
-    static int8_t rowScrollPos;
-    static int8_t rowScrollStatus;
-    static int rowTimeStartScroll;
-    static int rowTimeScroll;
 
     static uint8_t msgDialog(string title, string msg);
 
@@ -252,6 +254,10 @@ public:
     static unsigned int fdSearchElements;
 
     static Cheat currentCheat;
+
+    static RowScrollContext rowScrollCTX;
+    static RowScrollContext fdRowScrollCTX;
+    static RowScrollContext statusBarScrollCTX;
 
 };
 

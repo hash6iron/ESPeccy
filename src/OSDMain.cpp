@@ -287,30 +287,37 @@ void OSD::drawKbdLayout(uint8_t layout) {
     string bottom[5];
 
     if (ZXKeyb::Exists) {
-        bottom[0] = " SS+: P PS/2 | T TK |  Z ZX | 8 ZX81 "; // ZX Spectrum 48K layout
-        bottom[1] = " SS+: 4 48K | P PS/2 | Z ZX | 8 ZX81 "; // TK 90x layout
-        bottom[2] = " SS+: 4 48K | T TK | Z ZX | 8 ZX81   "; // PS/2 kbd help
-        bottom[3] = " SS+: 4 48K | T TK | P PS/2 | 8 ZX81 "; // ZX kbd help
-        bottom[4] = " SS+: 4 48K | T TK | Z ZX | P PS/2   "; // ZX81+ layout
+        bottom[0] = "SS+P: PS/2 | SS+T: TK | SS+Z ZX | SS+8 ZX81"; // ZX Spectrum 48K layout
+        bottom[1] = "SS+4: 48K | SS+P: PS/2 | SS+Z ZX | SS+8 ZX81"; // TK 90x layout
+        bottom[2] = "SS+4: 48K | SS+T: TK | SS+Z ZX | SS+8 ZX81"; // PS/2 kbd help
+        bottom[3] = "SS+4: 48K | SS+T: TK | SS+P PS/2 | SS+8 ZX81"; // ZX kbd help
+        bottom[4] = "SS+4: 48K | SS+T: TK | SS+Z ZX | SS+P PS/2"; // ZX81+ layout
     } else {
-        bottom[0] = " P PS/2 | T TK |  Z ZX | 8 ZX81 "; // ZX Spectrum 48K layout
-        bottom[1] = " 4 48K | P PS/2 | Z ZX | 8 ZX81 "; // TK 90x layout
-        bottom[2] = " 4 48K | T TK | Z ZX | 8 ZX81   "; // PS/2 kbd help
-        bottom[3] = " 4 48K | T TK | P PS/2 | 8 ZX81 "; // ZX kbd help
-        bottom[4] = " 4 48K | T TK | Z ZX | P PS/2   "; // ZX81+ layout
+        bottom[0] = "P: PS/2 | T: TK |  Z: ZX | 8: ZX81"; // ZX Spectrum 48K layout
+        bottom[1] = "4: 48K | P: PS/2 | Z: ZX | 8: ZX81"; // TK 90x layout
+        bottom[2] = "4: 48K | T: TK | Z: ZX | 8: ZX81"; // PS/2 kbd help
+        bottom[3] = "4: 48K | T: TK | P: PS/2 | 8: ZX81"; // ZX kbd help
+        bottom[4] = "4: 48K | T: TK | Z: ZX | P: PS/2"; // ZX81+ layout
     }
 
     switch(Config::videomode) {
-        case 0: vmode = "  Mode VGA "; break;
-        case 1: vmode = Config::arch[0] == 'T' && Config::ALUTK == 2 ? "Mode VGA60 " : "Mode VGA50 "; break;
-        case 2: vmode = Config::arch[0] == 'T' && Config::ALUTK == 2 ? "Mode CRT60 " : "Mode CRT50 "; break;
+        case 0: vmode = "Mode VGA"; break;
+        case 1: vmode = Config::arch[0] == 'T' && Config::ALUTK == 2 ? "Mode VGA60" : "Mode VGA50"; break;
+        case 2: vmode = Config::arch[0] == 'T' && Config::ALUTK == 2 ? "Mode CRT60" : "Mode CRT50"; break;
     }
-
-    for(int i=0; i<5; i++) bottom[i] += ((ZXKeyb::Exists) ? "    " : "         " ) + vmode;
 
     fabgl::VirtualKeyItem Nextkey;
 
-    drawWindow(256 + OSD_FONT_W * 2, 176 + 18, "", bottom[layout], true);
+    int width = 256 + OSD_FONT_W * 2;
+    int height = 176 + 18;
+    int maxW = width / OSD_FONT_W - 4 - vmode.length();
+
+    drawWindow(width, height, "", "" /*bottom[layout]*/, true);
+
+    ResetRowScrollContext(statusBarScrollCTX);
+
+    unsigned short x = scrAlignCenterX(width);
+    unsigned short y = scrAlignCenterY(height);
 
     while (1) {
 
@@ -332,7 +339,6 @@ void OSD::drawKbdLayout(uint8_t layout) {
             layoutdata = (uint8_t *)Layout_ZX81;
             break;
         }
-
 
         int pos_x, pos_y;
 
@@ -388,6 +394,13 @@ void OSD::drawKbdLayout(uint8_t layout) {
                 }
             }
 
+            VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+            VIDEO::vga.setFont(Font6x8);
+            VIDEO::vga.setCursor(x + 3, y + height - 11);
+
+            string text = " " + RotateLine(bottom[layout], &statusBarScrollCTX, maxW, 125, 25) + " " + vmode + " ";
+            VIDEO::vga.print(text.c_str());
+
             vTaskDelay(5 / portTICK_PERIOD_MS);
 
         }
@@ -414,7 +427,16 @@ void OSD::drawKbdLayout(uint8_t layout) {
                 layout = 3;
         };
 
-        drawWindow(256 + OSD_FONT_W * 2, 176 + 18, "", bottom[layout], false);
+        drawWindow(width, height, "", "", false);
+
+//        VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
+//        VIDEO::vga.setFont(Font6x8);
+//        VIDEO::vga.setCursor(x + 3, y + height - 11);
+//
+//        string text = " " + RotateLine(bottom[layout], &statusBarScrollCTX, maxW, 125, 25) + " ";
+//        printf("%s\n", text.c_str());
+//
+//        VIDEO::vga.print(text.c_str());
 
     }
 
@@ -907,13 +929,13 @@ void OSD::showCheatDialog() {
         while(true) {
             string statusbar;
             if (ZXKeyb::Exists) {
-                statusbar = Config::lang == 0 ? " N Open | CS+ENT Yes/No | BRK End " :
-                            Config::lang == 1 ? " N Abrir | CS+ENT S\xA1/No | BRK Fin " :
-                                                " N Iniciar | CS+ENT Sim/N\x84o | BRK Fim ";
+                statusbar = Config::lang == 0 ? "N: Open | CS+ENT: Enable/Disable | BRK: Finish & apply" :
+                            Config::lang == 1 ? "N: Abrir | CS+ENT: Habilitar/Deshabilitar | BRK: Finalizar y aplicar" :
+                                                "N: Iniciar | CS+ENT: Habilitar/Desabilitar | BRK: Finalizar e aplicar";
             } else {
-                statusbar = Config::lang == 0 ? " F2 Open | ESP Yes/No | ESC End " :
-                            Config::lang == 1 ? " F2 Abrir | ESP S\xA1/No | ESC Fin " :
-                                                " F2 Iniciar | ESP Sim/N\x84o | ESC Fim ";
+                statusbar = Config::lang == 0 ? "F2: Open | SPC: Enable/Disable | ESC: Finish & apply" :
+                            Config::lang == 1 ? "F2: Abrir | ESP: Habilitar/Deshabilitar | ESC: Finalizar y aplicar" :
+                                                "F2: Iniciar | ESP: Habilitar/Desabilitar | ESC: Finalizar e aplicar";
             }
 
             currentCheat = {};
@@ -1278,13 +1300,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
                 string statusbar;
                 if (ZXKeyb::Exists) {
-                    statusbar = Config::lang == 0 ? " N Rename | D Delete" :
-                                Config::lang == 1 ? " N Renombrar | D Borrar" :
-                                                    " N Renomear | D Excluir";
+                    statusbar = Config::lang == 0 ? "N: Rename | D: Delete" :
+                                Config::lang == 1 ? "N: Renombrar | D: Borrar" :
+                                                    "N: Renomear | D: Excluir";
                 } else {
-                    statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
-                                Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
-                                                    " F2 Renomear | F8 Excluir";
+                    statusbar = Config::lang == 0 ? "F2: Rename | F8: Delete" :
+                                Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
+                                                    "F2: Renomear | F8: Excluir";
                 }
 
                 statusbar += std::string(26 - statusbar.size(), ' ');
@@ -1328,13 +1350,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
                 string statusbar;
                 if (ZXKeyb::Exists) {
-                    statusbar = Config::lang == 0 ? " N Rename | D Delete" :
-                                Config::lang == 1 ? " N Renombrar | D Borrar" :
-                                                    " N Renomear | D Excluir";
+                    statusbar = Config::lang == 0 ? "N: Rename | D: Delete" :
+                                Config::lang == 1 ? "N: Renombrar | D: Borrar" :
+                                                    "N: Renomear | D: Excluir";
                 } else {
-                    statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
-                                Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
-                                                    " F2 Renomear | F8 Excluir";
+                    statusbar = Config::lang == 0 ? "F2: Rename | F8: Delete" :
+                                Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
+                                                    "F2: Renomear | F8: Excluir";
                 }
                 statusbar += std::string(26 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
@@ -1677,13 +1699,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     string menuload = MENU_PERSIST_LOAD[Config::lang] + getStringPersistCatalog();
                                     string statusbar;
                                     if (ZXKeyb::Exists) {
-                                        statusbar = Config::lang == 0 ? " N Rename | D Delete" :
-                                                    Config::lang == 1 ? " N Renombrar | D Borrar" :
-                                                                        " N Renomear | D Excluir";
+                                        statusbar = Config::lang == 0 ? "N: Rename | D: Delete" :
+                                                    Config::lang == 1 ? "N: Renombrar | D: Borrar" :
+                                                                        "N: Renomear | D: Excluir";
                                     } else {
-                                        statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
-                                                    Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
-                                                                        " F2 Renomear | F8 Excluir";
+                                        statusbar = Config::lang == 0 ? "F2: Rename | F8: Delete" :
+                                                    Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
+                                                                        "F2: Renomear | F8: Excluir";
                                     }
                                     statusbar += std::string(26 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
@@ -1709,13 +1731,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
                                     string statusbar;
                                     if (ZXKeyb::Exists) {
-                                        statusbar = Config::lang == 0 ? " N Rename | D Delete" :
-                                                    Config::lang == 1 ? " N Renombrar | D Borrar" :
-                                                                        " N Renomear | D Excluir";
+                                        statusbar = Config::lang == 0 ? "N: Rename | D: Delete" :
+                                                    Config::lang == 1 ? "N: Renombrar | D: Borrar" :
+                                                                        "N: Renomear | D: Excluir";
                                     } else {
-                                        statusbar = Config::lang == 0 ? " F2 Rename | F8 Delete" :
-                                                    Config::lang == 1 ? " F2 Renombrar | F8 Borrar" :
-                                                                        " F2 Renomear | F8 Excluir";
+                                        statusbar = Config::lang == 0 ? "F2: Rename | F8: Delete" :
+                                                    Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
+                                                                        "F2: Renomear | F8: Excluir";
                                     }
                                     statusbar += std::string(26 - statusbar.size(), ' ');
                                     uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
