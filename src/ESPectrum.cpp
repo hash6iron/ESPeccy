@@ -447,7 +447,7 @@ void ESPectrum::showBIOS() {
 
     auto screen_clear = [&](bool fullwidth = false) {
         int color = zxColor(7, 0);
-        for (int y = base_row + OSD_FONT_H * 3 - OSD_FONT_H / 2; y < base_row + ( total_rows - 2 ) * OSD_FONT_H; y++)
+        for (int y = base_row + OSD_FONT_H * 3; y < base_row + ( total_rows - 2 ) * OSD_FONT_H - OSD_FONT_H / 2; y++)
             for (int x = base_col + OSD_FONT_W - OSD_FONT_W / 2; x < base_col + ( total_cols - ( fullwidth ? 0 : 20 )) * OSD_FONT_W + OSD_FONT_W / 2; x++)
                 VIDEO::vga.dotFast(x, y, color);
 
@@ -514,7 +514,7 @@ void ESPectrum::showBIOS() {
         int bottom = top + 2 + dialog_height;
 
         // Limpiar el área del diálogo
-        for (int y = base_row + top * OSD_FONT_H - OSD_FONT_H / 2; y < base_row + bottom * OSD_FONT_H; y++) {
+        for (int y = base_row + top * OSD_FONT_H; y < base_row + bottom * OSD_FONT_H - OSD_FONT_H / 2; y++) {
             for (int x = base_col + left * OSD_FONT_W - OSD_FONT_W / 2; x < base_col + right * OSD_FONT_W + OSD_FONT_W / 2; x++) {
                 VIDEO::vga.dotFast(x, y, zxColor(7, 0));
             }
@@ -702,7 +702,7 @@ void ESPectrum::showBIOS() {
         ZXKeyb::ZXKbdRead();
         while (Kbd->virtualKeyAvailable()) {
             bool r = Kbd->getNextVirtualKey(&NextKey);
-            if (r && NextKey.down) mainMenuNav([](){}, [](){});
+            if (r && NextKey.down) mainMenuNav([&showHardwareInfo](){showHardwareInfo();}, [&showHardwareInfo](){showHardwareInfo();});
         }
 
         if (selectedOption != oldSelectedOptions || exit_to_main ) {
