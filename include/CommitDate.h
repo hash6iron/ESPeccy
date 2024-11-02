@@ -32,12 +32,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#include "BuildDate.h"
-#include "commit_info.h"
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#ifndef COMMITDATE_H
+#define COMMITDATE_H
 
-const char* getShortBuildDate() {
-    return COMMIT_DATE;
-}
+const char* getShortCommitDate();
+
+#endif // COMMITDATE_H

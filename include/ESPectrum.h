@@ -173,6 +173,7 @@ public:
 
     // static uint32_t sessid;
 
+    static string getHardwareInfo();
     static void showMemInfo(const char* caption = "ESPectrum");
 
 private:

@@ -518,32 +518,35 @@ static const char *AboutMsg[NLANGS][5] = {
 static const char *StartMsg[NLANGS] = {
 	// English
     "Hi! Thanks for choosing \nA1ESP\nF1eccy!\r"
+	"(https://github.com/SplinterGU/ESPeccy)\r"
     "\r"
-    "\nA1ESP\nF1eccy is open source software\r"
-    "licensed under GPL v3. You can use,\r"
-    "modify, and share it for free.\r"
+    "\nA1ESP\nF1eccy is open source software licensed\r"
+    "under GPL v3. You can use, modify,\r"
+    "and share it for free.\r"
     "\r"
-    "\nA1ESP\nF1eccy is powered by \nA1ESP\nF1ectrum\r"
+	"Powered by \nA1ESP\nF1ectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
 	,
 	// Spanish
 	"\xAD" "Hola! \xADGracias por elegir \nA1ESP\nF1eccy!\r"
+	"(https://github.com/SplinterGU/ESPeccy)\r"
 	"\r"
-	"\nA1ESP\nF1eccy es software de c\xA2" "digo abier-\r"
-	"to bajo licencia GPL v3, puedes usarlo\r"
-	"modificarlo y compartirlo gratis.\r"
+	"\nA1ESP\nF1eccy es software de c\xA2" "digo abierto bajo\r"
+	"licencia GPL v3, puedes usarlo modificarlo\r"
+	"y compartirlo gratis.\r"
     "\r"
-	"\nA1ESP\nF1eccy es impulsado por \nA1ESP\nF1ectrum\r"
+	"Powered by \nA1ESP\nF1ectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
 	,
 	// Portugues
 	"Oi! Obrigado por escolher \nA1ESP\nF1eccy!\r"
+	"(https://github.com/SplinterGU/ESPeccy)\r"
 	"\r"
-	"\nA1ESP\nF1eccy \x82 software de c" "\xA2" "digo aberto\r"
-	"sob licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\r"
+	"\nA1ESP\nF1eccy \x82 um software de c" "\xA2" "digo aberto sob\r"
+	"licen\x87" "a GPL v3, voc\x88 pode us\xa0-lo,\r"
 	"modific\xa0-lo e compartilh\xa0-lo gr\xa0tis.\r"
     "\r"
-	"\nA1ESP\nF1eccy \x82 alimentado pelo ESPectrum\r"\
+	"Powered by \nA1ESP\nF1ectrum\r"\
     "(https://zxespectrum.speccy.org/)\r"
 };
 

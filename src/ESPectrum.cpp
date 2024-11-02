@@ -68,7 +68,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "esp_efuse.h"
 #include "soc/efuse_reg.h"
 
-#include "BuildDate.h"
+#include "CommitDate.h"
 
 using namespace std;
 
@@ -214,8 +214,7 @@ void ShowStartMsg() {
 
     char msg[38];
     for (int i=START_MSG_DURATION; i >= 0; i--) {
-        OSD::osdAt(19, 1);
-        // sprintf(msg,Config::lang ? "Este mensaje se cerrar" "\xA0" " en %02d segundos" : "This message will close in %02d seconds",i);
+        OSD::osdAt(20, 1);
         sprintf(msg,STARTMSG_CLOSE[Config::lang],i);
         VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
         VIDEO::vga.print(msg);
@@ -235,72 +234,7 @@ void ESPectrum::showMemInfo(const char* caption) {
 
     string textout;
 
-    // // Get chip information
-    // esp_chip_info_t chip_info;
-    // esp_chip_info(&chip_info);
-
-    // printf(" ------------------------------------------------------------\n");
-    // printf(" Hardware info - %s \n", caption);
-    // printf(" ------------------------------------------------------------\n");
-    // // Chip models for ESP32
-    // textout = " Chip model    : ";
-    // uint32_t chip_ver = esp_efuse_get_pkg_ver();
-    // uint32_t pkg_ver = chip_ver & 0x7;
-    // switch (pkg_ver) {
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6 :
-    //         if (chip_info.revision == 3)
-    //             textout += "ESP32-D0WDQ6-V3";
-    //         else
-    //             textout += "ESP32-D0WDQ6";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5 :
-    //         if (chip_info.revision == 3)
-    //             textout += "ESP32-D0WD-V3";
-    //         else
-    //             textout += "ESP32-D0WD";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5 :
-    //         textout += "ESP32-D2WD";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2 :
-    //         textout += "ESP32-PICO-D2";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 :
-    //         textout += "ESP32-PICO-D4";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302 :
-    //         textout += "ESP32-PICO-V3-02";
-    //         break;
-    //     case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3 :
-    //          textout += "ESP32-D0WDR2-V3";
-    //         break;
-    //     default:
-    //         textout += "Unknown";
-    // }
-    // textout += "\n";
-    // printf(textout.c_str());
-
-    // textout = " Chip cores    : " + to_string(chip_info.cores) + "\n";
-    // printf(textout.c_str());
-
-    // textout = " Chip revision : " + to_string(chip_info.revision) + "\n";
-    // printf(textout.c_str());
-
-    // textout = " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n";
-    // printf(textout.c_str());
-
     multi_heap_info_t info;
-
-    // heap_caps_get_info(&info, MALLOC_CAP_SPIRAM);
-    // uint32_t psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
-    // textout = " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n";
-    // printf(textout.c_str());
-
-    // textout = " IDF Version   : " + (string)(esp_get_idf_version()) + "\n";
-    // printf(textout.c_str());
-
-    // printf("\n Memory info\n");
-    // printf(" ------------------------------------------------------------\n");
 
     heap_caps_get_info(&info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // internal RAM, memory capable to store data or to create new task
     textout = " Total free bytes         : " + to_string(info.total_free_bytes) + "\n";
@@ -309,27 +243,56 @@ void ESPectrum::showMemInfo(const char* caption) {
     textout = " Minimum free ever        : " + to_string(info.minimum_free_bytes) + "\n";
     printf(textout.c_str());
 
-    // textout = " Largest free block       : " + to_string(info.largest_free_block) + "\n";
-    // printf(textout.c_str());
-
-    // textout = " Free (MALLOC_CAP_32BIT)  : " + to_string(heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_32BIT)) + "\n";
-    // printf(textout.c_str());
-
-    // UBaseType_t wm;
-    // wm = uxTaskGetStackHighWaterMark(NULL);
-    // textout = " Main  Task Stack HWM     : " + to_string(wm) + "\n";
-    // printf(textout.c_str());
-
-    // wm = uxTaskGetStackHighWaterMark(ESPectrum::audioTaskHandle);
-    // textout = " Audio Task Stack HWM     : " + to_string(wm) + "\n";
-    // printf(textout.c_str());
-
-    // wm = uxTaskGetStackHighWaterMark(VIDEO::videoTaskHandle);
-    // textout = " Video Task Stack HWM     : " + (Config::videomode ? to_string(wm) : "N/A") + "\n";
-    // printf(textout.c_str());
-    // printf("\n ------------------------------------------------------------\n\n");
-
 }
+
+string ESPectrum::getHardwareInfo() {
+    // Get chip information
+    esp_chip_info_t chip_info;
+    esp_chip_info(&chip_info);
+
+    // Chip models for ESP32
+    string textout = " Chip model    : ";
+    uint32_t chip_ver = esp_efuse_get_pkg_ver();
+    uint32_t pkg_ver = chip_ver & 0x7;
+    switch (pkg_ver) {
+        case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6 :
+            textout += (chip_info.revision == 3) ? "ESP32-D0WDQ6-V3" : "ESP32-D0WDQ6";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5 :
+            textout += (chip_info.revision == 3) ? "ESP32-D0WD-V3" : "ESP32-D0WD";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5 :
+            textout += "ESP32-D2WD";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2 :
+            textout += "ESP32-PICO-D2";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 :
+            textout += "ESP32-PICO-D4";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302 :
+            textout += "ESP32-PICO-V3-02";
+            break;
+        case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3 :
+            textout += "ESP32-D0WDR2-V3";
+            break;
+        default:
+            textout += "Unknown";
+    }
+    textout += "\n";
+
+    // Continuar obteniendo información del hardware
+
+    textout += " Chip cores    : " + to_string(chip_info.cores) + "\n";
+    textout += " Chip revision : " + to_string(chip_info.revision) + "\n";
+    textout += " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n";
+    multi_heap_info_t info; heap_caps_get_info(&info, MALLOC_CAP_SPIRAM);
+    uint32_t psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
+    textout += " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n";
+    textout += " IDF Version   : " + (string)(esp_get_idf_version()) + "\n";
+
+    return textout;
+};
 
 //=======================================================================================
 // BOOT KEYBOARD
@@ -408,6 +371,7 @@ void ESPectrum::showBIOS() {
     int total_rows = OSD::scrH / OSD_FONT_H - 8;
     int total_cols = OSD::scrW / OSD_FONT_W - 8;
 
+    #define PRINT_FILLED_CENTERED(text)  VIDEO::vga.print(string((total_cols - strlen(text)) / 2, ' ').c_str()); VIDEO::vga.print(text); VIDEO::vga.print(string(total_cols - strlen(text) - (total_cols - strlen(text)) / 2, ' ').c_str())
     #define PRINT_FILLED_ROW(text)  VIDEO::vga.print(text); VIDEO::vga.print(string(total_cols - strlen(text), ' ').c_str())
     #define PRINT_FILLED_ROW_ALIGN_RIGHT(text)  VIDEO::vga.print(string(total_cols - strlen(text), ' ').c_str()); VIDEO::vga.print(text)
     #define SET_CURSOR(col,row) VIDEO::vga.setCursor(base_col + (col) * OSD_FONT_W, base_row + (row) * OSD_FONT_H)
@@ -441,7 +405,7 @@ void ESPectrum::showBIOS() {
 
     // Renderizar el menú inicial
     auto renderMenu = [&](int highlight) {
-        SET_CURSOR(0, 0);
+        SET_CURSOR(0, 1);
         int len = 0;
         for (int i = 0; i < menuCount; ++i) {
             VIDEO::vga.setTextColor(i == highlight ? zxColor(1, 1) : zxColor(7, 1), i == highlight ? zxColor(7, 1) : zxColor(1, 0));
@@ -455,7 +419,7 @@ void ESPectrum::showBIOS() {
     };
 
     auto renderOptions = [&](const char *options[], const char *values[], const int optionsCount, int highlight) {
-        SET_CURSOR(1, 2); // Ajustar la posición para el submenú
+        SET_CURSOR(1, 3); // Ajustar la posición para el submenú
         for (int i = 0; i < optionsCount; ++i) {
             // Color del texto, resaltado para el elemento seleccionado
             VIDEO::vga.setTextColor(i == highlight ? zxColor(7, 1) : zxColor(1, 0),
@@ -483,11 +447,11 @@ void ESPectrum::showBIOS() {
 
     auto screen_clear = [&](bool fullwidth = false) {
         int color = zxColor(7, 0);
-        for (int y = base_row + OSD_FONT_H * 2; y < base_row + ( total_rows - 2 ) * OSD_FONT_H; y++)
+        for (int y = base_row + OSD_FONT_H * 3; y < base_row + ( total_rows - 2 ) * OSD_FONT_H; y++)
             for (int x = base_col + OSD_FONT_W; x < base_col + ( total_cols - ( fullwidth ? 0 : 20 )) * OSD_FONT_W; x++)
                 VIDEO::vga.dotFast(x, y, color);
 
-        const int top = base_row + OSD_FONT_H + OSD_FONT_H / 2;
+        const int top = base_row + OSD_FONT_H * 2 + OSD_FONT_H / 2;
         const int buttom = base_row + ( total_rows - 1 ) * OSD_FONT_H - OSD_FONT_H / 2;
         const int left = base_col + OSD_FONT_W / 2;
         const int right = base_col + ( total_cols - 1 ) * OSD_FONT_W + OSD_FONT_W / 2;
@@ -497,7 +461,8 @@ void ESPectrum::showBIOS() {
         VIDEO::vga.line(  left,    top,  left, buttom, zxColor(1, 0));
         VIDEO::vga.line( right,    top, right, buttom, zxColor(1, 0));
 
-        VIDEO::vga.line( right - 19 * OSD_FONT_W,    top, right - 19 * OSD_FONT_W, buttom, zxColor(1, 0));
+        VIDEO::vga.line( right - 19 * OSD_FONT_W, top                    , right - 19 * OSD_FONT_W, buttom                 , zxColor(1, 0));
+        VIDEO::vga.line( right - 19 * OSD_FONT_W, buttom - 6 * OSD_FONT_H, right                  , buttom - 6 * OSD_FONT_H, zxColor(1, 0));
 
         SET_CURSOR(total_cols - 19, total_rows - 7);
         VIDEO::vga.setTextColor(zxColor(1, 0), zxColor(7, 0));
@@ -598,7 +563,7 @@ void ESPectrum::showBIOS() {
         // Mostrar los botones "OK" y "Cancel" en la quinta línea
         int selectedButton = 0; // 0 = OK, 1 = CancelDLG_ALERT
         auto renderButtons = [&](int type = BIOS_DLG_ALERT) {
-            SET_CURSOR(left + dialog_width / 2 - ( ( type == BIOS_DLG_CONFIRM ) ? 11 : 5 ), top + 4 + message_height );
+            SET_CURSOR(left + dialog_width / 2 - ( ( type == BIOS_DLG_CONFIRM ) ? 11 : 5 ), top + 4 + message_height);
             VIDEO::vga.setTextColor(selectedButton == 0 ? zxColor(1, 1) : zxColor(7, 0), selectedButton == 0 ? zxColor(7, 1) : zxColor(1, 0));
             VIDEO::vga.print("[   OK   ]");
 
@@ -643,62 +608,30 @@ void ESPectrum::showBIOS() {
         screen_clear();
 
         // Mostrar información de chip
-        SET_CURSOR(1, 2);
+        SET_CURSOR(1, 3);
         VIDEO::vga.setTextColor(zxColor(1, 0), zxColor(7, 0));
 
-        // Get chip information
-        esp_chip_info_t chip_info;
-        esp_chip_info(&chip_info);
-
-        // Chip models for ESP32
-        string textout = " Chip model    : ";
-        uint32_t chip_ver = esp_efuse_get_pkg_ver();
-        uint32_t pkg_ver = chip_ver & 0x7;
-        switch (pkg_ver) {
-            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ6 :
-                textout += (chip_info.revision == 3) ? "ESP32-D0WDQ6-V3" : "ESP32-D0WDQ6";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDQ5 :
-                textout += (chip_info.revision == 3) ? "ESP32-D0WD-V3" : "ESP32-D0WD";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5 :
-                textout += "ESP32-D2WD";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2 :
-                textout += "ESP32-PICO-D2";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 :
-                textout += "ESP32-PICO-D4";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302 :
-                textout += "ESP32-PICO-V3-02";
-                break;
-            case EFUSE_RD_CHIP_VER_PKG_ESP32D0WDR2V3 :
-                textout += "ESP32-D0WDR2-V3";
-                break;
-            default:
-                textout += "Unknown";
-        }
-        textout += "\n";
-        VIDEO::vga.print(textout.c_str());
-
-        // Continuar mostrando información del hardware
-
-        textout = " Chip cores    : " + to_string(chip_info.cores) + "\n"; VIDEO::vga.print(textout.c_str());
-        textout = " Chip revision : " + to_string(chip_info.revision) + "\n"; VIDEO::vga.print(textout.c_str());
-        textout = " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n"; VIDEO::vga.print(textout.c_str());
-        multi_heap_info_t info; heap_caps_get_info(&info, MALLOC_CAP_SPIRAM); uint32_t psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
-        textout = " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n"; VIDEO::vga.print(textout.c_str());
-        textout = " IDF Version   : " + (string)(esp_get_idf_version()) + "\n"; VIDEO::vga.print(textout.c_str());
-
+        VIDEO::vga.print(ESPectrum::getHardwareInfo().c_str());
     };
 
     // Iniciar el menú
     renderMenu(selectedOption);
     showHardwareInfo();
 
+    // Special position
+    //VIDEO::vga.setCursor(base_col, base_row - 1); // 0, 0 - 1px
+    SET_CURSOR(0,0);
+    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 1));
+    PRINT_FILLED_CENTERED("ESPeccy Bios Setup Utility");
+
     SET_CURSOR(0, total_rows - 1);
-    string footer = "ESPeccy BIOS - commit: " + string(getShortBuildDate()) + " ";
+    const char* commitDate = getShortCommitDate();
+    string footer = "BIOS Date: 20"
+                    + std::string(1, commitDate[0]) + commitDate[1] + "/"
+                    + std::string(1, commitDate[2]) + commitDate[3] + "/"
+                    + std::string(1, commitDate[4]) + commitDate[5] + " "
+                    + std::string(1, commitDate[6]) + commitDate[7] + ":"
+                    + std::string(1, commitDate[8]) + commitDate[9] + " ";
     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
     PRINT_FILLED_ROW_ALIGN_RIGHT(footer.c_str());
 
