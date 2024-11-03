@@ -136,17 +136,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SNA_EN \
     "Snapshot menu\n"\
-    "Load\t(F2) >\n"\
-    "Save\t(SF2) >\n"\
-    "Load in slot \t(F3) >\n"\
-    "Save in slot \t(F4) >\n"
+    "Load\t>\n"\
+    "Save\t>\n"\
+    "Load in slot \t>\n"\
+    "Save in slot \t>\n"
 
 #define MENU_TAPE_EN \
     "Tape menu\n"\
-    "Select (TAP,TZX) \t(F5) >\n"\
-    "Play/Stop\t(F6)  \n"\
-    "Eject Tape\t(SF6) \n"\
-    "Tape browser\t(F7)  \n"\
+    "Select (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
+    "Eject Tape\n"\
+    "Tape browser\n"\
 	"Player mode\t>\n"
 
 #define MENU_BETADISK_EN \
@@ -169,7 +169,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Reset\t>\n"\
     "Options\t>\n"\
     "Update\t>\n"\
-    "Help\n"\
+    "Keyboard help\t \n"\
     "About\n"
 
 #define MENU_OPTIONS_EN \
@@ -222,6 +222,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_STORAGE_EN "Storage\n"\
     "Betadisk\t>\n"\
+    "Auto tape load\t>\n"\
     "Flash tape load\t>\n"\
     "R.G. ROM timings\t>\n"
 

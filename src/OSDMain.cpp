@@ -1017,7 +1017,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         }
 
                         if (res == DLG_YES) {
-                            if (!SaveSnapshot(fname, fprefix == "S" || fprefix == "*" )) {
+                            if (!SaveSnapshot(fname, /*fprefix == "S" ||*/ fprefix == "*" )) {
                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                             } else {
                                 Config::ram_file = fname;
@@ -1230,7 +1230,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 // ESPectrum::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
-                    if (fprefix == "S") FileZ80::keepArch = true;
+                    // if (fprefix == "S") FileZ80::keepArch = true;
                     mFile.erase(0, 1);
                     string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
 
@@ -1664,7 +1664,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
                                             }
 
-                                            if (!SaveSnapshot(fname, fprefix == "S" || fprefix == "*" )) {
+                                            if (!SaveSnapshot(fname, /*fprefix == "S" ||*/ fprefix == "*" )) {
                                                 OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                                             } else {
                                                 Config::ram_file = fname;
@@ -2324,6 +2324,42 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
+                                            string TapeAutoload_menu = MENU_AUTOLOAD[Config::lang];
+                                            TapeAutoload_menu += MENU_YESNO[Config::lang];
+                                            bool prev_TapeAutoload = Config::TapeAutoload;
+                                            if (prev_TapeAutoload) {
+                                                menu_curopt = 1;
+                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[Y",0),2,"[*");
+                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[N",0),2,"[ ");
+                                            } else {
+                                                menu_curopt = 2;
+                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[Y",0),2,"[ ");
+                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[N",0),2,"[*");
+                                            }
+                                            uint8_t opt2 = menuRun(TapeAutoload_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)
+                                                    Config::TapeAutoload = true;
+                                                else
+                                                    Config::TapeAutoload = false;
+
+                                                if (Config::TapeAutoload != prev_TapeAutoload) {
+                                                    Config::save("TapeAutoload");
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (opt2 == 3) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
                                             string flash_menu = MENU_FLASHLOAD[Config::lang];
                                             flash_menu += MENU_YESNO[Config::lang];
                                             bool prev_flashload = Config::flashload;
@@ -2355,7 +2391,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             }
                                         }
                                     }
-                                    else if (opt2 == 3) {
+                                    else if (opt2 == 4) {
                                         menu_level = 3;
                                         menu_curopt = 1;
                                         menu_saverect = true;

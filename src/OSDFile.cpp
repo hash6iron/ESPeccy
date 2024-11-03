@@ -246,13 +246,13 @@ reset:
 
         if ( ftype == DISK_SNAFILE ) {
             if (ZXKeyb::Exists) {
-                StatusBar += Config::lang == 0 ? "SN: New (with ROM) | " :
-                             Config::lang == 1 ? "SN: Nuevo (con ROM) | " :
-                                                 "SN: Novo (com ROM) | ";
+                StatusBar += Config::lang == 0 ? "S+N: New w/ROM | " :
+                             Config::lang == 1 ? "S+N: Nuevo c/ROM | " :
+                                                 "S+N: Novo c/ROM | ";
             } else {
-                StatusBar += Config::lang == 0 ? "SF2: New (with ROM) | " :
-                             Config::lang == 1 ? "SF2: Nuevo (con ROM) | " :
-                                                 "SF2: Novo (com ROM) | " ;
+                StatusBar += Config::lang == 0 ? "S+F2: New w/ROM | " :
+                             Config::lang == 1 ? "S+F2: Nuevo c/ROM | " :
+                                                 "S+F2: Novo c/ROM | " ;
             }
         }
 
@@ -734,7 +734,7 @@ reset:
                             rtrim(filedir);
                             click();
 
-                            if ((Menukey.CTRL && Menukey.vk == fabgl::VK_RETURN) || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) return "S" + filedir;
+                            // if ((Menukey.CTRL && Menukey.vk == fabgl::VK_RETURN) || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) return "S" + filedir;
 
                             return "R" + filedir;
 

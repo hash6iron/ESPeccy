@@ -238,7 +238,8 @@ void Tape::LoadTape(string mFile) {
         mFile.erase(0, 1);
 
         // Flashload .tap if needed
-        if (FileUtils::fileSize( ( mFile[0] == '/' ? mFile : ( FileUtils::MountPoint + FileUtils::TAP_Path + mFile ) ).c_str() ) > 0
+        if (Config::TapeAutoload &&
+            FileUtils::fileSize( ( mFile[0] == '/' ? mFile : ( FileUtils::MountPoint + FileUtils::TAP_Path + mFile ) ).c_str() ) > 0
             && keySel == "R"
             && Config::flashload
             && Config::romSet != "ZX81+"

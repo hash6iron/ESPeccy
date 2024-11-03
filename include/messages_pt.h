@@ -138,17 +138,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SNA_PT \
     "Menu snapshots\n"\
-    "Carregar\t(F2) >\n"\
-    "Salvar\t(SF2) >\n"\
-    "Carregar no slot \t(F3) >\n"\
-    "Salvar no slot \t(F4) >\n"
+    "Carregar\t>\n"\
+    "Salvar\t>\n"\
+    "Carregar no slot\t>\n"\
+    "Salvar no slot\t>\n"
 
 #define MENU_TAPE_PT \
     "Fita K7\n"\
-    "Escolher (TAP,TZX)\t(F5) >\n"\
-    "Play/Stop\t(F6)  \n"\
-    "Ejetar fita\t(SF6) \n"\
-    "Navegador fita\t(F7)  \n"\
+    "Escolher (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
+    "Ejetar fita\n"\
+    "Navegador fita\n"\
 	"Modo reprodutor\t>\n"
 
 #define MENU_BETADISK_PT \
@@ -171,7 +171,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Reiniciar\t>\n"\
     "Op\x87\x94" "es\t>\n"\
     "Atualizar\t>\n"\
-    "Ajuda\n"\
+    "Ajuda do teclado\t \n"\
     "Sobre\n"
 
 #define MENU_OPTIONS_PT \
@@ -224,6 +224,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_STORAGE_PT "Armazenamento\n"\
     "Betadisk\t>\n"\
+    "Auto carregamento de fita\t>\n"\
     "Carregamento r\xA0pido\t>\n"\
     "Timings ROM R.G.\t>\n"
 

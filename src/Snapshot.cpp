@@ -571,9 +571,11 @@ static uint16_t mkword(uint8_t lobyte, uint8_t hibyte) {
     return lobyte | (hibyte << 8);
 }
 
-bool FileZ80::keepArch = false;
+// bool FileZ80::keepArch = false;
 
 bool FileZ80::load(string z80_fn) {
+
+    bool keepArch = false;
 
     FILE *file;
 
@@ -649,18 +651,22 @@ bool FileZ80::load(string z80_fn) {
         return false;
     }
 
-    // Force keepArch for testing
-    // keepArch = true;
-
+#if 0
     if (keepArch) {
-
         if (z80_arch == "48K") {
             if (Config::arch == "128K" || Config::arch == "Pentagon") keepArch = false;
         } else {
             if (Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95") keepArch = false;
         }
-
     }
+#else
+    if (z80_arch == "48K") {
+        if (Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95") keepArch = true;
+    } else {
+        // 128k or Pentagon
+        keepArch = false;
+    }
+#endif
 
     // printf("fileTypes -> Path: %s, begin_row: %d, focus: %d\n",FileUtils::SNA_Path.c_str(),FileUtils::fileTypes[DISK_SNAFILE].begin_row,FileUtils::fileTypes[DISK_SNAFILE].focus);
     // printf("Config    -> Path: %s, begin_row: %d, focus: %d\n",Config::Path.c_str(),(int)Config::begin_row,(int)Config::focus);
@@ -1102,6 +1108,18 @@ void FileZ80::loader48() {
     unsigned char *z80_array = (unsigned char *) load48;
     uint32_t dataOffset = 86;
 
+    uint8_t tk90xV3_5C09 = 20, tk90xV3_5C0A = 3; // initial values
+
+    // Dirty hack tk90x v3
+//    if (Config::arch == "TK90X") {
+//        if (  Config::romSet == "v3es"
+//           || Config::romSet == "v3pt"
+//           || Config::romSet == "v3en") {
+//            tk90xV3_5C09 = MemESP::readbyte(0x5C09);
+//            tk90xV3_5C0A = MemESP::readbyte(0x5C0A);
+//        }
+//    }
+
     ESPectrum::reset();
 
     // begin loading registers
@@ -1211,6 +1229,15 @@ void FileZ80::loader48() {
 
     VIDEO::grmem = MemESP::ram[5];
 
+    // Dirty hack tk90x v3
+    if (Config::arch == "TK90X") {
+        if (  Config::romSet == "v3es"
+           || Config::romSet == "v3pt"
+           || Config::romSet == "v3en") {
+            MemESP::writebyte(0x5C09, tk90xV3_5C09);
+            MemESP::writebyte(0x5C0A, tk90xV3_5C0A);
+        }
+    }
 }
 
 void FileZ80::loader128() {

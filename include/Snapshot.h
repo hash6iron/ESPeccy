@@ -61,7 +61,7 @@ public:
     static bool load(string z80_fn);
     static void loader48();
     static void loader128();
-    static bool keepArch;
+//    static bool keepArch;
     static bool save(string z80_fn, bool force_saverom = false);
 
 private:

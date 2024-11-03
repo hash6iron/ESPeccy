@@ -133,17 +133,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SNA_ES \
     "Men\xA3 snapshots\n"\
-    "Cargar\t(F2) >\n"\
-    "Guardar\t(SF2) >\n"\
-    "Cargar en slot \t(F3) >\n"\
-    "Guardar en slot \t(F4) >\n"
+    "Cargar\t>\n"\
+    "Guardar\t>\n"\
+    "Cargar en slot\t>\n"\
+    "Guardar en slot\t>\n"
 
 #define MENU_TAPE_ES \
     "Casete\n"\
-    "Elegir (TAP,TZX) \t(F5) >\n"\
-    "Play/Stop\t(F6)  \n"\
-    "Expulsar cinta\t(SF6) \n"\
-    "Navegador cinta\t(F7)  \n"\
+    "Elegir (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
+    "Expulsar cinta\n"\
+    "Navegador cinta\n"\
 	"Modo reproductor\t>\n"
 
 #define MENU_BETADISK_ES \
@@ -166,7 +166,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Resetear\t>\n"\
     "Opciones\t>\n"\
     "Actualizar\t>\n"\
-    "Ayuda\n"\
+    "Ayuda de teclado\t \n"\
     "Acerca de\n"
 
 #define MENU_OPTIONS_ES \
@@ -219,6 +219,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_STORAGE_ES "Almacenamiento\n"\
     "Betadisk\t>\n"\
+    "Auto carga de cinta\t>\n"\
     "Carga r\xA0pida cinta\t>\n"\
     "Timings ROM R.G.\t>\n"
 

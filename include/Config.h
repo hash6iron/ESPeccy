@@ -141,6 +141,8 @@ public:
 
     static int8_t volume;
 
+    static bool TapeAutoload;
+
 };
 
 #endif // Config.h

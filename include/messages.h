@@ -219,6 +219,8 @@ static const char *MENU_YESNO[NLANGS] = { MENU_YESNO_EN, MENU_YESNO_ES, MENU_YES
 
 static const char *MENU_DISKCTRL[NLANGS] = { "Betadisk\n" , "Betadisk\n", "Betadisk\n"};
 
+static const char *MENU_AUTOLOAD[NLANGS] = { "Auto load\n" , "Carga autom\xA0tica\n", "Carga autom\xA0tica\n"};
+
 static const char *MENU_FLASHLOAD[NLANGS] = { "Flash load\n" , "Carga r\xA0pida\n", "Carga r\xA0pida\n"};
 
 static const char *MENU_RGTIMINGS[NLANGS] = { "R.G. Timings\n" , "Timings R.G.\n", "Timings R.G.\n"};
