@@ -48,6 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Z80_JLS/z80.h"
 #include "roms.h"
 #include "CommitDate.h"
+#include "ROMLoad.h"
 
 #include "Cheat.h"
 
@@ -1028,6 +1029,32 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 }
             }
         } else
+        if (KeytoESP == fabgl::VK_F3) { // Cartridge
+            // ***********************************************************************************
+            // ROM DIALOG
+            // ***********************************************************************************
+            if (FileUtils::isSDReady()) {
+                menu_level = 0;
+                menu_saverect = false;
+                string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 51, 12);
+                if (mFile != "" && FileUtils::isSDReady()) {
+                    mFile.erase(0, 1);
+                    string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+                    if (!ROMLoad::load(fname)) {
+                        OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
+                        return;
+                    } else {
+                        Config::ram_file = NO_RAM_FILE;
+                        Config::last_ram_file = NO_RAM_FILE;
+                        Config::save("ram");
+
+                        Config::rom_file = fname;
+                        Config::last_rom_file = Config::rom_file;
+                        Config::save("rom");
+                    }
+                }
+            }
+        } else
         // if (KeytoESP == fabgl::VK_F5) { // UART test
         //     OSD::UART_test();
         // } else
@@ -1117,9 +1144,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             if (Config::DiskCtrl || Z80Ops::isPentagon) {
 
-                if (Config::ram_file != NO_RAM_FILE) {
-                    Config::ram_file = NO_RAM_FILE;
-                }
+                Config::rom_file = NO_ROM_FILE;
+                Config::last_rom_file = NO_ROM_FILE;
+
+                Config::ram_file = NO_RAM_FILE;
                 Config::last_ram_file = NO_RAM_FILE;
 
                 // Clear Cheat data
@@ -1262,7 +1290,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             LoadCheatFile(fname);
                             Config::ram_file = fname;
                             Config::last_ram_file = fname;
-
                         }
                     }
                 }
@@ -1320,24 +1347,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             }
         }
         else if (KeytoESP == fabgl::VK_F4) {
-
-            // menu_level = 0;
-            // menu_saverect = false;
-
-            // if (FileUtils::isSDReady()) {
-            //     string mFile = fileDialog(FileUtils::ESP_Path, MENU_ESP_SAVE_TITLE[Config::lang],DISK_ESPFILE,51,22);
-            //     if (mFile != "") {
-            //         // string fprefix = mFile.substr(0,1);
-            //         // if (fprefix == "S") FileZ80::keepArch = true;
-            //         // mFile.erase(0, 1);
-            //         // string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
-            //         // LoadSnapshot(fname,"","",0xff);
-            //         // Config::ram_file = fname;
-            //         // Config::last_ram_file = fname;
-            //     }
-            // }
-            // // if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
-
             // Persist Save
             string menusave = MENU_PERSIST_SAVE[Config::lang] + getStringPersistCatalog();
             menu_level = 0;
@@ -1558,18 +1567,23 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
         }
         else if (KeytoESP == fabgl::VK_F11) { // Hard reset
-            if (Config::ram_file != NO_RAM_FILE) {
-                Config::ram_file = NO_RAM_FILE;
-            }
+            Config::ram_file = NO_RAM_FILE;
             Config::last_ram_file = NO_RAM_FILE;
 
             // Clear Cheat data
             CheatMngr::closeCheatFile();
 
-            ESPectrum::reset();
+            if (Config::last_rom_file != NO_ROM_FILE) {
+                ROMLoad::load(Config::last_rom_file);
+                Config::rom_file = Config::last_rom_file;
+            } else
+                ESPectrum::reset();
         }
         else if (KeytoESP == fabgl::VK_F12) { // ESP32 reset
             // ESP host reset
+            Config::rom_file = NO_ROM_FILE;
+            Config::save("rom");
+
             Config::ram_file = NO_RAM_FILE;
             Config::save("ram");
             esp_hard_reset();
@@ -1742,7 +1756,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
                             menu_curopt = sna_mnu;
                         } else {
-                            menu_curopt = 1;
+                            menu_curopt = opt;
                             break;
                         }
                     }
@@ -1895,7 +1909,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
 
                         } else {
-                            menu_curopt = 2;
+                            menu_curopt = opt;
                             break;
                         }
                     }
@@ -1946,12 +1960,43 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 }
                             }
                         } else {
-                            menu_curopt = 3;
+                            menu_curopt = opt;
                             break;
                         }
                     }
                 }
                 else if (opt == 4) {
+                    // ***********************************************************************************
+                    // ROM DIALOG
+                    // ***********************************************************************************
+                    menu_curopt = opt;
+
+                    if (FileUtils::isSDReady()) {
+                        menu_level = 1;
+                        menu_saverect = true;
+                        string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 26, 13);
+                        if (mFile != "" && FileUtils::isSDReady()) {
+                            mFile.erase(0, 1);
+                            string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+                            if (!ROMLoad::load(fname)) {
+                                OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
+                                return;
+                            } else {
+                                Config::ram_file = NO_RAM_FILE;
+                                Config::last_ram_file = NO_RAM_FILE;
+                                Config::save("ram");
+
+                                Config::rom_file = fname;
+                                Config::last_rom_file = Config::rom_file;
+                                Config::save("rom");
+                            }
+                            return;
+                        }
+                        menu_saverect = false;
+                        menu_curopt = opt;
+                    }
+                }
+                else if (opt == 5) {
                     // ***********************************************************************************
                     // MACHINE MENU
                     // ***********************************************************************************
@@ -1966,7 +2011,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                     while (1) {
                         menu_level = 1;
-
 
                         uint8_t arch_num = menuRun(MENU_ARCH[Config::lang]);
                         if (arch_num) {
@@ -2099,6 +2143,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     Config::ram_file = "none";
                                     Config::save("ram");
 
+                                    Config::rom_file = "none";
+                                    Config::save("rom");
 
                                     if (romset != Config::romSet) {
 
@@ -2172,6 +2218,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             Config::romSet = romset;
                                             Config::save("romSet");
 
+                                            Config::rom_file = Config::last_rom_file;
+                                            Config::save("rom");
+
                                             esp_hard_reset();
 
                                         }
@@ -2195,13 +2244,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             menu_saverect = false;
 
                         } else {
-                            menu_curopt = 4;
+                            menu_curopt = opt;
                             break;
                         }
-
                     }
                 }
-                else if (opt == 5) {
+                else if (opt == 6) {
                     // ***********************************************************************************
                     // RESET MENU
                     // ***********************************************************************************
@@ -2220,52 +2268,69 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             } else {
                                 // Clear Cheat data
                                 CheatMngr::closeCheatFile();
-
-                                ESPectrum::reset();
+                                if (Config::last_rom_file != NO_ROM_FILE) {
+                                    ROMLoad::load(Config::last_rom_file);
+                                    Config::rom_file = Config::last_rom_file;
+                                } else
+                                    ESPectrum::reset();
                             }
                             return;
                         }
-                        else if (opt2 == 4) {
-                            // ESP host reset
-                            Config::ram_file = NO_RAM_FILE;
-                            Config::save("ram");
-                            esp_hard_reset();
-                        }
-                        else if (opt2 != 0) {
-
-                            if (opt2 == 2 && Config::DiskCtrl == 0 && !Z80Ops::isPentagon) {
+                        else if (opt2 == 2) {
+                            // Reset to TR-DOS
+                            if (Config::DiskCtrl == 0 && !Z80Ops::isPentagon) {
                                 OSD::osdCenteredMsg(TRDOS_RESET_ERR[Config::lang], LEVEL_ERROR, 1500 );
                                 return;
                             }
 
-                            // Hard reset
-                            if (Config::ram_file != NO_RAM_FILE) {
-                                Config::ram_file = NO_RAM_FILE;
-                            }
+                            Config::ram_file = NO_RAM_FILE;
                             Config::last_ram_file = NO_RAM_FILE;
+
+                            Config::rom_file = NO_ROM_FILE;
+                            Config::last_rom_file = NO_ROM_FILE;
 
                             // Clear Cheat data
                             CheatMngr::closeCheatFile();
 
                             ESPectrum::reset();
 
-                            // Reset to TR-DOS
-                            if (opt2 == 2) {
-                                if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
-                                MemESP::romInUse = 4;
-                                MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                                ESPectrum::trdos = true;
-                            }
-
+                            if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
+                            MemESP::romInUse = 4;
+                            MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
+                            ESPectrum::trdos = true;
                             return;
 
-                        } else {
-                            menu_curopt = 5;
+                        }
+                        else if (opt2 == 3) {
+                            // Hard reset
+                            Config::ram_file = NO_RAM_FILE;
+                            Config::last_ram_file = NO_RAM_FILE;
+
+                            // Clear Cheat data
+                            CheatMngr::closeCheatFile();
+
+                            if (Config::last_rom_file != NO_ROM_FILE) {
+                                ROMLoad::load(Config::last_rom_file);
+                                Config::rom_file = Config::last_rom_file;
+                            } else
+                                ESPectrum::reset();
+                            return;
+                        }
+                        else if (opt2 == 4) {
+                            // ESP host reset
+                            Config::rom_file = NO_ROM_FILE;
+                            Config::save("rom");
+                            Config::ram_file = NO_RAM_FILE;
+                            Config::save("ram");
+                            esp_hard_reset();
+                        }
+                        else {
+                            menu_curopt = opt;
                             break;
                         }
                     }
                 }
-                else if (opt == 6) {
+                else if (opt == 7) {
                     // ***********************************************************************************
                     // OPTIONS MENU
                     // ***********************************************************************************
@@ -2804,9 +2869,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                     Config::aspect_16_9 = true;
 
                                                 if (Config::aspect_16_9 != prev_asp) {
+                                                    Config::rom_file = "none";
                                                     Config::ram_file = "none";
                                                     Config::save("asp169");
                                                     Config::save("ram");
+                                                    Config::save("rom");
                                                     esp_hard_reset();
                                                 }
 
@@ -2845,9 +2912,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                     Config::scanlines = 0;
 
                                                 if (Config::scanlines != prev_opt) {
+                                                    Config::rom_file = "none";
                                                     Config::ram_file = "none";
                                                     Config::save("scanlines");
                                                     Config::save("ram");
+                                                    Config::save("rom");
                                                     // Reset to apply if mode != CRT
                                                     if (Config::videomode!=2) esp_hard_reset();
                                                 }
@@ -3029,13 +3098,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                                         if (Config::videomode) {
                                                             // ESP host reset
+                                                            Config::rom_file = NO_ROM_FILE;
+                                                            Config::save("rom");
                                                             Config::ram_file = NO_RAM_FILE;
                                                             Config::save("ram");
                                                             esp_hard_reset();
                                                         } else {
-                                                            if (Config::ram_file != NO_RAM_FILE) {
-                                                                Config::ram_file = NO_RAM_FILE;
-                                                            }
+                                                            Config::rom_file = NO_ROM_FILE;
+                                                            Config::last_rom_file = NO_ROM_FILE;
+
+                                                            Config::ram_file = NO_RAM_FILE;
                                                             Config::last_ram_file = NO_RAM_FILE;
 
                                                             // Clear Cheat data
@@ -3232,11 +3304,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         }
                         else {
-                            menu_curopt = 6;
+                            menu_curopt = opt;
                             break;
                         }
                     }
-                } else if (opt == 7) {
+                } else if (opt == 8) {
                     menu_level = 1;
                     menu_curopt = 1;
                     menu_saverect = true;
@@ -3388,49 +3460,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
 
                         } else {
-                            menu_curopt = 7;
+                            menu_curopt = opt;
                             break;
                         }
                     }
                 }
-                else if (opt == 8) { // Help
-
+                else if (opt == 9) { // Help
                     OSD::drawKbdLayout(ZXKeyb::Exists ? 3 : 2);
-
-                    // drawOSD(true);
-                    // osdAt(2, 0);
-                    // VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
-                    // if (ZXKeyb::Exists)
-                    //     VIDEO::vga.print(Config::lang ? OSD_HELP_ES_ZX : OSD_HELP_EN_ZX);
-                    // else
-                    //     VIDEO::vga.print(Config::lang ? OSD_HELP_ES : OSD_HELP_EN);
-
-                    // while (1) {
-
-                    //     if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
-
-                    //     ESPectrum::readKbdJoy();
-
-                    //     if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-                    //         if (ESPectrum::readKbd(&Nextkey)) {
-                    //             if(!Nextkey.down) continue;
-                    //             if (Nextkey.vk == fabgl::VK_F1 || Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_RETURN || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY1B || Nextkey.vk == fabgl::VK_JOY2A || Nextkey.vk == fabgl::VK_JOY2B) break;
-                    //         }
-                    //     }
-
-                    //     vTaskDelay(5 / portTICK_PERIOD_MS);
-
-                    // }
-
-                    // click();
-
-                    // if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
-
                     return;
-
                 }
-                else if (opt == 9) {
-
+                else if (opt == 10) {
                     // About
                     drawOSD(false);
 
@@ -3536,9 +3575,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 else break;
 
             }
-
         }
-
     }
 }
 
@@ -5754,9 +5791,7 @@ void OSD::pokeDialog() {
                         menu_saverect = true;
                         uint8_t opt = simpleMenuRun( Bankmenu, x + dlg_Objects[curObject].posx * OSD_FONT_W,y + dlg_Objects[curObject].posy * OSD_FONT_H, 10, 9);
                         if(opt!=0) {
-
                             if (BankCombo[opt -1] != dlgValues[curObject]) {
-
                                 dlgValues[curObject] = BankCombo[opt - 1];
 
                                 VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(5, 1));
@@ -5778,14 +5813,10 @@ void OSD::pokeDialog() {
                                         VIDEO::vga.print("0    ");
                                     }
                                 }
-
                             }
-
-                            break;
-                        } else break;
-                        menu_curopt = opt;
+                        }
+                        break;
                     }
-
                 } else
                 if (dlg_Objects[curObject].Name == "Ok") {
 
@@ -5807,25 +5838,19 @@ void OSD::pokeDialog() {
                         trim(bank);
                         MemESP::ram[stoi(bank)][address] = value;
                     }
-
                     click();
-
                     break;
 
                 } else
                 if (dlg_Objects[curObject].Name == "Cancel") {
-
                     click();
                     break;
-
                 }
 
             } else
             if (Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY2A) {
-
                 click();
                 break;
-
             }
 
         }

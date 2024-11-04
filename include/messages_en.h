@@ -165,6 +165,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Snapshot\t>\n"\
     "Tape\t>\n"\
     "Betadisk\t>\n"\
+    "Cartridge\t>\n"\
 	"Machine\t>\n"\
     "Reset\t>\n"\
     "Options\t>\n"\

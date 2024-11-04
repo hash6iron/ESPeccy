@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef Snapshot_h
-#define Snapshot_h
+#ifndef SNAPSHOT_H
+#define SNAPSHOT_H
 
 #include <stdio.h>
 #include <inttypes.h>

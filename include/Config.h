@@ -84,6 +84,8 @@ public:
     static string   pref_romSet_TK95;
     static string   ram_file;
     static string   last_ram_file;
+    static string   rom_file;
+    static string   last_rom_file;
     static uint8_t  esp32rev;
     static bool     slog_on;
     static bool     aspect_16_9;

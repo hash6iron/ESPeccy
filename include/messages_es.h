@@ -162,6 +162,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Snapshots\t>\n"\
     "Casete\t>\n"\
     "Betadisk\t>\n"\
+    "Cartucho\t>\n"\
     "Modelo\t>\n"\
     "Resetear\t>\n"\
     "Opciones\t>\n"\

@@ -56,6 +56,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "pwm_audio.h"
 #include "fabgl.h"
 #include "wd1793.h"
+#include "ROMLoad.h"
 
 #include "ZXKeyb.h"
 #include "freertos/FreeRTOS.h"
@@ -958,6 +959,8 @@ void ESPectrum::setup()
     // printf("pref_romSet_TK90X: %s\n",Config::pref_romSet_TK90X.c_str());
     // printf("pref_romSet_TK95: %s\n",Config::pref_romSet_TK95.c_str());
 
+    bool was_vreset = false;
+
     // Set arch if there's no snapshot to load
     if (Config::ram_file == NO_RAM_FILE) {
 
@@ -965,6 +968,8 @@ void ESPectrum::setup()
 
             Config::pref_arch.pop_back();
             Config::save("pref_arch");
+
+            was_vreset = true;
 
         } else {
 
@@ -1245,9 +1250,10 @@ void ESPectrum::setup()
     // Clear Cheat data
     CheatMngr::closeCheatFile();
 
+    Config::last_rom_file = Config::rom_file;
+
     // Load snapshot if present in Config::ram_file
     if (Config::ram_file != NO_RAM_FILE) {
-
         FileUtils::SNA_Path = Config::SNA_Path;
         FileUtils::fileTypes[DISK_SNAFILE].begin_row = Config::SNA_begin_row;
         FileUtils::fileTypes[DISK_SNAFILE].focus = Config::SNA_focus;
@@ -1267,13 +1273,17 @@ void ESPectrum::setup()
         FileUtils::fileTypes[DISK_DSKFILE].fileSearch = Config::DSK_fileSearch;
 
         LoadSnapshot(Config::ram_file,"","",0xff);
-        OSD::LoadCheatFile(Config::last_ram_file);
-        Config::ram_file = Config::last_ram_file;
-
-        Config::last_ram_file = Config::ram_file;
+        OSD::LoadCheatFile(Config::ram_file);
         Config::ram_file = NO_RAM_FILE;
         Config::save("ram");
 
+    } else {
+        // Load ROM if present in Config::rom_file
+        if (!was_vreset && Config::rom_file != NO_ROM_FILE) {
+            ROMLoad::load(Config::rom_file);
+            Config::rom_file = NO_ROM_FILE;
+            Config::save("rom");
+        }
     }
 
     if (Config::slog_on) showMemInfo("Setup finished.");
@@ -1566,17 +1576,23 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                     if (KeytoESP == fabgl::VK_DELETE) {
                         // printf("Ctrl + Alt + Supr!\n");
                         // ESP host reset
+                        Config::rom_file = NO_ROM_FILE;
+                        Config::save("rom");
+
                         Config::ram_file = NO_RAM_FILE;
                         Config::save("ram");
                         OSD::esp_hard_reset();
                     } else if (KeytoESP == fabgl::VK_BACKSPACE) {
                         // printf("Ctrl + Alt + backSpace!\n");
                         // Hard
-                        if (Config::ram_file != NO_RAM_FILE) {
-                            Config::ram_file = NO_RAM_FILE;
-                        }
+                        Config::ram_file = NO_RAM_FILE;
                         Config::last_ram_file = NO_RAM_FILE;
-                        ESPectrum::reset();
+
+                        if (Config::last_rom_file != NO_ROM_FILE) {
+                            ROMLoad::load(Config::last_rom_file);
+                            Config::rom_file = Config::last_rom_file;
+                        } else
+                            ESPectrum::reset();
                         return;
                     }
                 } else if (KeytoESP == fabgl::VK_BACKSPACE) {
@@ -1586,10 +1602,15 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                         LoadSnapshot(Config::last_ram_file,"","",0xff);
                         OSD::LoadCheatFile(Config::last_ram_file);
                         Config::ram_file = Config::last_ram_file;
+
                     } else {
                         // Clear Cheat data
                         CheatMngr::closeCheatFile();
-                        ESPectrum::reset();
+                        if (Config::last_rom_file != NO_ROM_FILE) {
+                            ROMLoad::load(Config::last_rom_file);
+                            Config::rom_file = Config::last_rom_file;
+                        } else
+                            ESPectrum::reset();
                     }
                     return;
                 }
@@ -2032,6 +2053,9 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             } else
             if (!bitRead(ZXKeyb::ZXcols[5],1)) { // O -> Poke
                 OSD::pokeDialog();
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[5],4)) { // Y -> Cartridge
+                OSD::do_OSD(fabgl::VK_F3,0,true);
             } else
             if (!bitRead(ZXKeyb::ZXcols[5],3)) { // U -> Cheats
                 OSD::do_OSD(fabgl::VK_F9,0,true);

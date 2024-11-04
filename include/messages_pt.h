@@ -167,6 +167,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Snapshots\t>\n"\
     "Fita K7\t>\n"\
     "Betadisk\t>\n"\
+    "Cartucho\t>\n"\
     "Hardware\t>\n"\
     "Reiniciar\t>\n"\
     "Op\x87\x94" "es\t>\n"\

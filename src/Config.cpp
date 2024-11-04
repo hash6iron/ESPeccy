@@ -65,6 +65,8 @@ string   Config::pref_romSet_TK90X = "v1es";
 string   Config::pref_romSet_TK95 = "95es";
 string   Config::ram_file = NO_RAM_FILE;
 string   Config::last_ram_file = NO_RAM_FILE;
+string   Config::rom_file = NO_ROM_FILE;
+string   Config::last_rom_file = NO_ROM_FILE;
 
 bool     Config::slog_on = true;
 bool     Config::aspect_16_9 = false;
@@ -188,6 +190,7 @@ ConfigEntry configEntries[] = {
     {"pref_romSet_90X", CONFIG_TYPE_STRING, &Config::pref_romSet_TK90X},
     {"pref_romSet_95", CONFIG_TYPE_STRING, &Config::pref_romSet_TK95},
     {"ram", CONFIG_TYPE_STRING, &Config::ram_file},
+    {"rom", CONFIG_TYPE_STRING, &Config::rom_file},
     {"slog", CONFIG_TYPE_BOOL, &Config::slog_on},
 //    {"sdstorage", CONFIG_TYPE_STRING, &Config::sd_storage},
     {"asp169", CONFIG_TYPE_BOOL, &Config::aspect_16_9},

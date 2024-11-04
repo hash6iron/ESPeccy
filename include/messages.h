@@ -84,6 +84,7 @@ static const char *OSD_PAUSE[NLANGS] = { OSD_PAUSE_EN,OSD_PAUSE_ES,OSD_PAUSE_PT 
 #define OSD_TAPE_LOAD_ERR "ERROR Loading tape file"
 #define OSD_TAPE_SAVE_ERR "ERROR Saving tape file"
 #define OSD_BETADISK_LOAD_ERR "ERROR Loading Disk file"
+#define OSD_ROM_LOAD_ERR "ERROR Loading ROM file"
 
 #define OSD_PLEASE_WAIT "Please Wait..."
 

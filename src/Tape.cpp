@@ -50,6 +50,7 @@ using namespace std;
 #include "Snapshot.h"
 #include "messages.h"
 #include "Z80_JLS/z80.h"
+#include "ROMLoad.h"
 
 FILE *Tape::tape;
 FILE *Tape::cswBlock;
@@ -261,10 +262,14 @@ void Tape::LoadTape(string mFile) {
             MemESP::writebyte(0x5C78,rand() % 256);
             MemESP::writebyte(0x5C79,rand() % 256);
 
-            if (Config::ram_file != NO_RAM_FILE) {
-                Config::ram_file = NO_RAM_FILE;
-            }
+            Config::ram_file = NO_RAM_FILE;
             Config::last_ram_file = NO_RAM_FILE;
+
+            // Preserve ROM
+            if (Config::last_rom_file != NO_ROM_FILE) {
+                ROMLoad::load(Config::last_rom_file, false);
+                Config::rom_file = Config::last_rom_file;
+            }
 
             if (OSDprev) {
                 VIDEO::OSD = OSDprev;

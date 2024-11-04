@@ -124,6 +124,7 @@ private:
 #define DISK_PSNA_FILE "persist"
 
 #define NO_RAM_FILE "none"
+#define NO_ROM_FILE "none"
 
 #define SNA_48K_SIZE 49179
 #define SNA_48K_WITH_ROM_SIZE 65563

@@ -32,9 +32,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef COMMIT_INFO_H
-#define COMMIT_INFO_H
+#ifndef ROMLOAD_H
+#define ROMLOAD_H
 
-const char* COMMIT_DATE = "2411040024";  // Formato YYmmddHHMM
+#include <stdio.h>
+#include <inttypes.h>
+#include <string>
 
-#endif // COMMIT_INFO_H
+using namespace std;
+
+class ROMLoad
+{
+public:
+    static bool load(string rom_fn, bool reset = true);
+};
+
+#endif
