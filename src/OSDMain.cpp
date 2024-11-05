@@ -1033,27 +1033,38 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             // ***********************************************************************************
             // ROM DIALOG
             // ***********************************************************************************
-            if (FileUtils::isSDReady()) {
-                menu_level = 0;
-                menu_saverect = false;
-                string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 51, 12);
-                if (mFile != "" && FileUtils::isSDReady()) {
-                    mFile.erase(0, 1);
-                    string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
-                    if (!ROMLoad::load(fname)) {
-                        OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
-                        return;
-                    } else {
-                        Config::ram_file = NO_RAM_FILE;
-                        Config::last_ram_file = NO_RAM_FILE;
-                        Config::save("ram");
+            while(1) {
+                if (FileUtils::isSDReady()) {
+                    menu_level = 0;
+                    // menu_saverect = true;
+                    menu_saverect = false;
+                    string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 51, 12);
+                    if (mFile != "") {
+                        if (FileUtils::isSDReady()) {
+                            mFile.erase(0, 1);
+                            string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+                            if (!ROMLoad::load(fname)) {
+                                OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
+                            } else {
+                                Config::ram_file = NO_RAM_FILE;
+                                Config::last_ram_file = NO_RAM_FILE;
+                                Config::save("ram");
 
-                        Config::rom_file = fname;
-                        Config::last_rom_file = Config::rom_file;
-                        Config::save("rom");
+                                Config::rom_file = fname;
+                                Config::last_rom_file = Config::rom_file;
+                                Config::save("rom");
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    } else {
+                        break;
                     }
+                    // menu_saverect = false;
                 }
             }
+
         } else
         // if (KeytoESP == fabgl::VK_F5) { // UART test
         //     OSD::UART_test();
@@ -1144,8 +1155,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             if (Config::DiskCtrl || Z80Ops::isPentagon) {
 
-                Config::rom_file = NO_ROM_FILE;
-                Config::last_rom_file = NO_ROM_FILE;
+                // Config::rom_file = NO_ROM_FILE;
+                // Config::last_rom_file = NO_ROM_FILE;
 
                 Config::ram_file = NO_RAM_FILE;
                 Config::last_ram_file = NO_RAM_FILE;
@@ -1574,7 +1585,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             CheatMngr::closeCheatFile();
 
             if (Config::last_rom_file != NO_ROM_FILE) {
-                ROMLoad::load(Config::last_rom_file);
+                if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                 Config::rom_file = Config::last_rom_file;
             } else
                 ESPectrum::reset();
@@ -1969,32 +1980,72 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     // ***********************************************************************************
                     // ROM DIALOG
                     // ***********************************************************************************
-                    menu_curopt = opt;
-
-                    if (FileUtils::isSDReady()) {
+                    menu_curopt = 1;
+                    menu_saverect = true;
+                    while(1) {
                         menu_level = 1;
-                        menu_saverect = true;
-                        string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 26, 13);
-                        if (mFile != "" && FileUtils::isSDReady()) {
-                            mFile.erase(0, 1);
-                            string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
-                            if (!ROMLoad::load(fname)) {
-                                OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
-                                return;
-                            } else {
-                                Config::ram_file = NO_RAM_FILE;
-                                Config::last_ram_file = NO_RAM_FILE;
-                                Config::save("ram");
+                        uint8_t rom_opt = menuRun(MENU_ROM_CART[Config::lang]);
+                        if (rom_opt > 0) {
+                            if (rom_opt == 1) {
+                                menu_curopt = 1;
+                                menu_saverect = true;
+                                while(1) {
+                                    if (FileUtils::isSDReady()) {
+                                        menu_curopt = 1;
+                                        menu_level = 2;
+                                        string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 26, 13);
+                                        if (mFile != "") {
+                                            if (FileUtils::isSDReady()) {
+                                                mFile.erase(0, 1);
+                                                string fname = FileUtils::MountPoint + FileUtils::ROM_Path + mFile;
+                                                if (!ROMLoad::load(fname)) {
+                                                    OSD::osdCenteredMsg(OSD_ROM_LOAD_ERR, LEVEL_WARN);
+                                                } else {
+                                                    Config::ram_file = NO_RAM_FILE;
+                                                    Config::last_ram_file = NO_RAM_FILE;
+                                                    Config::save("ram");
 
-                                Config::rom_file = fname;
-                                Config::last_rom_file = Config::rom_file;
-                                Config::save("rom");
+                                                    Config::rom_file = fname;
+                                                    Config::last_rom_file = Config::rom_file;
+                                                    Config::save("rom");
+                                                    return;
+                                                }
+                                            } else {
+                                                break;
+                                            }
+                                        } else {
+                                            break;
+                                        }
+                                        menu_saverect = false;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            } else
+                            if (rom_opt == 2) {
+                                if ( Config::last_rom_file != NO_ROM_FILE || Config::rom_file != NO_ROM_FILE ) {
+                                    Config::rom_file = NO_ROM_FILE;
+                                    Config::last_rom_file = NO_ROM_FILE;
+                                    Config::save("rom");
+
+                                    osdCenteredMsg(OSD_ROM_EJECT[Config::lang], LEVEL_INFO, 1000);
+
+                                    ESPectrum::reset();
+
+                                    return;
+                                } else {
+                                    OSD::osdCenteredMsg(OSD_ROM_INSERT_ERR[Config::lang], LEVEL_WARN);
+                                }
                             }
-                            return;
                         }
+                        else
+                            break;
+
                         menu_saverect = false;
-                        menu_curopt = opt;
+                        menu_curopt = rom_opt;
                     }
+
+                    menu_curopt = opt;
                 }
                 else if (opt == 5) {
                     // ***********************************************************************************
@@ -2269,7 +2320,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 // Clear Cheat data
                                 CheatMngr::closeCheatFile();
                                 if (Config::last_rom_file != NO_ROM_FILE) {
-                                    ROMLoad::load(Config::last_rom_file);
+                                    if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                                     Config::rom_file = Config::last_rom_file;
                                 } else
                                     ESPectrum::reset();
@@ -2286,8 +2337,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             Config::ram_file = NO_RAM_FILE;
                             Config::last_ram_file = NO_RAM_FILE;
 
-                            Config::rom_file = NO_ROM_FILE;
-                            Config::last_rom_file = NO_ROM_FILE;
+                            // Config::rom_file = NO_ROM_FILE;
+                            // Config::last_rom_file = NO_ROM_FILE;
 
                             // Clear Cheat data
                             CheatMngr::closeCheatFile();
@@ -2310,7 +2361,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             CheatMngr::closeCheatFile();
 
                             if (Config::last_rom_file != NO_ROM_FILE) {
-                                ROMLoad::load(Config::last_rom_file);
+                                if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                                 Config::rom_file = Config::last_rom_file;
                             } else
                                 ESPectrum::reset();
@@ -3262,29 +3313,29 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         while (1){
                                             string opt_menu = MENU_OSD_OPT2[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
+                                            opt_menu += MENU_OSD_TEXT_SCROLL;
                                             bool prev_opt = Config::osd_AltRot;
                                             if (prev_opt) {
-                                                menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
-                                            } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
+                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu.replace(opt_menu.find("[P",0),2,"[*");
+                                            } else {
+                                                menu_curopt = 1;
                                                 opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu.replace(opt_menu.find("[P",0),2,"[ ");
                                             }
 
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
                                                 if (opt2 == 1)
-                                                    Config::osd_AltRot = 1;
-                                                else
                                                     Config::osd_AltRot = 0;
+                                                else
+                                                    Config::osd_AltRot = 1;
 
-                                                if (Config::osd_AltRot != prev_opt) {
-                                                    Config::save("osd_AltRot");
-                                                }
                                                 menu_curopt = opt2;
+
+                                                if (Config::osd_AltRot != prev_opt) Config::save("osd_AltRot");
+
                                                 menu_saverect = false;
                                             } else {
                                                 menu_curopt = 1;

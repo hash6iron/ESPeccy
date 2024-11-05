@@ -1589,7 +1589,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                         Config::last_ram_file = NO_RAM_FILE;
 
                         if (Config::last_rom_file != NO_ROM_FILE) {
-                            ROMLoad::load(Config::last_rom_file);
+                            if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                             Config::rom_file = Config::last_rom_file;
                         } else
                             ESPectrum::reset();
@@ -1607,7 +1607,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                         // Clear Cheat data
                         CheatMngr::closeCheatFile();
                         if (Config::last_rom_file != NO_ROM_FILE) {
-                            ROMLoad::load(Config::last_rom_file);
+                            if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                             Config::rom_file = Config::last_rom_file;
                         } else
                             ESPectrum::reset();

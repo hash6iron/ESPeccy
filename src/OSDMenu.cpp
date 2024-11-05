@@ -121,11 +121,13 @@ std::string OSD::RotateLine(const std::string &line, RowScrollContext *context, 
                     context->rowScrollPos++;
                     if (context->rowScrollPos >= len - maxLength) {
                         context->rowScrollStatus = true; // Cambia de dirección
+                        context->rowTimeStartScroll = 0;
                     }
                 } else {
                     context->rowScrollPos--;
                     if (context->rowScrollPos <= 0) {
                         context->rowScrollStatus = false; // Cambia de dirección
+                        context->rowTimeStartScroll = 0;
                     }
                 }
             } else {

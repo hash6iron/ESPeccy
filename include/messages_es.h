@@ -127,6 +127,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_ES "Cinta insertada"
 #define OSD_TAPE_EJECT_ES "Cinta expulsada"
 
+#define OSD_ROM_EJECT_ES "Cartucho expulsado"
+#define OSD_ROM_INSERT_ERR_ES "Cartucho no insertado"
+
 #define MENU_DELETE_SNA_ES "Borrar snapshot"
 
 #define TRDOS_RESET_ERR_ES "Error en reset a TR-DOS. Active Betadisk."
@@ -157,6 +160,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Unidad#\n"\
     "Insertar disco\t>\n"\
     "Expulsar disco\n"
+
+#define MENU_ROM_CART_ES \
+    "Cartucho\n"\
+    "Insertar\t>\n"\
+    "Expulsar\n"
 
 #define MENU_MAIN_ES \
     "Snapshots\t>\n"\
@@ -242,7 +250,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Early\t[E]\n"\
     "Late\t[L]\n"
 
-
 #define MENU_ARCH_ES "Elija modelo\n"
 
 #define MENU_ROMS48_ES "Elija ROM\n"\
@@ -300,7 +307,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Espa\xA4ol\t[ ]\n"\
 	"Portugu\x82s\t[ ]\n"
 
-#define MENU_JOY_ES "Menu Joystick\n"
+#define MENU_JOY_ES "Men\xA3 Joystick\n"
 
 #define MENU_DEFJOY_ES "Definir\n"
 
@@ -309,7 +316,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define DLG_TITLE_INPUTPOK_ES "A\xA4" "adir Poke"
 
 #define MENU_OSD_ES "Config. OSD\n"\
-    "IZQ/DRCH navegar menu\t>\n"\
-    "Rotaci\xA2n texto alternativa\t>\n"
+    "Men\xA3 con cursores\t>\n"\
+    "Rotaci\xA2n de texto\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_ES_h

@@ -130,6 +130,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_EN "Tape inserted"
 #define OSD_TAPE_EJECT_EN "Tape ejected"
 
+#define OSD_ROM_EJECT_EN "Cartridge ejected"
+#define OSD_ROM_INSERT_ERR_EN "No cartridge inserted"
+
 #define MENU_DELETE_SNA_EN "Delete snapshot"
 
 #define TRDOS_RESET_ERR_EN "Can't reset to TR-DOS. Enable Betadisk."
@@ -160,6 +163,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Drive#\n"\
 	"Insert disk\t>\n"\
     "Eject disk\n"
+
+#define MENU_ROM_CART_EN \
+    "Cartridge\n"\
+    "Insert\t>\n"\
+    "Eject\n"
 
 #define MENU_MAIN_EN \
     "Snapshot\t>\n"\
@@ -311,7 +319,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
 
 #define MENU_OSD_EN "OSD settings\n"\
-    "LEFT/RIGHT navigate menu\t>\n"\
-    "Text rotation alternative\t>\n"
+    "Menu with cursors\t>\n"\
+    "Text scroll\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_EN_h

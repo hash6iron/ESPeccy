@@ -132,6 +132,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_PT "Fita inserida"
 #define OSD_TAPE_EJECT_PT "Fita ejetada"
 
+#define OSD_ROM_EJECT_PT "Cartucho ejetado"
+#define OSD_ROM_INSERT_ERR_PT "Cartucho n\x84o inserido"
+
 #define MENU_DELETE_SNA_PT "Escolha snapshot"
 
 #define TRDOS_RESET_ERR_PT "TR-DOS n\x84o presente. Ative o Betadisk."
@@ -162,6 +165,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Drive#\n"\
     "Inserir disco\t>\n"\
     "Ejetar disco\n"
+
+#define MENU_ROM_CART_PT \
+    "Cartucho\n"\
+    "Inserir\t>\n"\
+    "Ejetar\n"
 
 #define MENU_MAIN_PT \
     "Snapshots\t>\n"\
@@ -313,7 +321,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
 
 #define MENU_OSD_PT "OSD op\n"\
-    "ESQ/DIR navegar menu\t>\n"\
-    "Rota\x87\x84o texto alternativa\t>\n"
+    "Menu com setas\t>\n"\
+    "Rota\x87\x84o do texto\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_PT_h
