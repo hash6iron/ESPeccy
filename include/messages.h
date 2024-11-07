@@ -337,9 +337,9 @@ static const char *POKE_BANK_MENU[NLANGS] = { " Bank  \n" , " Banco \n" , " Banc
 
 static const char *MENU_OSD[NLANGS] = { MENU_OSD_EN, MENU_OSD_ES, MENU_OSD_PT };
 
-static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opcion \n","Opo \n" };
+static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
 
-static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opcion \n","Opo \n" };
+static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
 
 #define MENU_OSD_TEXT_SCROLL "Normal\t[N]\n"\
     "Ping-Pong\t[P]\n"
