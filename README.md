@@ -96,11 +96,13 @@ There's also no need to sort files using external utilities: the emulator create
 
 - F1 Main menu
 - F2 Load snapshot (SNA, Z80, SP, P)
+- SHIFT + F2 Save snapshot (SNA, Z80, SP, P)
 - F3 Load custom snapshot
 - F4 Save custom snapshot
 - F5 Select TAP file
 - F6 Play/Stop tape
 - F7 Tape Browser
+- SHIFT + F3 Load cartridge
 - F8 CPU / Tape load stats ( [CPU] microsecs per CPU cycle, [IDL] idle microsecs, [FPS] Frames per second, [FND] FPS w/no delay applied )
 - F9 Volume down
 - F10 Volume up
@@ -109,13 +111,12 @@ There's also no need to sort files using external utilities: the emulator create
 - CTRL + F1 Show current machine keyboard layout
 - CTRL + F2 Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD), and MAX speed (black speed and no sound)
 - CTRL + F5..F8 Screen centering in CRT 15K/50hz mode
+- SHIFT + F9 Cheats (POK)
 - CTRL + F9 Input poke
 - CTRL + F10 NMI
 - CTRL + F11 Reset to TR-DOS
 - SHIFT + F1 Hardware info
-- SHIFT + F2 Save snapshot (SNA, Z80, SP, P)
 - SHIFT + F6 Eject tape
-- SHIFT + F9 Cheats (POK)
 - Pause Pause
 - ScrollLock Switch "Cursor keys as joy" setting
 - PrntScr BMP screen capture (Folder /.c at SDCard)
@@ -132,6 +133,7 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 - 5 Select TAP file
 - 6 Play/Stop tape
 - 7 Tape browser
+- Y Load cartridge
 - 8 CPU / Tape load stats ( [CPU] microsecs per CPU cycle, [IDL] idle microsecs, [FPS] Frames per second, [FND] FPS w/no delay applied )
 - 9 Volume down
 - 0 Volume up
@@ -141,8 +143,8 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 - R Reset to TR-DOS
 - T Cycle turbo modes -> 100% speed (blue OSD), 125% speed (red OSD), 150% speed (magenta OSD), and MAX speed (black speed and no sound)
 - I Hardware info
-- O Input poke
 - U Cheats (POK)
+- O Input poke
 - P Pause
 - K Show current machine keyboard layout
 - Z,X,C,V Screen centering in CRT 15K mode
