@@ -306,7 +306,7 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
         click();
         uint8_t flags = 0;
 
-        string new_name = input(1, focus, "", SLOTNAME_LEN, SLOTNAME_LEN, zxColor(0,0), zxColor(7,0), rowGet(menu, idx), "", &flags);
+        string new_name = input(1, focus, "", SLOTNAME_LEN, min(SLOTNAME_LEN, cols - 4), zxColor(0,0), zxColor(7,0), rowGet(menu, idx), "", &flags);
         if ( !( flags & 1 ) ) { // if not canceled
             renameSlot(idx, new_name);
         }

@@ -37,18 +37,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "nvs_handle.hpp"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
 #include <cctype>
 #include <algorithm>
-#include <locale>
-#include "hardconfig.h"
 #include "Config.h"
 #include "FileUtils.h"
 #include "messages.h"
 #include "ESPectrum.h"
-#include "pwm_audio.h"
 #include "roms.h"
 #include "OSDMain.h"
 

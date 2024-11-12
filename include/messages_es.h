@@ -101,13 +101,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SAVE_SNA_TITLE_ES "Guardar snapshot"
 
-#define MENU_TAP_TITLE_ES "Elija fichero de cinta"
+#define MENU_TAP_TITLE_ES "Elija cinta"
 
 #define MENU_DSK_TITLE_ES "Elija disco"
-
-#define MENU_ESP_LOAD_TITLE_ES "Elija snapshot de ESPectrum"
-
-#define MENU_ESP_SAVE_TITLE_ES "Guardar snapshot de ESPectrum"
 
 #define MENU_CHT_TITLE_ES "Elija fichero de cheats"
 
@@ -135,18 +131,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TRDOS_RESET_ERR_ES "Error en reset a TR-DOS. Active Betadisk."
 
 #define MENU_SNA_ES \
-    "Men\xA3 snapshots\n"\
+    "Snapshots\n"\
     "Cargar\t>\n"\
     "Guardar\t>\n"\
     "Cargar en slot\t>\n"\
     "Guardar en slot\t>\n"
 
 #define MENU_TAPE_ES \
-    "Casete\n"\
+    "Cintas\n"\
     "Elegir (TAP,TZX)\t>\n"\
     "Play/Stop\n"\
     "Expulsar cinta\n"\
-    "Navegador cinta\n"\
+    "Navegador cinta\t>\n"\
 	"Modo reproductor\t>\n"
 
 #define MENU_BETADISK_ES \
@@ -162,15 +158,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Expulsar disco\n"
 
 #define MENU_ROM_CART_ES \
-    "Cartucho\n"\
+    "Cartuchos\n"\
     "Insertar\t>\n"\
     "Expulsar\n"
 
 #define MENU_MAIN_ES \
     "Snapshots\t>\n"\
-    "Casete\t>\n"\
+    "Cintas\t>\n"\
     "Betadisk\t>\n"\
-    "Cartucho\t>\n"\
+    "Cartuchos\t>\n"\
     "Modelo\t>\n"\
     "Resetear\t>\n"\
     "Opciones\t>\n"\
@@ -179,7 +175,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Acerca de\n"
 
 #define MENU_OPTIONS_ES \
-    "Men\xA3 opciones\n"\
+    "Opciones\n"\
     "Almacenamiento\t>\n"\
     "Modelo preferido\t>\n"\
     "ROM preferida\t>\n"\
@@ -307,7 +303,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Espa\xA4ol\t[ ]\n"\
 	"Portugu\x82s\t[ ]\n"
 
-#define MENU_JOY_ES "Men\xA3 Joystick\n"
+#define MENU_JOY_ES "Joystick\n"
 
 #define MENU_DEFJOY_ES "Definir\n"
 
@@ -315,7 +311,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_ES "A\xA4" "adir Poke"
 
-#define MENU_OSD_ES "Config. OSD\n"\
+#define MENU_OSD_ES "OSD\n"\
     "Men\xA3 con cursores\t>\n"\
     "Rotaci\xA2n de texto\t>\n"
 

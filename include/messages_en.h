@@ -104,13 +104,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SAVE_SNA_TITLE_EN "Save Snapshot"
 
-#define MENU_TAP_TITLE_EN "Select tape file"
+#define MENU_TAP_TITLE_EN "Select tape"
 
 #define MENU_DSK_TITLE_EN "Select disk"
-
-#define MENU_ESP_LOAD_TITLE_EN "Load ESPectrum Snapshot"
-
-#define MENU_ESP_SAVE_TITLE_EN "Save ESPectrum Snapshot"
 
 #define MENU_CHT_TITLE_EN "Select cheats file"
 
@@ -138,18 +134,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TRDOS_RESET_ERR_EN "Can't reset to TR-DOS. Enable Betadisk."
 
 #define MENU_SNA_EN \
-    "Snapshot menu\n"\
+    "Snapshots\n"\
     "Load\t>\n"\
     "Save\t>\n"\
     "Load in slot \t>\n"\
     "Save in slot \t>\n"
 
 #define MENU_TAPE_EN \
-    "Tape menu\n"\
+    "Tapes\n"\
     "Select (TAP,TZX)\t>\n"\
     "Play/Stop\n"\
     "Eject Tape\n"\
-    "Tape browser\n"\
+    "Tape browser\t>\n"\
 	"Player mode\t>\n"
 
 #define MENU_BETADISK_EN \
@@ -165,15 +161,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Eject disk\n"
 
 #define MENU_ROM_CART_EN \
-    "Cartridge\n"\
+    "Cartridges\n"\
     "Insert\t>\n"\
     "Eject\n"
 
 #define MENU_MAIN_EN \
-    "Snapshot\t>\n"\
-    "Tape\t>\n"\
+    "Snapshots\t>\n"\
+    "Tapes\t>\n"\
     "Betadisk\t>\n"\
-    "Cartridge\t>\n"\
+    "Cartridges\t>\n"\
 	"Machine\t>\n"\
     "Reset\t>\n"\
     "Options\t>\n"\
@@ -182,7 +178,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "About\n"
 
 #define MENU_OPTIONS_EN \
-    "Options menu\n"\
+    "Options\n"\
     "Storage\t>\n"\
     "Preferred Machine\t>\n"\
     "Preferred ROM\t>\n"\
@@ -217,7 +213,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "360x200 (16:9)\t[1]\n"
 
 #define MENU_RESET_EN \
-    "Reset Menu\n"\
+    "Reset\n"\
     "Soft reset\n"\
 	"TR-DOS reset \t(CF11)\n"\
     "Hard reset\t(F11)\n"\
@@ -310,7 +306,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Spanish\t[ ]\n"\
     "Portuguese\t[ ]\n"
 
-#define MENU_JOY_EN "Joystick menu\n"
+#define MENU_JOY_EN "Joystick\n"
 
 #define MENU_DEFJOY_EN "Assign keys\n"
 
@@ -318,7 +314,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
 
-#define MENU_OSD_EN "OSD settings\n"\
+#define MENU_OSD_EN "OSD\n"\
     "Menu with cursors\t>\n"\
     "Text scroll\t>\n"
 

@@ -1346,7 +1346,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                     "F2: Renomear | F8: Excluir";
                 }
 
-                statusbar += std::string(26 - statusbar.size(), ' ');
                 uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
                 if (opt2 && FileUtils::isSDReady()) {
                     if ( persistLoad(opt2) ) {
@@ -1375,7 +1374,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
                                                     "F2: Renomear | F8: Excluir";
                 }
-                statusbar += std::string(26 - statusbar.size(), ' ');
+                
                 uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     if ( FileUtils::isSDReady() ) if (persistSave(opt2)) return;
@@ -1633,32 +1632,28 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         mFile.erase(0, 1);
                                         string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
 
-                                        if ( FileUtils::isSDReady() ) {
-                                            // Save new (check if exists)
+                                        // Save new (check if exists)
+                                        if ( fprefix == "N" || fprefix == "*" ) {
                                             struct stat stat_buf;
-                                            if ( fprefix == "N" || fprefix == "*" ) {
-                                                struct stat stat_buf;
-                                                if (stat(fname.c_str(), &stat_buf) == 0) {
-                                                    if (access(fname.c_str(), W_OK)) {
-                                                        OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
-                                                        return;
-                                                    } else
-                                                    if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
-                                                }
+                                            if (stat(fname.c_str(), &stat_buf) == 0) {
+                                                if (access(fname.c_str(), W_OK)) {
+                                                    OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
+                                                    return;
+                                                } else
+                                                if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
+                                            }
 
-                                                if (!SaveSnapshot(fname, fprefix == "*")) {
-                                                    OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
-                                                } else {
-                                                    Config::ram_file = fname;
-                                                    Config::last_ram_file = fname;
-                                                }
-
+                                            if (!SaveSnapshot(fname, fprefix == "*")) {
+                                                OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
                                             } else {
-                                                LoadSnapshot(fname,"","",0xff);
-                                                LoadCheatFile(fname);
                                                 Config::ram_file = fname;
                                                 Config::last_ram_file = fname;
                                             }
+                                        } else {
+                                            LoadSnapshot(fname,"","",0xff);
+                                            LoadCheatFile(fname);
+                                            Config::ram_file = fname;
+                                            Config::last_ram_file = fname;
                                         }
                                         return;
                                     }
@@ -1670,31 +1665,27 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                             }
                             else if (sna_mnu == 2) {
-
                                 if ( FileUtils::isSDReady() ) {
                                     string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 28, 13);
-                                    if (mFile != "") {
+                                    if (mFile != "" && FileUtils::isSDReady()) {
                                         string fprefix = mFile.substr(0,1);
                                         mFile.erase(0, 1);
                                         string fname = FileUtils::MountPoint + FileUtils::SNA_Path + "/" + mFile;
 
-                                        if ( FileUtils::isSDReady() ) {
-                                            uint8_t res = DLG_YES;
-                                            struct stat stat_buf;
-                                            if (stat(fname.c_str(), &stat_buf) == 0) {
-                                                if (access(fname.c_str(), W_OK)) {
-                                                    OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
-                                                    return;
-                                                } else
-                                                if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
-                                            }
+                                        struct stat stat_buf;
+                                        if (stat(fname.c_str(), &stat_buf) == 0) {
+                                            if (access(fname.c_str(), W_OK)) {
+                                                OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
+                                                return;
+                                            } else
+                                            if (msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]) != DLG_YES) return;
+                                        }
 
-                                            if (!SaveSnapshot(fname, /*fprefix == "S" ||*/ fprefix == "*" )) {
-                                                OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
-                                            } else {
-                                                Config::ram_file = fname;
-                                                Config::last_ram_file = fname;
-                                            }
+                                        if (!SaveSnapshot(fname, fprefix == "*")) {
+                                            OSD::osdCenteredMsg(OSD_PSNA_SAVE_ERR, LEVEL_WARN);
+                                        } else {
+                                            Config::ram_file = fname;
+                                            Config::last_ram_file = fname;
                                         }
                                         return;
                                     }
@@ -1829,10 +1820,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = 2;
                                     menu_saverect = false;
                                 } else {
-                                    if (Tape::tapeStatus == TAPE_STOPPED)
-                                        Tape::Play();
-                                    else
-                                        Tape::Stop();
+                                    if (Tape::tapeStatus == TAPE_STOPPED) Tape::Play();
+                                    else                                  Tape::Stop();
                                     return;
                                 }
                             }

@@ -38,7 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <algorithm>
 
 #include "esp_heap_caps.h" // Para heap_caps_malloc
 

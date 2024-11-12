@@ -380,38 +380,6 @@ bool FileSNA::isPersistAvailable(string filename) {
 
 // ///////////////////////////////////////////////////////////////////////////////
 
-bool check_and_create_directory(const char* path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        if ((st.st_mode & S_IFDIR) != 0) {
-            // printf("Directory exists\n");
-            return true;
-        } else {
-            // printf("Path exists but it is not a directory\n");
-            // Create the directory
-            if (mkdir(path, 0755) == 0) {
-                // printf("Directory created\n");
-                return true;
-            } else {
-                printf("Failed to create directory\n");
-                return false;
-            }
-        }
-    } else {
-        // printf("Directory does not exist\n");
-        // Create the directory
-        if (mkdir(path, 0755) == 0) {
-            // printf("Directory created\n");
-            return true;
-        } else {
-            printf("Failed to create directory\n");
-            return false;
-        }
-    }
-}
-
-// ///////////////////////////////////////////////////////////////////////////////
-
 static bool writeMemPage(uint8_t page, FILE *file, bool blockMode)
 {
     page = page & 0x07;

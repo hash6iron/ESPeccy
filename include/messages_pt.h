@@ -106,13 +106,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_SAVE_SNA_TITLE_PT "Salvar snapshot"
 
-#define MENU_TAP_TITLE_PT "Escolha o arq. de Fita"
+#define MENU_TAP_TITLE_PT "Escolha o Fita"
 
 #define MENU_DSK_TITLE_PT "Escolha o disco"
-
-#define MENU_ESP_LOAD_TITLE_PT "Escolha snapshot de ESPectrum"
-
-#define MENU_ESP_SAVE_TITLE_PT "Salvar snapshot de ESPectrum"
 
 #define MENU_CHT_TITLE_PT "Escolha o arq. de cheats"
 
@@ -140,22 +136,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TRDOS_RESET_ERR_PT "TR-DOS n\x84o presente. Ative o Betadisk."
 
 #define MENU_SNA_PT \
-    "Menu snapshots\n"\
+    "Snapshots\n"\
     "Carregar\t>\n"\
     "Salvar\t>\n"\
     "Carregar no slot\t>\n"\
     "Salvar no slot\t>\n"
 
 #define MENU_TAPE_PT \
-    "Fita K7\n"\
+    "Fitas\n"\
     "Escolher (TAP,TZX)\t>\n"\
     "Play/Stop\n"\
     "Ejetar fita\n"\
-    "Navegador fita\n"\
+    "Navegador fita\t>\n"\
 	"Modo reprodutor\t>\n"
 
 #define MENU_BETADISK_PT \
-    "Drive\n"\
+    "Drives\n"\
     "Drive A\t>\n"\
     "Drive B\t>\n"\
     "Drive C\t>\n"\
@@ -167,15 +163,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Ejetar disco\n"
 
 #define MENU_ROM_CART_PT \
-    "Cartucho\n"\
+    "Cartuchos\n"\
     "Inserir\t>\n"\
     "Ejetar\n"
 
 #define MENU_MAIN_PT \
     "Snapshots\t>\n"\
-    "Fita K7\t>\n"\
+    "Fitas\t>\n"\
     "Betadisk\t>\n"\
-    "Cartucho\t>\n"\
+    "Cartuchos\t>\n"\
     "Hardware\t>\n"\
     "Reiniciar\t>\n"\
     "Op\x87\x94" "es\t>\n"\
@@ -184,7 +180,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Sobre\n"
 
 #define MENU_OPTIONS_PT \
-    "Menu op\x87\x94" "es\n"\
+    "Op\x87\x94" "es\n"\
     "Armazenamento\t>\n"\
     "Hardware favorito\t>\n"\
     "ROM favorita\t>\n"\
@@ -312,7 +308,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Espanhol\t[ ]\n"\
 	"Portugu\x88s\t[ ]\n"
 
-#define MENU_JOY_PT "Menu Joystick\n"
+#define MENU_JOY_PT "Joystick\n"
 
 #define MENU_DEFJOY_PT "Definir\n"
 
@@ -320,7 +316,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
 
-#define MENU_OSD_PT "OSD op\n"\
+#define MENU_OSD_PT "OSD\n"\
     "Menu com setas\t>\n"\
     "Rota\x87\x84o do texto\t>\n"
 

@@ -1420,7 +1420,7 @@ void Tape::removeSelectedBlocks() {
         tapeBlkLen = (l | (h << 8));
 
         // Verificar si el bloque actual está en el vector selected
-        if (std::find(selectedBlocks.begin(), selectedBlocks.end(), blockIndex) == selectedBlocks.end()) {
+        if (!isSelectedBlock(blockIndex)) {
             // Escribir la longitud del bloque
             fwrite(&encodedlen, sizeof(encodedlen), 1, tempFile);
 
@@ -1511,7 +1511,7 @@ void Tape::moveSelectedBlocks(int targetPosition) {
     while (true) {
         fseek(tape, off, SEEK_SET);
 
-        bool block_is_selected = ( std::find(selectedBlocks.begin(), selectedBlocks.end(), blockIndex) != selectedBlocks.end() );
+        bool block_is_selected = isSelectedBlock(blockIndex);
 
         size_t bytesRead = fread(&encodedlen, sizeof(encodedlen), 1, tape);
         if (bytesRead != 1) break;
