@@ -60,10 +60,11 @@ class Config
 {
 public:
 
-    static void load();
+    static bool load();
     static void save();
     static void save(string value);
 
+    static bool backupExistsOnSD();
     static bool saveToSD();
     static bool loadFromSD();
 

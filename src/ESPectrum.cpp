@@ -226,6 +226,7 @@ void ShowStartMsg() {
 
     // Disable StartMsg
     Config::StartMsg = false;
+
     // Save all keys after new flash or update
     Config::save();
 
@@ -941,7 +942,7 @@ void ESPectrum::setup()
     // LOAD CONFIG
     //=======================================================================================
 
-    Config::load();
+    bool config_load_failed = Config::load();
 
     if (Config::StartMsg) Config::save(); // Firmware updated or reflashed: save all config data
 
@@ -1104,8 +1105,6 @@ void ESPectrum::setup()
 
     if (Config::slog_on) showMemInfo("VGA started");
 
-    if (Config::StartMsg) ShowStartMsg(); // Show welcome message
-
     //=======================================================================================
     // INIT FILESYSTEM
     //=======================================================================================
@@ -1113,6 +1112,25 @@ void ESPectrum::setup()
     FileUtils::initFileSystem();
 
     if (Config::slog_on) showMemInfo("File system started");
+
+    //=======================================================================================
+    // Start Message
+    //=======================================================================================
+
+    if (Config::StartMsg) {
+        ShowStartMsg(); // Show welcome message
+        if (config_load_failed) {
+            if (FileUtils::SDReady && !FileUtils::isMountedSDCard()) FileUtils::unmountSDCard();
+            if (!FileUtils::SDReady) FileUtils::initFileSystem();
+            if (FileUtils::SDReady && Config::backupExistsOnSD()) {
+                uint8_t res = OSD::msgDialog("Config backup found on SD.", "Restore it?");
+                if (res == DLG_YES) {
+                    Config::loadFromSD();
+                    Config::save();
+                }
+            }
+        }
+    }
 
     //=======================================================================================
     // BIOS

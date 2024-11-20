@@ -1367,7 +1367,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 Config::lang == 1 ? "F2: Renombrar | F8: Borrar" :
                                                     "F2: Renomear | F8: Excluir";
                 }
-                
+
                 uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     if ( FileUtils::isSDReady() ) if (persistSave(opt2)) return;

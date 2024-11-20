@@ -260,7 +260,7 @@ ConfigEntry configEntries[] = {
 };
 
 // Function to load the configuration
-void Config::load() {
+bool Config::load() {
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -274,7 +274,7 @@ void Config::load() {
     err = nvs_open("storage", NVS_READONLY, &handle);
     if (err != ESP_OK) {
         printf("Error (%s) opening NVS handle for read!\n", esp_err_to_name(err));
-        return;
+        return true;
     }
 
     // Iterate over the configuration entries and load them
@@ -345,6 +345,8 @@ void Config::load() {
 
     // Close NVS
     nvs_close(handle);
+
+    return false;
 }
 
 void Config::save() {
@@ -401,6 +403,12 @@ void Config::save(string value) {
 
     // Close NVS
     nvs_close(handle);
+}
+
+// Function to check if a file exists in SD using stat
+bool Config::backupExistsOnSD() {
+    struct stat buffer;
+    return (stat((FileUtils::MountPoint + "/.ESPeccy.cfg").c_str(), &buffer) == 0); // 0 means the file exists
 }
 
 // Function to save configuration to SD using fopen
