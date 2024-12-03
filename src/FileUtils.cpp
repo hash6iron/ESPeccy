@@ -131,7 +131,7 @@ bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS)
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
         .max_files = 8,
-        .allocation_unit_size = 16 * 1024
+        .allocation_unit_size = 0 // 16 * 1024
     };
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
@@ -142,7 +142,7 @@ bool FileUtils::mountSDCard(int PIN_MISO, int PIN_MOSI, int PIN_CLK, int PIN_CS)
         .sclk_io_num = PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 4000,
+        .max_transfer_sz = 2048, // 4000,
     };
 
     ret = spi_bus_initialize(SPI2_HOST, &bus_cfg, SPI_DMA_CH1);

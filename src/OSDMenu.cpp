@@ -338,7 +338,7 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
 
                 renameSlot(idx, "");
 
-                string new_name =  ( Config::lang == 0 ? "<Free Slot " :
+                const string new_name =  ( Config::lang == 0 ? "<Free Slot " :
                                      Config::lang == 1 ? "<Ranura Libre " :
                                                          "<Slot Livre ") + to_string(idx) + ">";
                 menu = rowReplace(menu, idx, new_name);
@@ -386,12 +386,13 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
 
     // CRT Overscan compensation
     if (Config::videomode == 2) {
-        x = 18;
+//        x = 18;
+        x = 0;
         if (menu_level == 0) {
             if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-                y = 4;
+                y = Config::aspect_16_9 ? OSD_FONT_H * 2 : OSD_FONT_H;
             } else {
-                y = 12;
+                y = OSD_FONT_H * 3;
             }
         }
     } else {
@@ -401,11 +402,11 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
 
     // Position
     if (menu_level == 0) {
-        x += (Config::aspect_16_9 ? 24 : 8);
-        y += 8;
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3);
+        y += OSD_FONT_H;
         prev_y[0] = 0;
     } else {
-        x += (Config::aspect_16_9 ? 24 : 8) + (54 /*60*/ * menu_level);
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3) + (54 /*60*/ * menu_level);
         if (menu_saverect && !prev_y[menu_level]) {
             y += (4 + (OSD_FONT_H * menu_prevopt));
             prev_y[menu_level] = y;
@@ -977,19 +978,20 @@ int OSD::menuTape(string title) {
 
     // CRT Overscan compensation
     if (Config::videomode == 2) {
-        x = 18;
+//        x = 18;
+        x = 0;
         if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-            y = 4;
+            y = Config::aspect_16_9 ? OSD_FONT_H * 2 : OSD_FONT_H;
         } else {
-            y = 12;
+            y = OSD_FONT_H * 3;
         }
     } else {
         x = 0;
         y = 0;
     }
 
-    x += (Config::aspect_16_9 ? 24 : 8);
-    y += 8;
+    x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3);
+    y += OSD_FONT_H;
 
     // Columns
     cols = 50; // 47 for block info + 2 pre and post space + 1 for scrollbar
@@ -1360,12 +1362,13 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     // CRT Overscan compensation
     if (Config::videomode == 2) {
-        x = 18;
+//        x = 18;
+        x = 0;
         if (menu_level == 0) {
             if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-                y = 4;
+                y = Config::aspect_16_9 ? OSD_FONT_H * 2 : OSD_FONT_H;
             } else {
-                y = 12;
+                y = OSD_FONT_H * 3;
             }
         }
     } else {
@@ -1375,11 +1378,11 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     // Position
     if (menu_level == 0) {
-        x += (Config::aspect_16_9 ? 24 : 8);
-        y += 8;
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3);
+        y += OSD_FONT_H;
         prev_y[0] = 0;
     } else {
-        x += (Config::aspect_16_9 ? 24 : 8) + (54 /*60*/ * menu_level);
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3) + (54 /*60*/ * menu_level);
         if (menu_saverect && !prev_y[menu_level]) {
             y += (4 + (OSD_FONT_H * menu_prevopt));
             prev_y[menu_level] = y;

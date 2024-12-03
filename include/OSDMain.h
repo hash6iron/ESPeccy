@@ -136,6 +136,12 @@ public:
     static void HWInfo();
     // static void UART_test();
 
+    //static void render_screen_scaled(int x0, int y0, const uint8_t *bitmap, int divisor, bool monocrome);
+    static void renderScreenScaled(int x0, int y0, const uint32_t *bitmap, int divisor, bool monocrome);
+    //static void loadCompressedScreen(FILE *f, unsigned char *buffer);
+    static void loadCompressedScreen(FILE *f, uint32_t *buffer);
+    static bool renderScreen(int x, int y, const char* filename);
+
     // Error
     static void errorPanel(string errormsg);
     static void errorHalt(string errormsg);

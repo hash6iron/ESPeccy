@@ -105,9 +105,9 @@ public:
     static uint8_t  videomode;
     static uint8_t  AluTiming;
     static uint8_t  ps2_dev2;
-    static bool CursorAsJoy;
-    static int8_t CenterH;
-    static int8_t CenterV;
+    static bool     CursorAsJoy;
+    static int8_t   CenterH;
+    static int8_t   CenterV;
 
     static string   SNA_Path;
     static uint16_t SNA_begin_row;
@@ -127,24 +127,24 @@ public:
     static uint8_t  DSK_fdMode;
     static string   DSK_fileSearch;
 
-    static uint8_t scanlines;
-    static uint8_t render;
+    static uint8_t  scanlines;
+    static uint8_t  render;
 
-    static bool TABasfire1;
+    static bool     TABasfire1;
 
-    static bool StartMsg;
+    static bool     StartMsg;
 
-    static uint8_t port254default; // For TK90X v1 ROM -> 0xbf: Spanish, 0x3f: Portuguese
+    static uint8_t  port254default; // For TK90X v1 ROM -> 0xbf: Spanish, 0x3f: Portuguese
 
-    static uint8_t ALUTK; // TK ALU -> 0 -> Ferranti, 1 -> Microdigital 50hz, 2 -> Microdigital 60hz
+    static uint8_t  ALUTK; // TK ALU -> 0 -> Ferranti, 1 -> Microdigital 50hz, 2 -> Microdigital 60hz
 
-    static uint8_t DiskCtrl; // 0 -> None, 1 -> Betadisk
+    static uint8_t  DiskCtrl; // 0 -> None, 1 -> Betadisk
 
-    static bool TimeMachine;
+    static bool     TimeMachine;
 
-    static int8_t volume;
+    static int8_t   volume;
 
-    static bool TapeAutoload;
+    static bool     TapeAutoload;
 
 };
 

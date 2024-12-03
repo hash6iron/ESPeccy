@@ -48,7 +48,7 @@ void CaptureToBmp()
 
     char filename[] = "ESP00000.bmp";
 
-    unsigned char bmp_header2[BMP_HEADER2_SIZE] = { 
+    unsigned char bmp_header2[BMP_HEADER2_SIZE] = {
         0xaa,0xaa,0xaa,0xaa,0xbb,
         0xbb,0xbb,0xbb,0x01,0x00,
         0x08,0x00,0x00,0x00,0x00,
@@ -82,7 +82,7 @@ void CaptureToBmp()
             return;
         }
     }
-    
+
     DIR* dir = opendir(scrdir.c_str());
     if (dir == NULL) {
         delete[] linebuf;
@@ -108,8 +108,8 @@ void CaptureToBmp()
 
     if (Config::slog_on) printf("BMP number -> %.5d\n",bmpnumber);
 
-    sprintf((char *)filename,"ESP%.5d.bmp",bmpnumber);    
-        
+    sprintf((char *)filename,"ESP%.5d.bmp",bmpnumber);
+
     // Full filename. Save only to SD.
     std::string fullfn = (string) MOUNT_POINT_SD + DISK_SCR_DIR + "/" + filename;
 

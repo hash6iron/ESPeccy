@@ -75,6 +75,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string>
 
+#include "tzx_headers.h"
+
 using namespace std;
 
 #define MENU_REDRAW true
@@ -203,6 +205,765 @@ void OSD::drawWindow(uint16_t width, uint16_t height, string top, string bottom,
 
 }
 
+#define SCREEN_WIDTH  256
+#define SCREEN_HEIGHT 192
+
+// Paleta de colores del ZX Spectrum
+static const uint8_t ZX_PALETTE[16][3] = {
+    {0, 0, 0}, {0, 0, 128}, {128, 0, 0}, {128, 0, 128},
+    {0, 128, 0}, {0, 128, 128}, {128, 128, 0}, {128, 128, 128},
+    {0, 0, 0}, {0, 0, 255}, {255, 0, 0}, {255, 0, 255},
+    {0, 255, 0}, {0, 255, 255}, {255, 255, 0}, {255, 255, 255}
+};
+
+#if 0
+void OSD::render_screen_scaled(int x0, int y0, const uint8_t *bitmap, int divisor, bool monocrome) {
+    if (divisor <= 0) divisor = 1; // Evitar divisores inválidos
+    int scaled_width = SCREEN_WIDTH / divisor;
+    int scaled_height = SCREEN_HEIGHT / divisor;
+
+    const uint8_t *attributes = bitmap + 0x1800;
+
+    for (int y = 0; y < scaled_height; y++) {
+        for (int x = 0; x < scaled_width; x++) {
+            int r = 0, g = 0, b = 0, count = 0;
+
+            // Tomar píxeles en bloques según el divisor
+            for (int j = 0; j < divisor; j++) {
+                for (int i = 0; i < divisor; i++) {
+                    int src_x = x * divisor + i;
+                    int src_y = y * divisor + j;
+
+                    // Calcular offset en pantalla original
+                    int char_col = src_x / 8;
+                    int bit = 7 - (src_x % 8);
+
+                    // Atributo
+                    uint8_t attr = (monocrome) ? 0x38 : attributes[(src_y / 8) * 32 + char_col];
+
+                    // Obtener colores según el atributo
+                    int ink = attr & 0x07;          // INK (color del pixel encendido)
+                    int paper = (attr >> 3) & 0x07; // PAPER (color del pixel apagado)
+                    int bright = (attr & 0x40) ? 8 : 0; // BRIGHT
+
+                    int address = (((src_y & 0xC0) >> 6) << 11) |
+                                  ((src_y & 0x07) << 8) |
+                                  (((src_y & 0x38) >> 3) << 5);
+
+                    // Color del píxel actual
+                    uint8_t color_index = (bitmap[address + char_col] & (1 << bit))
+                                          ? ink + bright
+                                          : paper + bright;
+                    const uint8_t *rgb = ZX_PALETTE[color_index];
+
+                    // Sumar los valores RGB para el promedio
+                    r += rgb[0];
+                    g += rgb[1];
+                    b += rgb[2];
+                    count++;
+                }
+            }
+
+            // Promediar los colores del bloque y guardar en el buffer reducido
+
+            // 888 -> 222
+            uint8_t color =  ((r / count) >> 6) |
+                            (((g / count) >> 6) << 2) |
+                            (((b / count) >> 6) << 4);
+
+            VIDEO::vga.dotFast(x0 + x, y0 + y, color);
+        }
+    }
+}
+#endif
+
+void OSD::renderScreenScaled(int x0, int y0, const uint32_t *bitmap, int divisor, bool monocrome) {
+    if (divisor <= 0) divisor = 1; // Evitar divisores inválidos
+    int scaled_width = SCREEN_WIDTH / divisor;
+    int scaled_height = SCREEN_HEIGHT / divisor;
+
+    const uint32_t *attributes = bitmap + 0x1800 / 4; // Offset en palabras de 32 bits
+
+    for (int y = 0; y < scaled_height; y++) {
+        for (int x = 0; x < scaled_width; x++) {
+            int r = 0, g = 0, b = 0, count = 0;
+
+            // Procesar bloques según el divisor
+            for (int j = 0; j < divisor; j++) {
+                for (int i = 0; i < divisor; i++) {
+                    int src_x = x * divisor + i;
+                    int src_y = y * divisor + j;
+
+                    // Calcular offset en pantalla original
+                    int char_col = src_x / 8;
+                    int bit = 7 - (src_x % 8);
+
+                    // Leer atributos
+                    uint8_t attr = (monocrome)
+                                   ? 0x38
+                                   : ((attributes[(src_y / 8) * 8 + char_col / 4] >> ((char_col % 4) * 8)) & 0xFF);
+
+                    // Obtener colores según el atributo
+                    int ink = attr & 0x07;          // INK (color del pixel encendido)
+                    int paper = (attr >> 3) & 0x07; // PAPER (color del pixel apagado)
+                    int bright = (attr & 0x40) ? 8 : 0; // BRIGHT
+
+                    int address = (((src_y & 0xC0) >> 6) << 11) |
+                                  ((src_y & 0x07) << 8) |
+                                  (((src_y & 0x38) >> 3) << 5);
+
+                    // Leer palabra alineada de 32 bits
+                    uint32_t word = bitmap[(address / 4) + char_col / 4];
+                    uint8_t databyte = (word >> ((char_col % 4) * 8)) & 0xFF;
+
+                    // Determinar el color del pixel actual
+                    uint8_t color_index = (databyte & (1 << bit))
+                                          ? ink + bright
+                                          : paper + bright;
+                    const uint8_t *rgb = ZX_PALETTE[color_index];
+
+                    // Sumar valores RGB para el promedio
+                    r += rgb[0];
+                    g += rgb[1];
+                    b += rgb[2];
+                    count++;
+                }
+            }
+
+            // Promediar colores del bloque y guardar en el buffer reducido
+            uint8_t color =  ((r / count) >> 6) |
+                            (((g / count) >> 6) << 2) |
+                            (((b / count) >> 6) << 4);
+
+            VIDEO::vga.dotFast(x0 + x, y0 + y, color);
+        }
+    }
+}
+
+
+#if 0
+void OSD::loadCompressedScreen(FILE *f, unsigned char *buffer) {
+
+    uint8_t ed_cnt = 0;
+    uint8_t repcnt = 0;
+    uint8_t repval = 0;
+    uint16_t memidx = 0;
+
+    #define SCRLEN 6912
+
+    while(memidx < SCRLEN) {
+        uint8_t databyte;
+        fread(&databyte, sizeof(uint8_t), 1, f);
+        if (ed_cnt == 0) {
+            if (databyte != 0xED)
+                buffer[memidx++] = databyte;
+            else
+                ed_cnt++;
+        }
+        else if (ed_cnt == 1) {
+            if (databyte != 0xED) {
+                buffer[memidx++] = 0xED;
+                buffer[memidx++] = databyte;
+                ed_cnt = 0;
+            }
+            else
+                ed_cnt++;
+        }
+        else if (ed_cnt == 2) {
+            repcnt = databyte;
+            ed_cnt++;
+        }
+        else if (ed_cnt == 3) {
+            repval = databyte;
+            if (memidx + repcnt > SCRLEN) repcnt = SCRLEN - memidx;
+            for (uint16_t i = 0; i < repcnt; i++) buffer[memidx++] = repval;
+            ed_cnt = 0;
+        }
+    }
+}
+#endif
+
+#define SCRLEN 6912
+#define WORDS_IN_SCREEN (SCRLEN / 4) // Número de palabras de 32 bits en la pantalla
+
+void OSD::loadCompressedScreen(FILE *f, uint32_t *buffer) {
+    uint8_t ed_cnt = 0;
+    uint8_t repcnt = 0;
+    uint8_t repval = 0;
+    uint32_t memidx = 0;
+
+    uint8_t local_buffer[4]; // Buffer local para almacenar 4 bytes antes de escribir
+    uint8_t local_idx = 0;   // Índice dentro del buffer local
+
+    // Escribe el contenido del local_buffer al buffer de destino si está lleno
+    #define WRITE_BUFFER(val)                       \
+        local_buffer[local_idx++] = val;            \
+        if (local_idx == 4) {                       \
+            *buffer++ = (local_buffer[0] << 0) |    \
+                        (local_buffer[1] << 8) |    \
+                        (local_buffer[2] << 16) |   \
+                        (local_buffer[3] << 24);    \
+            local_idx = 0;                          \
+        }
+
+    while (memidx < SCRLEN) {
+        uint8_t databyte;
+        fread(&databyte, sizeof(uint8_t), 1, f);
+
+        if (ed_cnt == 0) {
+            if (databyte != 0xED) {
+                WRITE_BUFFER(databyte);
+                memidx++;
+            } else {
+                ed_cnt++;
+            }
+        } else if (ed_cnt == 1) {
+            if (databyte != 0xED) {
+                WRITE_BUFFER(0xED);
+                WRITE_BUFFER(databyte);
+                memidx += 2;
+                ed_cnt = 0;
+            } else {
+                ed_cnt++;
+            }
+        } else if (ed_cnt == 2) {
+            repcnt = databyte;
+            ed_cnt++;
+        } else if (ed_cnt == 3) {
+            repval = databyte;
+            if (memidx + repcnt > SCRLEN) repcnt = SCRLEN - memidx;
+            while (repcnt--) {
+                WRITE_BUFFER(repval);
+                memidx++;
+            }
+            ed_cnt = 0;
+        }
+    }
+
+    // Si quedaron datos residuales en el buffer local, completarlos y escribir
+    if (local_idx > 0) {
+        while (local_idx < 4) {
+            local_buffer[local_idx++] = 0; // Completar con ceros
+        }
+        *buffer = (local_buffer[0] << 0) |
+                  (local_buffer[1] << 8) |
+                  (local_buffer[2] << 16) |
+                  (local_buffer[3] << 24); // Última palabra
+    }
+}
+
+string fileExistsWithScrExtension(const std::string& absolutePath) {
+    // Encuentra la posición del último separador de directorio
+    size_t lastSlashPos = absolutePath.find_last_of("/\\");
+    if (lastSlashPos == std::string::npos) {
+        return absolutePath;
+    }
+
+    // Obtén el directorio base
+    std::string baseDir = absolutePath.substr(0, lastSlashPos);
+    // Obtén el nombre del archivo sin su extensión
+    std::string fileName = absolutePath.substr(lastSlashPos + 1);
+    size_t dotPos = fileName.find_last_of('.');
+    if (dotPos != std::string::npos) {
+        fileName = fileName.substr(0, dotPos);
+    }
+
+    // Construye el nuevo path en la subcarpeta SCRSHOT
+    std::string scrFilePath = baseDir + "/SCRSHOT/" + fileName + ".scr";
+
+   // Verifica si el archivo existe
+    if (access(scrFilePath.c_str(), F_OK) == 0) {
+        return scrFilePath;
+    }
+
+    return absolutePath;
+}
+
+unsigned char aux_buff[128];
+
+int check_screen_relocator(unsigned char *buffer) {
+    // Buscar desde la posición 255 hacia atrás
+    for (int i = sizeof(aux_buff) - 1; i >= 9; --i) {
+        // Seq1: 237,176,201
+        if (buffer[i - 2] == 237 && buffer[i - 1] == 176 && buffer[i] == 201) {
+            return i + 1; // Retornar posición final + 1
+        }
+        // Seq2: 237,176,251,201
+        if (buffer[i - 3] == 237 && buffer[i - 2] == 176 && buffer[i - 1] == 251 && buffer[i] == 201) {
+            return i + 1; // Retornar posición final + 1
+        }
+        // Seq3: 237,176,195,*,*
+        if (buffer[i - 4] == 237 && buffer[i - 3] == 176 && buffer[i - 2] == 195) {
+            return i + 1; // Retornar posición final + 1
+        }
+        // Seq4: 237,176,251,195,*,*
+        if (buffer[i - 5] == 237 && buffer[i - 4] == 176 && buffer[i - 3] == 251 && buffer[i - 2] == 195) {
+            return i + 1; // Retornar posición final + 1
+        }
+        // Seq5: 237,176,205,*,*,201
+        if (buffer[i - 5] == 237 && buffer[i - 4] == 176 && buffer[i - 3] == 205 && buffer[i] == 201) {
+            return i + 1; // Retornar posición final + 1
+        }
+        // Seq6: 237,176,205,*,*,195,*,*
+        if (buffer[i - 7] == 237 && buffer[i - 6] == 176 && buffer[i - 5] == 205 && buffer[i - 2] == 195) {
+            return i + 1; // Retornar posición final + 1
+        }
+    }
+    // Si no se encuentra ninguna coincidencia
+    return 0;
+}
+
+// CAUTION: Use this funcion only if menu_level = 0
+
+bool OSD::renderScreen(int x0, int y0, const char* filename) {
+
+    bool monocrome = false;
+
+    uint32_t * snapshot = (uint32_t *) VIDEO::SaveRect;
+
+    string fname = fileExistsWithScrExtension(string(filename));
+
+    FILE *file = fopen(fname.c_str(), "rb");
+    if (!file) {
+        perror("Error opening file");
+        return true;
+    }
+
+    size_t filesize = FileUtils::fileSize(fname.c_str());
+
+    if (FileUtils::hasTZXextension(fname.c_str())) {
+
+        // Leer y validar el encabezado
+        st_head_tzx header;
+        if (fread(&header, sizeof(st_head_tzx), 1, file) != 1 || strncmp(header.zx_tape, "ZXTape!", 7) != 0 || header._1a != 0x1A) {
+            fprintf(stderr, "Error: Invalid TZX file format\n");
+            fclose(file);
+            return true;
+        }
+
+        unsigned block_count = 0;
+        unsigned pos = sizeof(st_head_tzx);
+        unsigned char b; //, lb;
+
+        // Procesar los bloques
+        while (pos < filesize && block_count == 0) {
+            // Calcular el tamaño del bloque
+            unsigned long block_length = 0;
+            unsigned long data_length = 0;
+
+            unsigned char block_id;
+
+            fseek(file, pos, SEEK_SET);
+            if (fread(&block_id, 1, 1, file) != 1) break;
+
+            switch (block_id) {
+                case 0x10: // Standard Speed Data Block
+                    fseek(file, pos + 3, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    block_length = 5 + data_length;
+
+                    if ((data_length >= 6912 && data_length <= 7200) ||
+                        (data_length >= 49152 - 6912)) {
+
+                        unsigned seek_pos_add = 2;
+
+                        if (data_length - 2 < 6912) {
+                            seek_pos_add = 6912 - (data_length - 2);
+                        }
+                        else if (data_length > 6914) {
+                            fseek(file, pos + 4 + 2, SEEK_SET);
+                            fread(aux_buff, 1, sizeof(aux_buff), file);
+                            seek_pos_add = check_screen_relocator(aux_buff) + 2;
+                        }
+//                        printf("Saving [%s] (block id: %d)(data_length %d)\n", base_name, block_id, data_length);
+                        fseek(file, pos + 4 + seek_pos_add, SEEK_SET);
+                        for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                            uint32_t word;
+                            fread(&word, sizeof(uint32_t), 1, file);
+                            snapshot[i] = word;
+                        }
+//                        dump_scr(file, base_name, block_count++);
+                        block_count++;
+                    }
+                    break;
+                case 0x11: // Turbo Speed Data Block
+                    //fseek(file, pos + 13, SEEK_SET);
+                    //fread(&lb, 1, 1, file);
+                    fseek(file, pos + 16, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    block_length = 19 + data_length;
+
+                    if ((data_length >= 6912 && data_length <= 7200) ||
+                        (data_length >= 49152 - 6912)) {
+
+                        unsigned seek_pos_add = 2;
+
+                        if (data_length - 2 < 6912) {
+                            seek_pos_add = 6912 - (data_length - 2);
+                        }
+                        else if (data_length > 6914) {
+                            fseek(file, pos + 4 + 2, SEEK_SET);
+                            fread(aux_buff, 1, sizeof(aux_buff), file);
+                            seek_pos_add = check_screen_relocator(aux_buff) + 2;
+                        }
+//                        printf("Saving [%s] (block id: %d)(data_length %d)\n", base_name, block_id, data_length);
+                        fseek(file, pos + 18 + seek_pos_add, SEEK_SET);
+                        for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                            uint32_t word;
+                            fread(&word, sizeof(uint32_t), 1, file);
+                            snapshot[i] = word;
+                        }
+//                        dump_scr(file, base_name, block_count++);
+                        block_count++;
+                    }
+                    break;
+                case 0x12: // Pure Tone
+                    block_length = 5;
+                    break;
+                case 0x13: // Pulse Sequence
+                    fread(&b, 1, 1, file);
+                    block_length = 2 + 2 * b;
+                    break;
+                case 0x14: // Pure Data Block (ignore this!)
+                    fseek(file, pos + 8, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    block_length = 11 + data_length;
+                    break;
+                case 0x15: // Direct Recording Block
+                    fseek(file, pos + 6, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    block_length = 9 + data_length;
+                    break;
+                case 0x18: // CSW Recording
+                case 0x19: // Generalized Data Block
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 24;
+                    block_length = 5 + data_length;
+                    break;
+                case 0x20: // Silence Block
+                    block_length = 3;
+                    break;
+                case 0x21: // Group Start
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    block_length = 2 + b;
+                    break;
+                case 0x22: // Group End
+                    block_length = 1;
+                    break;
+                case 0x23: // Jump to block
+                case 0x24: // Loop Start
+                    block_length = 3;
+                    break;
+                case 0x25: // Loop End
+                    block_length = 1;
+                    break;
+                case 0x26: // Call Sequence
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    block_length = 3 + 2 * data_length;
+                    break;
+                case 0x27: // Return from Sequence
+                    block_length = 1;
+                    break;
+                case 0x28: // Select block
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    block_length = 3 + data_length;
+                    break;
+                case 0x2A: // Stop the Tape if in 48K
+                    block_length = 5;
+                    break;
+                case 0x2B: // Set Signal Level
+                    block_length = 6;
+                    break;
+                case 0x30: // Text Description
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    block_length = 2 + b;
+                    break;
+                case 0x31: // Message Block
+                    fseek(file, pos + 2, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    block_length = 3 + b;
+                    break;
+                case 0x32: // Archive Info
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    block_length = 3 + data_length;
+                    break;
+                case 0x33: // Hardware Info
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    block_length = 2 + b * 3;
+                    break;
+                case 0x34: // Emulation Info
+                    block_length = 9;
+                    break;
+                case 0x35: // Custom Info
+                    fseek(file, pos + 17, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 24;
+                    block_length = 21 + data_length;
+                    break;
+                case 0x5a:
+                    block_length = 10;
+                    break;
+                case 0x40: // Snapshot
+                    fseek(file, pos + 2, SEEK_SET);
+                    fread(&b, 1, 1, file);
+                    data_length = b;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 8;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 16;
+                    fread(&b, 1, 1, file);
+                    data_length |= b << 24;
+                    block_length = 5 + data_length;
+                    // Aca se podria llamar a la rutina general de snapshot dependiendo el tipo
+                    // en pos + 1, si 00: z80, 01: sna
+                    break;
+                default:
+                    fprintf(stderr, "Error: Unknown block type 0x%X at position %u\n", block_id, pos);
+                    fclose(file);
+                    return true;
+            }
+
+            pos += block_length; // Avanzar al siguiente bloque
+        }
+
+        if (!block_count) {
+            fclose(file);
+            return true;
+        }
+
+    } else if (FileUtils::hasTAPextension(fname.c_str())) {
+        unsigned block_count = 0;
+        unsigned pos = 0;
+
+        while (pos < filesize && block_count == 0) {
+            unsigned char length_low, length_high;
+            unsigned short block_length;
+
+            fseek(file, pos, SEEK_SET);
+
+            if (fread(&length_low, 1, 1, file) != 1) break;
+            if (fread(&length_high, 1, 1, file) != 1) break;
+
+            block_length = length_low | (length_high << 8);
+
+            pos += 2;
+
+            // Leer el pri ESPeccy no necesita generarlo si ya tiene la pantalla en el snapshot...mer byte del bloque (indicador de cabecera)
+            unsigned char header_type;
+            if (fread(&header_type, 1, 1, file) != 1) break;
+
+            if (/*header_type == 0xFF &&*/
+                (block_length >= 6912 && block_length <= 7200) ||
+                (block_length >= 49152 - 6912) ) {
+
+                unsigned seek_pos_add = 0;
+
+                if (block_length > 6912) {
+                    fseek(file, pos + 1, SEEK_SET);
+                    fread(aux_buff, 1, sizeof(aux_buff), file);
+                    seek_pos_add = check_screen_relocator(aux_buff);
+                }
+
+                fseek(file, pos + 1 + seek_pos_add, SEEK_SET);
+                // Posible pantalla
+//                printf("Saving [%s] (header type %d)(block_length %d)\n", base_name, header_type, block_length);
+                for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                    uint32_t word;
+                    fread(&word, sizeof(uint32_t), 1, file);
+                    snapshot[i] = word;
+                }
+//                dump_scr(file, base_name, block_count++);
+                block_count++;
+            }
+
+            pos += block_length;
+        }
+
+        if (!block_count) {
+            fclose(file);
+            return true;
+        }
+
+    } else {
+        bool isZ80 = FileUtils::hasZ80extension(fname.c_str());
+
+        off_t seekOff = 0;
+
+        if (!isZ80) {
+            switch(filesize) {
+                // SCR
+                case 6144:
+                    monocrome = true;
+                case 6912:
+                    break;
+
+                // SNA
+                case SNA_48K_SIZE:
+                    seekOff = 27;
+                    break;
+
+                case SNA_48K_WITH_ROM_SIZE:
+                case SNA_128K_SIZE1:
+                    seekOff = 16411;
+                    break;
+
+                case SNA_128K_SIZE2:
+                    seekOff = 16411+16384;
+                    break;
+
+                // SP
+                case 49190:
+                    seekOff = 38;
+                    break;
+
+                case 65574:
+                    seekOff = 16384+38;
+                    break;
+
+                // no soportado
+                default:
+                    printf("error\n");
+                    fclose(file);
+                    return true;
+
+            }
+        }
+
+        if (isZ80) {
+            // Check Z80 version and arch
+            uint8_t z80version;
+            uint16_t ahdrlen = 0;
+
+            // stack space for header, should be enough for
+            // version 1 (30 bytes)
+            // version 2 (55 bytes) (30 + 2 + 23)
+            // version 3 (87 bytes) (30 + 2 + 55) or (86 bytes) (30 + 2 + 54)
+            uint8_t header[87];
+
+            // read first 30 bytes
+            fread(header, 1, 30, file);
+
+            if (header[6] | header[7]) { // Version 1 (PC is != 0)
+                z80version = 1;
+            } else { // Version 2 o 3
+                // header[30]
+                fread(&header[30], 1, 2, file); // Additional header len
+
+                ahdrlen = header[30] | (header[31] << 8);
+                // additional header block length
+                if (ahdrlen == 23)
+                    z80version = 2;
+                else if (ahdrlen == 54 || ahdrlen == 55)
+                    z80version = 3;
+                else {
+                    printf("Z80.load: unknown version, ahdrlen = %u\n", (unsigned int) ahdrlen);
+                    fclose(file);
+                    return true;
+                }
+            }
+
+            // additional vars
+            bool dataCompressed = false;
+
+            uint8_t bank = 0;
+
+            if (z80version != 1) {
+                off_t dataOffset = 30 + 2 + ahdrlen;
+                dataCompressed = true;
+                while (dataOffset < filesize) {
+                    fseek(file, dataOffset, SEEK_SET);
+                    uint16_t compDataLen;
+                    uint8_t dummy[2];
+                    fread(&dummy, 1, sizeof(dummy), file); dataOffset += 2;
+                    compDataLen = dummy[0] | (dummy[1] << 8);
+                    fread(&bank, 1, sizeof(bank), file); dataOffset++;
+                    if (bank == 8) {
+                        // load Screen
+                        if (compDataLen == 0xffff) dataCompressed = false;
+                        break;
+                    }
+                    if (compDataLen == 0xffff) compDataLen = 0x4000;
+                    dataOffset += compDataLen;
+                }
+            } else {
+                dataCompressed = (header[12] & 0x20) ? true : false;
+            }
+
+            if (z80version == 1 || bank == 8) {
+                if (dataCompressed) {
+                    // load compressed data into memory
+                    loadCompressedScreen(file, snapshot);
+                } else {
+                    for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                        uint32_t word;
+                        fread(&word, sizeof(uint32_t), 1, file);
+                        snapshot[i] = word;
+                    }
+                }
+            }
+
+        } else {
+            fseek(file, seekOff, SEEK_SET);
+            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                uint32_t word;
+                fread(&word, sizeof(uint32_t), 1, file);
+                snapshot[i] = word;
+            }
+        }
+    }
+
+    fclose(file);
+
+    renderScreenScaled(x0, y0, snapshot, 2, monocrome);
+
+    return false;
+}
 
 #define REP_MARKER 0xAA  // Marca para las secuencias repetidas
 
@@ -237,7 +998,6 @@ void OSD::drawCompressedBMP(int x, int y, const uint8_t * bmp) {
             VIDEO::vga.dotFast(x + n, y + i, color);
         }
 }
-
 
 void OSD::drawOSD(bool bottom_info) {
     unsigned short x = scrAlignCenterX(OSD_W);
@@ -994,7 +1754,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             if ( FileUtils::isSDReady() ) {
                 uint8_t res = DLG_YES;
-                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, 51, 12);
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SAVE_SNA_TITLE[Config::lang], DISK_SNAFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
                     mFile.erase(0, 1);
@@ -1254,11 +2014,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         }
         else if (KeytoESP == fabgl::VK_F2) {
             menu_level = 0;
-            menu_saverect = true; // force save background, for show cheat dialog if exists
+//            menu_saverect = true; // force save background, for show cheat dialog if exists
+            menu_saverect = false;
 
             if (FileUtils::isSDReady()) {
                 // ESPectrum::showMemInfo("Before F2 file dialog");
-                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang],DISK_SNAFILE,51,12);
+                string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
                 // ESPectrum::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
@@ -1291,7 +2052,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         } else {
                             LoadSnapshot(fname,"","",0xff);
+                            menu_saverect = true; // force save background, for show cheat dialog if exists
                             LoadCheatFile(fname);
+                            menu_saverect = false; // disable force save background
                             Config::ram_file = fname;
                             Config::last_ram_file = fname;
                         }
@@ -1380,7 +2143,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             menu_saverect = false;
 
             if ( FileUtils::isSDReady() ) {
-                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang],DISK_TAPFILE,51,12);
+                string mFile = fileDialog(FileUtils::TAP_Path, MENU_TAP_TITLE[Config::lang], DISK_TAPFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
                 if (mFile != "" && FileUtils::isSDReady() ) {
                     string tapFile = FileUtils::MountPoint + FileUtils::TAP_Path + "/" + mFile.substr(1);
                     string fprefix = mFile.substr(0,1);
@@ -3351,24 +4114,28 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             // Update
                             if (opt2 == 1) {
 
-                                string title = OSD_FIRMW_UPDATE[Config::lang];
-                                string msg = OSD_DLG_SURE[Config::lang];
-                                uint8_t res = msgDialog(title,msg);
+                                if ( FileUtils::isSDReady() ) {
 
-                                if (res == DLG_YES) {
+                                    string title = OSD_FIRMW_UPDATE[Config::lang];
+                                    string msg = OSD_DLG_SURE[Config::lang];
+                                    uint8_t res = msgDialog(title,msg);
 
-                                    // Open firmware file
-                                    FILE *firmware = fopen("/sd/firmware.upg", "rb");
-                                    if (firmware == NULL) {
-                                        osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
-                                    } else {
-                                        esp_err_t res = updateFirmware(firmware);
-                                        fclose(firmware);
-                                        string errMsg = OSD_FIRMW_ERR[Config::lang];
-                                        errMsg += " Code = " + to_string(res);
-                                        osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                    if (res == DLG_YES) {
+
+                                        if ( FileUtils::isSDReady() ) {
+                                            // Open firmware file
+                                            FILE *firmware = fopen("/sd/firmware.upg", "rb");
+                                            if (firmware == NULL) {
+                                                osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
+                                            } else {
+                                                esp_err_t res = updateFirmware(firmware);
+                                                fclose(firmware);
+                                                string errMsg = OSD_FIRMW_ERR[Config::lang];
+                                                errMsg += " Code = " + to_string(res);
+                                                osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                            }
+                                        }
                                     }
-
                                 }
 
                                 menu_curopt = 1;
@@ -3393,18 +4160,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         if (res == DLG_YES) {
 
-                                            // Flash custom ROM 48K
-                                            FILE *customrom = fopen(fname.c_str(), "rb");
-                                            if (customrom == NULL) {
-                                                osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
-                                            } else {
-                                                esp_err_t res = updateROM(customrom, 1);
-                                                fclose(customrom);
-                                                string errMsg = OSD_ROM_ERR[Config::lang];
-                                                errMsg += " Code = " + to_string(res);
-                                                osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                            if ( FileUtils::isSDReady() ) {
+                                                // Flash custom ROM 48K
+                                                FILE *customrom = fopen(fname.c_str(), "rb");
+                                                if (customrom == NULL) {
+                                                    osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
+                                                } else {
+                                                    esp_err_t res = updateROM(customrom, 1);
+                                                    fclose(customrom);
+                                                    string errMsg = OSD_ROM_ERR[Config::lang];
+                                                    errMsg += " Code = " + to_string(res);
+                                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                                }
                                             }
-
                                         }
                                     }
                                 }
@@ -3430,18 +4198,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         if (res == DLG_YES) {
 
-                                            // Flash custom ROM 128K
-                                            FILE *customrom = fopen(fname.c_str(), "rb");
-                                            if (customrom == NULL) {
-                                                osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
-                                            } else {
-                                                esp_err_t res = updateROM(customrom, 2);
-                                                fclose(customrom);
-                                                string errMsg = OSD_ROM_ERR[Config::lang];
-                                                errMsg += " Code = " + to_string(res);
-                                                osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                            if ( FileUtils::isSDReady() ) {
+                                                // Flash custom ROM 128K
+                                                FILE *customrom = fopen(fname.c_str(), "rb");
+                                                if (customrom == NULL) {
+                                                    osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
+                                                } else {
+                                                    esp_err_t res = updateROM(customrom, 2);
+                                                    fclose(customrom);
+                                                    string errMsg = OSD_ROM_ERR[Config::lang];
+                                                    errMsg += " Code = " + to_string(res);
+                                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                                }
                                             }
-
                                         }
                                     }
                                 }
@@ -3468,18 +4237,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         if (res == DLG_YES) {
 
-                                            // Flash custom ROM TK
-                                            FILE *customrom = fopen(fname.c_str(), "rb");
-                                            if (customrom == NULL) {
-                                                osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
-                                            } else {
-                                                esp_err_t res = updateROM(customrom, 3);
-                                                fclose(customrom);
-                                                string errMsg = OSD_ROM_ERR[Config::lang];
-                                                errMsg += " Code = " + to_string(res);
-                                                osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                            if ( FileUtils::isSDReady() ) {
+                                                // Flash custom ROM TK
+                                                FILE *customrom = fopen(fname.c_str(), "rb");
+                                                if (customrom == NULL) {
+                                                    osdCenteredMsg(OSD_NOROMFILE_ERR[Config::lang], LEVEL_WARN, 2000);
+                                                } else {
+                                                    esp_err_t res = updateROM(customrom, 3);
+                                                    fclose(customrom);
+                                                    string errMsg = OSD_ROM_ERR[Config::lang];
+                                                    errMsg += " Code = " + to_string(res);
+                                                    osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                                }
                                             }
-
                                         }
                                     }
                                 }

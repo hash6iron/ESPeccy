@@ -133,7 +133,8 @@ unsigned long getLong(char *buffer) {
 
 void OSD::fd_StatusbarDraw(const string& statusbar, bool fdMode) {
     // Print status bar
-    menuAt(mf_rows, 0);
+//    menuAt(mf_rows, 0);
+    menuAt(h/OSD_FONT_H-1,0);
     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
 
     if (fdMode) {
@@ -147,6 +148,8 @@ void OSD::fd_StatusbarDraw(const string& statusbar, bool fdMode) {
 // Run a new file menu
 string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows) {
 
+    string lastFile = "";
+
     // struct stat stat_buf;
     long dirfilesize;
     bool reIndex;
@@ -157,12 +160,13 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
 
     // CRT Overscan compensation
     if (Config::videomode == 2) {
-        x = 18;
+//        x = 18;
+        x = 0;
         if (menu_level == 0) {
             if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
-                y = 4;
+                y = Config::aspect_16_9 ? OSD_FONT_H * 2 : OSD_FONT_H;
             } else {
-                y = 12;
+                y = OSD_FONT_H * 3;
             }
         }
     } else {
@@ -172,34 +176,30 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
 
     // Position
     if (menu_level == 0) {
-        x += (Config::aspect_16_9 ? 24 : 4);
-        y += (Config::aspect_16_9 ? 4 : 8);
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3);
+        y += (Config::aspect_16_9 ? OSD_FONT_H : OSD_FONT_H);
     } else {
-        x += (Config::aspect_16_9 ? 24 : 4) + (48 /*60*/ * menu_level);
-        y += (Config::aspect_16_9 ? 4 : 8) + (4 /*8*/ * (menu_level - 1));
+        x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3) + (48 /*60*/ * menu_level);
+        y += (Config::aspect_16_9 ? OSD_FONT_H : OSD_FONT_H) + (4 /*8*/ * (menu_level - 1));
     }
 
-    // Size
-    // w = (cols * OSD_FONT_W) + 2;
-    // h = ((mf_rows + 1) * OSD_FONT_H) + 2;
-    // // Check window boundaries
-    // if ( x + mfcols * OSD_FONT_W > (Config::aspect_16_9 ? 24 : 4) + 52 * OSD_FONT_W ) x = (Config::aspect_16_9 ? 24 : 4) + ( 51 - mfcols ) * OSD_FONT_W;
-    // if ( y + mfrows > (Config::aspect_16_9 ? 200 : 240) - 2 * OSD_FONT_H ) y = (Config::aspect_16_9 ? 200 : 240) - ( mfrows + 2 ) * OSD_FONT_H;
+    bool thumb_enabled = menu_level == 0 && (ftype == DISK_TAPFILE || ftype == DISK_SNAFILE);
 
     // Adjust dialog size if needed
     w = (cols * OSD_FONT_W) + 2;
     printf("X: %d w: %d Cols: %d scrW: %d\n",x,w,cols,scrW);
-    while ( x + w >= OSD::scrW - OSD_FONT_W) {
+    int limW = OSD::scrW - (Config::aspect_16_9 ? OSD_FONT_W * 4: OSD_FONT_W * 2);
+    while (x + w >= limW) {
         cols--;
         w = (cols * OSD_FONT_W) + 2;
         printf("X: %d w: %d Cols: %d scrW: %d\n",x,w,cols,scrW);
     };
 
-    h = ((mf_rows + 1) * OSD_FONT_H) + 2;
+    h = ((mf_rows + 1) * OSD_FONT_H) + 2 + (thumb_enabled ? 192 / 2 : 0);
     printf("Y: %d h: %d mf_rows: %d scrH: %d\n",y,h,mf_rows,scrH);
-    while ( y + h >= OSD::scrH - OSD_FONT_H) {
+    while (y + h >= OSD::scrH - OSD_FONT_H) {
         mf_rows--;
-        h = ((mf_rows + 1) * OSD_FONT_H) + 2;
+        h = ((mf_rows + 1) * OSD_FONT_H) + 2 + (thumb_enabled ? 192 / 2 : 0);
         printf("Y: %d h: %d mf_rows: %d scrH: %d\n",y,h,mf_rows,scrH);
     };
 
@@ -229,6 +229,14 @@ reset:
         VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 1));
         menuAt(row, 0);
         VIDEO::vga.print(std::string(cols, ' ').c_str());
+    }
+
+    if (thumb_enabled) {
+        for (int r = row; r < h/OSD_FONT_H-1; r++) {
+            VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+            menuAt(r, 0);
+            VIDEO::vga.print(std::string(cols, ' ').c_str());
+        }
     }
 
     // Draw shortcut help
@@ -360,7 +368,8 @@ reset:
 
         if (FileUtils::fileTypes[ftype].fdMode) {
             // Clean Status Bar
-            menuAt(row, 0);
+            menuAt(h/OSD_FONT_H-1,0);
+            //menuAt(row, 0);
             VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
             VIDEO::vga.print(std::string(cols, ' ').c_str());
 
@@ -420,7 +429,8 @@ reset:
         fd_Redraw(title, fdir, ftype); // Draw content
 
         // First clean statusbar
-        menuAt(row, 0);
+        menuAt(h/OSD_FONT_H-1,0);
+        //menuAt(row, 0);
         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
         VIDEO::vga.print(std::string(cols, ' ').c_str());
 
@@ -448,14 +458,16 @@ reset:
                 unsigned int elem = FileUtils::fileTypes[ftype].fdMode ? fdSearchElements : elements;
                 if (elem) {
                     // menuAt(mf_rows, cols - (real_rows > virtual_rows ? 13 : 12));
-                    menuAt(mf_rows, cols - 12);
+                    //menuAt(mf_rows, cols - 12);
+                    menuAt(h/OSD_FONT_H-1, cols - 12);
                     char elements_txt[13];
                     int nitem = (FileUtils::fileTypes[ftype].begin_row + FileUtils::fileTypes[ftype].focus ) - (4 + ndirs) + (fdir.length() == 1);
                     snprintf(elements_txt, sizeof(elements_txt), "%d/%d ", nitem > 0 ? nitem : 0 , elem);
                     VIDEO::vga.print(std::string(12 - strlen(elements_txt), ' ').c_str());
                     VIDEO::vga.print(elements_txt);
                 } else {
-                    menuAt(mf_rows, cols - 12);
+                    //menuAt(mf_rows, cols - 12);
+                    menuAt(h/OSD_FONT_H-1, cols - 12);
                     VIDEO::vga.print(std::string(12,' ').c_str());
                 }
 
@@ -526,14 +538,14 @@ reset:
 
                         bool save_withrom = Menukey.CTRL;
 
-                        string new_tap = OSD::input( 1, mf_rows, Config::lang == 0 ? "Name: " :
-                                                                 Config::lang == 1 ? "Nomb: " :
-                                                                                     "Nome: "
-                                                                , FILENAMELEN - 1
-                                                                , cols - 3 - 6
-                                                                , zxColor(7,1), zxColor(5,0)
-                                                                , ""
-                                                                , fat32forbidden );
+                        string new_tap = OSD::input( 1, h/OSD_FONT_H-1, Config::lang == 0 ? "Name: " :
+                                                                        Config::lang == 1 ? "Nomb: " :
+                                                                                            "Nome: "
+                                                                      , FILENAMELEN - 1
+                                                                      , cols - 3 - 6
+                                                                      , zxColor(7,1), zxColor(5,0)
+                                                                      , ""
+                                                                      , fat32forbidden );
 
                         if ( new_tap != "" ) {
 
@@ -560,7 +572,8 @@ reset:
                         FileUtils::fileTypes[ftype].fdMode ^= 1;
 
                         // status bard position & color
-                        menuAt(mf_rows, 0);
+                        //menuAt(mf_rows, 0);
+                        menuAt(h/OSD_FONT_H-1, 0);
                         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
 
                         if (FileUtils::fileTypes[ftype].fdMode) {
@@ -754,13 +767,40 @@ reset:
 
             } else {
                 fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
+                if (thumb_enabled) {
+                    string _fname = rowGet(menu,FileUtils::fileTypes[ftype].focus);
 
+                    if (lastFile != _fname) {
+                        bool clsPreview = false;
+                        lastFile = _fname;
+                        if (_fname[0] != ' ') {
+                            rtrim(_fname);
+                            clsPreview = OSD::renderScreen(x+(w/2)-128/2, y+1+mf_rows*OSD_FONT_H, (FileUtils::MountPoint+fdir+_fname).c_str());
+                        } else {
+                            clsPreview = true;
+                        }
+                        if (clsPreview) {
+                            for (int r = row; r < h/OSD_FONT_H-1; r++) {
+                                VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                                menuAt(r, 0);
+                                VIDEO::vga.print(std::string(cols, ' ').c_str());
+                            }
+                            string no_preview_txt = Config::lang == 0 ? "NO PREVIEW AVAILABLE" :
+                                                    Config::lang == 1 ? "SIN VISTA PREVIA" :
+                                                                        "TELA N\x8EO DISPON\x8BVEL";
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2 - no_preview_txt.length()/2);
+                            VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                            VIDEO::vga.print(no_preview_txt.c_str());
+                        }
+                    }
+                }
             }
 
             if (FileUtils::fileTypes[ftype].fdMode) {
 
                 if ((++fdCursorFlash & 0xf) == 0) {
-                    menuAt(mf_rows, 1);
+                    //menuAt(mf_rows, 1);
+                    menuAt(h/OSD_FONT_H-1, 1);
                     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
                     VIDEO::vga.print(Config::lang == 0 ? "Find: " :
                                      Config::lang == 1 ? "B\xA3sq: " :

@@ -392,13 +392,13 @@ void ESPectrum::showBIOS() {
     const int menuExitCount = sizeof(menuExit) / sizeof(menuExit[0]);
 
     const char* menuOptionsResolution[] = {"320x240 (4:3)", "360x200 (16:9)"};
-    const int menuOptionsResolutionCount = sizeof(menuOptionsResolution) / sizeof(menuOptionsResolution[0]);
+    //const int menuOptionsResolutionCount = sizeof(menuOptionsResolution) / sizeof(menuOptionsResolution[0]);
 
     const char* menuOptionsFrequency[] = {"60Hz (VGA)", "50Hz (VGA)", "15kHz (CRT)"};
-    const int menuOptionsFrequencyCount = sizeof(menuOptionsFrequency) / sizeof(menuOptionsFrequency[0]);
+    //const int menuOptionsFrequencyCount = sizeof(menuOptionsFrequency) / sizeof(menuOptionsFrequency[0]);
 
     const char* menuOptionsScanlines[] = {"No", "Yes"};
-    const int menuOptionsScanlinesCount = sizeof(menuOptionsScanlines) / sizeof(menuOptionsScanlines[0]);
+    //const int menuOptionsScanlinesCount = sizeof(menuOptionsScanlines) / sizeof(menuOptionsScanlines[0]);
 
     int selectedOption = 0;
     int selectedAdvancedOption = 0;
