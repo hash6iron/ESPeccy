@@ -234,7 +234,7 @@ void (*Tape::GetBlock)() = &Tape::TAP_GetBlock;
 
 // Load tape file (.tap, .tzx)
 void Tape::LoadTape(string mFile) {
-    if (FileUtils::hasTAPextension(mFile)) {
+    if (FileUtils::hasExtension(mFile, "tap")) {
         string keySel = mFile.substr(0,1);
         mFile.erase(0, 1);
 
@@ -291,7 +291,7 @@ void Tape::LoadTape(string mFile) {
 
         ESPectrum::TapeNameScroller = 0;
 
-    } else if (FileUtils::hasTZXextension(mFile)) {
+    } else if (FileUtils::hasExtension(mFile, "tzx")) {
 
         string keySel = mFile.substr(0,1);
         mFile.erase(0, 1);

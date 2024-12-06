@@ -166,6 +166,8 @@ static const char *MENU_DSK_TITLE[NLANGS] = { MENU_DSK_TITLE_EN,MENU_DSK_TITLE_E
 
 static const char *MENU_CHT_TITLE[NLANGS] = { MENU_CHT_TITLE_EN,MENU_CHT_TITLE_ES,MENU_CHT_TITLE_PT };
 
+static const char *MENU_SCR_TITLE[NLANGS] = { MENU_SCR_TITLE_EN,MENU_SCR_TITLE_ES,MENU_SCR_TITLE_PT };
+
 static const char *MENU_DELETE_TAP_BLOCKS[NLANGS] = { MENU_DELETE_TAP_BLOCKS_EN,MENU_DELETE_TAP_BLOCKS_ES,MENU_DELETE_TAP_BLOCKS_PT };
 
 static const char *MENU_DELETE_CURRENT_TAP_BLOCK[NLANGS] = { MENU_DELETE_CURRENT_TAP_BLOCK_EN,MENU_DELETE_CURRENT_TAP_BLOCK_ES,MENU_DELETE_CURRENT_TAP_BLOCK_PT };
@@ -331,13 +333,11 @@ static const char *DLG_TITLE_INPUTPOK[NLANGS] = { DLG_TITLE_INPUTPOK_EN, DLG_TIT
 
 static const char *POKE_BANK_MENU[NLANGS] = { " Bank  \n" , " Banco \n" , " Banco \n" };
 
-static const char *MENU_OSD[NLANGS] = { MENU_OSD_EN, MENU_OSD_ES, MENU_OSD_PT };
+static const char *MENU_UI[NLANGS] = { MENU_UI_EN, MENU_UI_ES, MENU_UI_PT };
 
-static const char *MENU_OSD_OPT1[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
+static const char *MENU_UI_OPT[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
 
-static const char *MENU_OSD_OPT2[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
-
-#define MENU_OSD_TEXT_SCROLL "Normal\t[N]\n"\
+#define MENU_UI_TEXT_SCROLL "Normal\t[N]\n"\
     "Ping-Pong\t[P]\n"
 
 static const char *AboutMsg[NLANGS][5] = {

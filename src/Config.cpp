@@ -148,6 +148,9 @@ int8_t Config::volume = ESP_VOLUME_DEFAULT;
 
 bool Config::TapeAutoload = false;
 
+bool Config::thumbsEnabled = true;
+bool Config::instantPreview = true;
+
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
     s.erase(std::remove_if(s.begin(), s.end(),
@@ -256,7 +259,11 @@ ConfigEntry configEntries[] = {
     {"osd_LRNav", CONFIG_TYPE_UINT8, &Config::osd_LRNav},
     {"osd_AltRot", CONFIG_TYPE_UINT8, &Config::osd_AltRot},
 
-    {"TapeAutoload", CONFIG_TYPE_BOOL, &Config::TapeAutoload}
+    {"TapeAutoload", CONFIG_TYPE_BOOL, &Config::TapeAutoload},
+
+    {"thumbsEnabled", CONFIG_TYPE_BOOL, &Config::thumbsEnabled},
+    {"instantPreview", CONFIG_TYPE_BOOL, &Config::instantPreview}
+
 };
 
 // Function to load the configuration

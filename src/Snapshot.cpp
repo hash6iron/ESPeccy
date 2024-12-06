@@ -65,16 +65,16 @@ bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8
 
     uint8_t OSDprev = VIDEO::OSD;
 
-    if (FileUtils::hasSNAextension(filename)) {
+    if (FileUtils::hasExtension(filename, "sna")) {
         res = FileSNA::load(filename, force_arch, force_romset, force_ALU);
 
-    } else if (FileUtils::hasZ80extension(filename)) {
+    } else if (FileUtils::hasExtension(filename, "z80")) {
         res = FileZ80::load(filename);
 
     } else if (FileUtils::hasExtension(filename, "sp")) {
         res = FileSP::load(filename);
 
-    } else if (FileUtils::hasPextension(filename)) {
+    } else if (FileUtils::hasExtension(filename, "p")) {
         res = FileP::load(filename);
 
     }
@@ -97,11 +97,11 @@ bool SaveSnapshot(string filename, bool force_saverom) {
 
     bool res = false;
 
-    if (FileUtils::hasSNAextension(filename)) {
+    if (FileUtils::hasExtension(filename, "sna")) {
 
         res = FileSNA::save(filename, force_saverom);
 
-    } else if (FileUtils::hasZ80extension(filename)) {
+    } else if (FileUtils::hasExtension(filename, "z80")) {
 
         res = FileZ80::save(filename, force_saverom);
 

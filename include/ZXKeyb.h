@@ -39,6 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define ZXKDBREAD_MODEINTERACTIVE 0
 #define ZXKDBREAD_MODEINPUT 1
+#define ZXKDBREAD_MODEKBDLAYOUT 2
 
 class ZXKeyb {
 

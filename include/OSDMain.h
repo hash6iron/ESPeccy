@@ -90,6 +90,11 @@ using namespace std;
     #define SCROLL_SEP_CHAR '\xFA'
 #endif
 
+#define RENDER_PREVIEW_OK               0
+#define RENDER_PREVIEW_ERROR            1
+#define RENDER_PREVIEW_OK_MORE          2
+#define RENDER_PREVIEW_REQUEST_NO_FOUND 3
+
 typedef struct MenuState
 {
     unsigned short begin_row;       // First real displayed row
@@ -140,7 +145,8 @@ public:
     static void renderScreenScaled(int x0, int y0, const uint32_t *bitmap, int divisor, bool monocrome);
     //static void loadCompressedScreen(FILE *f, unsigned char *buffer);
     static void loadCompressedScreen(FILE *f, uint32_t *buffer);
-    static bool renderScreen(int x, int y, const char* filename);
+    static int renderScreen(int x, int y, const char* filename, int screen_number, off_t* screen_offset = nullptr);
+    static void saveSCR(const std::string& absolutePath, const uint32_t *bitmap);
 
     // Error
     static void errorPanel(string errormsg);

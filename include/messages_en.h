@@ -110,6 +110,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_CHT_TITLE_EN "Select cheats file"
 
+#define MENU_SCR_TITLE_EN "Select .SCR"
+
 #define MENU_DELETE_TAP_BLOCKS_EN "Delete selection"
 
 #define MENU_DELETE_CURRENT_TAP_BLOCK_EN "Delete block"
@@ -187,7 +189,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Display\t>\n"\
     "Other\t>\n"\
     "Language\t>\n"\
-    "OSD\t>\n"
+    "User Interface\t>\n"
 
 #define MENU_UPDATE_EN \
     "Update\n"\
@@ -314,8 +316,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
 
-#define MENU_OSD_EN "OSD\n"\
+#define MENU_UI_EN "User Interface\n"\
     "Menu with cursors\t>\n"\
-    "Text scroll\t>\n"
+    "Text scroll\t>\n"\
+    "Thumbnails\t>\n"\
+    "Instant preview\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_EN_h

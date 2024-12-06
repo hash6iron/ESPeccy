@@ -48,12 +48,15 @@ using namespace std;
 // Defines
 #define ASCII_NL 10
 
-#define DISK_SNAFILE 0
-#define DISK_TAPFILE 1
-#define DISK_DSKFILE 2
-#define DISK_ROMFILE 3
-#define DISK_ESPFILE 4
-#define DISK_CHTFILE 5
+enum {
+    DISK_SNAFILE,
+    DISK_TAPFILE,
+    DISK_DSKFILE,
+    DISK_ROMFILE,
+    DISK_ESPFILE,
+    DISK_CHTFILE,
+    DISK_SCRFILE
+};
 
 struct DISK_FTYPE {
     string fileExts;
@@ -89,12 +92,6 @@ public:
     // static uint16_t       countFileEntriesFromDir(String path);
     // static string getSortedFileList(string fileDir);
     static bool hasExtension(string filename, string extension);
-    static bool hasSNAextension(string filename);
-    static bool hasZ80extension(string filename);
-    static bool hasPextension(string filename);
-    static bool hasTAPextension(string filename);
-    static bool hasTZXextension(string filename);
-    static bool hasPOKextension(string filename);
 
     static void deleteFilesWithExtension(const char *folder_path, const char *extension);
 
@@ -110,8 +107,9 @@ public:
     static string ROM_Path; // Current ROM path on the SD
     static string ESP_Path; // Current ROM path on the SD
     static string CHT_Path; // Current POK path on the SD
+    static string SCR_Path; // Current POK path on the SD
 
-    static DISK_FTYPE fileTypes[6];
+    static DISK_FTYPE fileTypes[];
 
 private:
     friend class Config;

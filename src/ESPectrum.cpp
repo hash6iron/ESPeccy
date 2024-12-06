@@ -1469,8 +1469,11 @@ IRAM_ATTR bool ESPectrum::readKbd(fabgl::VirtualKeyItem *Nextkey) {
     // Global keys
     if (Nextkey->down) {
         if (Nextkey->vk == fabgl::VK_PRINTSCREEN) { // Capture framebuffer to BMP file in SD Card (thx @dcrespo3d!)
-            CaptureToBmp();
-            r = false;
+            if (Nextkey->SHIFT) {
+                CaptureToBmp();
+                r = false;
+            }
+
         } else
         if (Nextkey->vk == fabgl::VK_SCROLLLOCK) { // Change CursorAsJoy setting
             Config::CursorAsJoy = !Config::CursorAsJoy;
@@ -2086,6 +2089,16 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             } else
             if (!bitRead(ZXKeyb::ZXcols[1],1)) { // S -> Save snapshot
                 OSD::do_OSD(fabgl::VK_F2,0,true);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[1],2)) { // D -> Load .SCR
+                OSD::do_OSD(fabgl::VK_F5,0,true);
+            } else
+            if (!bitRead(ZXKeyb::ZXcols[1],4)) { // G -> Capture SCR
+                if (Tape::tapeSaveName=="none") {
+                    OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+                } else {
+                    OSD::saveSCR(Tape::tapeSaveName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
+                }
             } else
             if (!bitRead(ZXKeyb::ZXcols[0],1)) { // Z -> CenterH
                 if (Config::CenterH > -16) Config::CenterH--;

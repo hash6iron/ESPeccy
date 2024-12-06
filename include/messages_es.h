@@ -107,6 +107,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_CHT_TITLE_ES "Elija fichero de cheats"
 
+#define MENU_SCR_TITLE_ES "Elija fichero .SCR"
+
 #define MENU_DELETE_TAP_BLOCKS_ES "Borrar selecci\xA2n"
 
 #define MENU_DELETE_CURRENT_TAP_BLOCK_ES "Borrar bloque"
@@ -184,7 +186,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Pantalla\t>\n"\
     "Otros\t>\n"\
     "Idioma\t>\n"\
-    "OSD\t>\n"
+    "Interfaz de Usuario\t>\n"
 
 #define MENU_UPDATE_ES \
     "Actualizar\n"\
@@ -311,8 +313,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_ES "A\xA4" "adir Poke"
 
-#define MENU_OSD_ES "OSD\n"\
+#define MENU_UI_ES "Interfaz de Usuario\n"\
     "Men\xA3 con cursores\t>\n"\
-    "Rotaci\xA2n de texto\t>\n"
+    "Rotaci\xA2n de texto\t>\n"\
+    "Miniaturas\t>\n"\
+    "Vista instant\xA0nea\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_ES_h

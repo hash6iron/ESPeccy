@@ -146,6 +146,9 @@ public:
 
     static bool     TapeAutoload;
 
+    static bool     thumbsEnabled;
+    static bool     instantPreview;
+
 };
 
 #endif // Config.h

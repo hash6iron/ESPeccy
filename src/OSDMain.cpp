@@ -165,6 +165,58 @@ void OSD::esp_hard_reset() {
     while (true);
 }
 
+void OSD::restoreBackbufferData(bool force) {
+    if ( !SaveRectpos ) return;
+    if (menu_saverect || force) {
+        printf("--- OSD::restoreBackbufferData %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
+
+        uint16_t w = VIDEO::SaveRect[--SaveRectpos] >> 16;
+        uint16_t h = VIDEO::SaveRect[SaveRectpos] & 0xffff;
+
+        uint16_t x = VIDEO::SaveRect[--SaveRectpos] >> 16;
+        uint16_t y = VIDEO::SaveRect[SaveRectpos] & 0xffff;
+
+        SaveRectpos -= ( ( ( ( x + w ) >> 2 ) + 1 ) - ( x >> 2 ) ) * h;
+
+        uint32_t j = SaveRectpos;
+
+        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h );
+
+        for (uint32_t m = y; m < y + h; m++) {
+            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
+            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
+                backbuffer32[n] = VIDEO::SaveRect[j++];
+            }
+        }
+        printf("OSD::restoreBackbufferData exit %d 0x%x j:%d 0x%x\n", SaveRectpos, SaveRectpos * 4, j, j * 4);
+//        if ( !force )
+        menu_saverect = false;
+    }
+}
+
+void OSD::saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool force) {
+
+    if ( force || menu_saverect ) {
+        printf("OSD::saveBackbufferData x=%hd y=%hd w=%hd h=%hd pos=%d 0x%x\n", x, y, w, h, SaveRectpos, SaveRectpos * 4);
+
+        for (uint32_t m = y; m < y + h; m++) {
+            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
+            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
+                VIDEO::SaveRect[SaveRectpos++] = backbuffer32[n];
+            }
+        }
+
+        VIDEO::SaveRect[SaveRectpos++] = ( x << 16 ) | y;
+        VIDEO::SaveRect[SaveRectpos++] = ( w << 16 ) | h;
+
+        printf("OSD::saveBackbufferData exit %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
+    }
+}
+
+void OSD::saveBackbufferData(bool force) {
+    OSD::saveBackbufferData(x, y, w, h, force);
+}
+
 // // Cursor to OSD first row,col
 void OSD::osdHome() { VIDEO::vga.setCursor(osdInsideX(), osdInsideY()); }
 
@@ -207,6 +259,8 @@ void OSD::drawWindow(uint16_t width, uint16_t height, string top, string bottom,
 
 #define SCREEN_WIDTH  256
 #define SCREEN_HEIGHT 192
+#define SCRLEN 6912
+#define WORDS_IN_SCREEN (SCRLEN / 4) // Número de palabras de 32 bits en la pantalla
 
 // Paleta de colores del ZX Spectrum
 static const uint8_t ZX_PALETTE[16][3] = {
@@ -216,63 +270,146 @@ static const uint8_t ZX_PALETTE[16][3] = {
     {0, 255, 0}, {0, 255, 255}, {255, 255, 0}, {255, 255, 255}
 };
 
-#if 0
-void OSD::render_screen_scaled(int x0, int y0, const uint8_t *bitmap, int divisor, bool monocrome) {
-    if (divisor <= 0) divisor = 1; // Evitar divisores inválidos
-    int scaled_width = SCREEN_WIDTH / divisor;
-    int scaled_height = SCREEN_HEIGHT / divisor;
+// Función común para construir el path en la subcarpeta SCRSHOT
+std::string buildSCRFilePath(const std::string& absolutePath, std::string& scrDir) {
+    size_t lastSlashPos = absolutePath.find_last_of("/\\");
+    if (lastSlashPos == std::string::npos) {
+        return ""; // Ruta inválida
+    }
 
-    const uint8_t *attributes = bitmap + 0x1800;
+    // Obtén el directorio base y el nombre del archivo sin extensión
+    std::string baseDir = absolutePath.substr(0, lastSlashPos);
+    std::string fileName = absolutePath.substr(lastSlashPos + 1);
+    size_t dotPos = fileName.find_last_of('.');
+    if (dotPos != std::string::npos) {
+        fileName = fileName.substr(0, dotPos);
+    }
 
-    for (int y = 0; y < scaled_height; y++) {
-        for (int x = 0; x < scaled_width; x++) {
-            int r = 0, g = 0, b = 0, count = 0;
+    // Construye los paths necesarios
+    scrDir = baseDir + "/SCRSHOT";
+    return scrDir + "/" + fileName + ".scr";
+}
 
-            // Tomar píxeles en bloques según el divisor
-            for (int j = 0; j < divisor; j++) {
-                for (int i = 0; i < divisor; i++) {
-                    int src_x = x * divisor + i;
-                    int src_y = y * divisor + j;
+// Verifica si un archivo SCR existe
+std::string fileExistsWithScrExtension(const std::string& absolutePath) {
+    std::string scrDir;
+    std::string scrFilePath = buildSCRFilePath(absolutePath, scrDir);
+    if (scrFilePath.empty()) {
+        return absolutePath;
+    }
 
-                    // Calcular offset en pantalla original
-                    int char_col = src_x / 8;
-                    int bit = 7 - (src_x % 8);
+    // Verifica si el archivo existe
+    if (access(scrFilePath.c_str(), F_OK) == 0) {
+        return scrFilePath;
+    }
 
-                    // Atributo
-                    uint8_t attr = (monocrome) ? 0x38 : attributes[(src_y / 8) * 32 + char_col];
+    return absolutePath;
+}
 
-                    // Obtener colores según el atributo
-                    int ink = attr & 0x07;          // INK (color del pixel encendido)
-                    int paper = (attr >> 3) & 0x07; // PAPER (color del pixel apagado)
-                    int bright = (attr & 0x40) ? 8 : 0; // BRIGHT
+// Guarda el contenido del bitmap como archivo SCR
+void OSD::saveSCR(const std::string& absolutePath, const uint32_t *bitmap) {
+    uint32_t pos = OSD::SaveRectpos;
 
-                    int address = (((src_y & 0xC0) >> 6) << 11) |
-                                  ((src_y & 0x07) << 8) |
-                                  (((src_y & 0x38) >> 3) << 5);
+    if ( FileUtils::isSDReady() ) {
+        std::string scrDir;
+        std::string scrFilePath = buildSCRFilePath(absolutePath, scrDir);
+        if (scrFilePath.empty()) {
+            return; // Ruta inválida
+        }
 
-                    // Color del píxel actual
-                    uint8_t color_index = (bitmap[address + char_col] & (1 << bit))
-                                          ? ink + bright
-                                          : paper + bright;
-                    const uint8_t *rgb = ZX_PALETTE[color_index];
+        // Crea la carpeta SCRSHOT si no existe
+        struct stat st;
+        if (stat(scrDir.c_str(), &st) != 0) {
+            if (mkdir(scrDir.c_str(), 0755) != 0) {
+                perror("Failed to create SCRSHOT directory");
+                SaveRectpos = pos; // must be 0
+                return;
+            }
+        }
 
-                    // Sumar los valores RGB para el promedio
-                    r += rgb[0];
-                    g += rgb[1];
-                    b += rgb[2];
-                    count++;
-                }
+        // Verifica si el archivo existe
+        if (access(scrFilePath.c_str(), F_OK) == 0) {
+            SaveRectpos = WORDS_IN_SCREEN;
+
+            uint8_t res = OSD::msgDialog(OSD_TAPE_SAVE_EXIST[Config::lang],OSD_DLG_SURE[Config::lang]);
+            if (res != DLG_YES) {
+                SaveRectpos = pos; // must be 0
+                return;
             }
 
-            // Promediar los colores del bloque y guardar en el buffer reducido
+        }
 
-            // 888 -> 222
-            uint8_t color =  ((r / count) >> 6) |
-                            (((g / count) >> 6) << 2) |
-                            (((b / count) >> 6) << 4);
+        if ( FileUtils::isSDReady() ) {
+            // Abre el archivo para escritura en modo binario
+            FILE *file = fopen(scrFilePath.c_str(), "wb");
+            if (!file) {
+                perror("Failed to open .scr file for writing");
+                SaveRectpos = pos; // must be 0
+                return;
+            }
+
+            // Escribe los primeros 6912 bytes del bitmap en palabras de 32 bits
+            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                uint32_t word = bitmap[i];
+                fwrite(&word, sizeof(uint32_t), 1, file);
+            }
+
+            // Cierra el archivo
+            fclose(file);
+        }
+    }
+
+    SaveRectpos = pos; // must be 0
+}
+
+#if 0
+void OSD::renderScreenNormal(int x0, int y0, const uint32_t *bitmap, bool monocrome) {
+
+    const uint32_t *attributes = bitmap + 0x1800 / 4; // Offset en palabras de 32 bits
+
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            int r = 0, g = 0, b = 0, count = 0;
+
+            // Calcular offset en pantalla original
+            int char_col = x / 8;
+            int bit = 7 - (x % 8);
+
+            // Leer atributos
+            uint8_t attr = (monocrome)
+                           ? 0x38
+                           : ((attributes[(y / 8) * 8 + char_col / 4] >> ((char_col % 4) * 8)) & 0xFF);
+
+            // Obtener colores según el atributo
+            int ink = attr & 0x07;          // INK (color del pixel encendido)
+            int paper = (attr >> 3) & 0x07; // PAPER (color del pixel apagado)
+            int bright = (attr & 0x40) ? 8 : 0; // BRIGHT
+
+            int address = (((y & 0xC0) >> 6) << 11) |
+                          ((y & 0x07) << 8) |
+                          (((y & 0x38) >> 3) << 5);
+
+            // Leer palabra alineada de 32 bits
+            uint32_t word = bitmap[(address / 4) + char_col / 4];
+            uint8_t databyte = (word >> ((char_col % 4) * 8)) & 0xFF;
+
+            // Determinar el color del pixel actual
+            uint8_t color_index = (databyte & (1 << bit))
+                                  ? ink + bright
+                                  : paper + bright;
+            const uint8_t *rgb = ZX_PALETTE[color_index];
+
+            // Sumar valores RGB para el promedio
+            r = rgb[0];
+            g = rgb[1];
+            b = rgb[2];
+
+            // Promediar colores del bloque y guardar en el buffer reducido
+            uint8_t color =  (rgb[0] >> 6) |
+                            ((rgb[1] >> 6) << 2) |
+                            ((rgb[2] >> 6) << 4);
 
             VIDEO::vga.dotFast(x0 + x, y0 + y, color);
-        }
     }
 }
 #endif
@@ -340,52 +477,6 @@ void OSD::renderScreenScaled(int x0, int y0, const uint32_t *bitmap, int divisor
     }
 }
 
-
-#if 0
-void OSD::loadCompressedScreen(FILE *f, unsigned char *buffer) {
-
-    uint8_t ed_cnt = 0;
-    uint8_t repcnt = 0;
-    uint8_t repval = 0;
-    uint16_t memidx = 0;
-
-    #define SCRLEN 6912
-
-    while(memidx < SCRLEN) {
-        uint8_t databyte;
-        fread(&databyte, sizeof(uint8_t), 1, f);
-        if (ed_cnt == 0) {
-            if (databyte != 0xED)
-                buffer[memidx++] = databyte;
-            else
-                ed_cnt++;
-        }
-        else if (ed_cnt == 1) {
-            if (databyte != 0xED) {
-                buffer[memidx++] = 0xED;
-                buffer[memidx++] = databyte;
-                ed_cnt = 0;
-            }
-            else
-                ed_cnt++;
-        }
-        else if (ed_cnt == 2) {
-            repcnt = databyte;
-            ed_cnt++;
-        }
-        else if (ed_cnt == 3) {
-            repval = databyte;
-            if (memidx + repcnt > SCRLEN) repcnt = SCRLEN - memidx;
-            for (uint16_t i = 0; i < repcnt; i++) buffer[memidx++] = repval;
-            ed_cnt = 0;
-        }
-    }
-}
-#endif
-
-#define SCRLEN 6912
-#define WORDS_IN_SCREEN (SCRLEN / 4) // Número de palabras de 32 bits en la pantalla
-
 void OSD::loadCompressedScreen(FILE *f, uint32_t *buffer) {
     uint8_t ed_cnt = 0;
     uint8_t repcnt = 0;
@@ -452,33 +543,6 @@ void OSD::loadCompressedScreen(FILE *f, uint32_t *buffer) {
     }
 }
 
-string fileExistsWithScrExtension(const std::string& absolutePath) {
-    // Encuentra la posición del último separador de directorio
-    size_t lastSlashPos = absolutePath.find_last_of("/\\");
-    if (lastSlashPos == std::string::npos) {
-        return absolutePath;
-    }
-
-    // Obtén el directorio base
-    std::string baseDir = absolutePath.substr(0, lastSlashPos);
-    // Obtén el nombre del archivo sin su extensión
-    std::string fileName = absolutePath.substr(lastSlashPos + 1);
-    size_t dotPos = fileName.find_last_of('.');
-    if (dotPos != std::string::npos) {
-        fileName = fileName.substr(0, dotPos);
-    }
-
-    // Construye el nuevo path en la subcarpeta SCRSHOT
-    std::string scrFilePath = baseDir + "/SCRSHOT/" + fileName + ".scr";
-
-   // Verifica si el archivo existe
-    if (access(scrFilePath.c_str(), F_OK) == 0) {
-        return scrFilePath;
-    }
-
-    return absolutePath;
-}
-
 unsigned char aux_buff[128];
 
 int check_screen_relocator(unsigned char *buffer) {
@@ -515,7 +579,9 @@ int check_screen_relocator(unsigned char *buffer) {
 
 // CAUTION: Use this funcion only if menu_level = 0
 
-bool OSD::renderScreen(int x0, int y0, const char* filename) {
+int OSD::renderScreen(int x0, int y0, const char* filename, int screen_number, off_t* screen_offset) {
+
+    int ret = RENDER_PREVIEW_OK;
 
     bool monocrome = false;
 
@@ -526,27 +592,27 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
     FILE *file = fopen(fname.c_str(), "rb");
     if (!file) {
         perror("Error opening file");
-        return true;
+        return RENDER_PREVIEW_ERROR;
     }
 
     size_t filesize = FileUtils::fileSize(fname.c_str());
 
-    if (FileUtils::hasTZXextension(fname.c_str())) {
+    if (FileUtils::hasExtension(fname.c_str(), "tzx")) {
 
         // Leer y validar el encabezado
         st_head_tzx header;
         if (fread(&header, sizeof(st_head_tzx), 1, file) != 1 || strncmp(header.zx_tape, "ZXTape!", 7) != 0 || header._1a != 0x1A) {
             fprintf(stderr, "Error: Invalid TZX file format\n");
             fclose(file);
-            return true;
+            return RENDER_PREVIEW_ERROR;
         }
 
-        unsigned block_count = 0;
+        unsigned screen_count = 0;
         unsigned pos = sizeof(st_head_tzx);
         unsigned char b; //, lb;
 
         // Procesar los bloques
-        while (pos < filesize && block_count == 0) {
+        while (pos < filesize && screen_count <= screen_number + 1) {
             // Calcular el tamaño del bloque
             unsigned long block_length = 0;
             unsigned long data_length = 0;
@@ -568,30 +634,37 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                     if ((data_length >= 6912 && data_length <= 7200) ||
                         (data_length >= 49152 - 6912)) {
 
-                        unsigned seek_pos_add = 2;
+                        if (screen_count == screen_number) {
+                            off_t seek_pos_add = 2;
 
-                        if (data_length - 2 < 6912) {
-                            seek_pos_add = 6912 - (data_length - 2);
+                            if (data_length - 2 < 6912) {
+                                seek_pos_add = 6912 - (data_length - 2);
+                            }
+                            else if (data_length > 6914) {
+                                fseek(file, pos + 4 + 2, SEEK_SET);
+                                fread(aux_buff, 1, sizeof(aux_buff), file);
+                                seek_pos_add = check_screen_relocator(aux_buff) + 2;
+                            }
+
+                            off_t off = seek_pos_add;
+                            if (screen_offset) {
+                                off += *screen_offset;
+                                if (pos + 4 + off + 6912 > filesize) off = filesize - 6912 - ( pos + 4 );
+                                if (seek_pos_add + *screen_offset < 0) off = 0;
+                                *screen_offset = off - seek_pos_add;
+                            }
+
+                            fseek(file, pos + 4 + off, SEEK_SET);
+                            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                                uint32_t word;
+                                fread(&word, sizeof(uint32_t), 1, file);
+                                snapshot[i] = word;
+                            }
                         }
-                        else if (data_length > 6914) {
-                            fseek(file, pos + 4 + 2, SEEK_SET);
-                            fread(aux_buff, 1, sizeof(aux_buff), file);
-                            seek_pos_add = check_screen_relocator(aux_buff) + 2;
-                        }
-//                        printf("Saving [%s] (block id: %d)(data_length %d)\n", base_name, block_id, data_length);
-                        fseek(file, pos + 4 + seek_pos_add, SEEK_SET);
-                        for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
-                            uint32_t word;
-                            fread(&word, sizeof(uint32_t), 1, file);
-                            snapshot[i] = word;
-                        }
-//                        dump_scr(file, base_name, block_count++);
-                        block_count++;
+                        screen_count++;
                     }
                     break;
                 case 0x11: // Turbo Speed Data Block
-                    //fseek(file, pos + 13, SEEK_SET);
-                    //fread(&lb, 1, 1, file);
                     fseek(file, pos + 16, SEEK_SET);
                     fread(&b, 1, 1, file);
                     data_length = b;
@@ -604,25 +677,34 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                     if ((data_length >= 6912 && data_length <= 7200) ||
                         (data_length >= 49152 - 6912)) {
 
-                        unsigned seek_pos_add = 2;
+                        if (screen_count == screen_number) {
+                            off_t seek_pos_add = 2;
 
-                        if (data_length - 2 < 6912) {
-                            seek_pos_add = 6912 - (data_length - 2);
+                            if (data_length - 2 < 6912) {
+                                seek_pos_add = 6912 - (data_length - 2);
+                            }
+                            else if (data_length > 6914) {
+                                fseek(file, pos + 4 + 2, SEEK_SET);
+                                fread(aux_buff, 1, sizeof(aux_buff), file);
+                                seek_pos_add = check_screen_relocator(aux_buff) + 2;
+                            }
+
+                            off_t off = seek_pos_add;
+                            if (screen_offset) {
+                                off += *screen_offset;
+                                if (pos + 18 + off + 6912 > filesize) off = filesize - 6912 - ( pos + 18 );
+                                if (seek_pos_add + *screen_offset < 0) off = 0;
+                                *screen_offset = off - seek_pos_add;
+                            }
+
+                            fseek(file, pos + 18 + off, SEEK_SET);
+                            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                                uint32_t word;
+                                fread(&word, sizeof(uint32_t), 1, file);
+                                snapshot[i] = word;
+                            }
                         }
-                        else if (data_length > 6914) {
-                            fseek(file, pos + 4 + 2, SEEK_SET);
-                            fread(aux_buff, 1, sizeof(aux_buff), file);
-                            seek_pos_add = check_screen_relocator(aux_buff) + 2;
-                        }
-//                        printf("Saving [%s] (block id: %d)(data_length %d)\n", base_name, block_id, data_length);
-                        fseek(file, pos + 18 + seek_pos_add, SEEK_SET);
-                        for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
-                            uint32_t word;
-                            fread(&word, sizeof(uint32_t), 1, file);
-                            snapshot[i] = word;
-                        }
-//                        dump_scr(file, base_name, block_count++);
-                        block_count++;
+                        screen_count++;
                     }
                     break;
                 case 0x12: // Pure Tone
@@ -766,22 +848,35 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                 default:
                     fprintf(stderr, "Error: Unknown block type 0x%X at position %u\n", block_id, pos);
                     fclose(file);
-                    return true;
+                    return RENDER_PREVIEW_ERROR;
             }
 
             pos += block_length; // Avanzar al siguiente bloque
         }
 
-        if (!block_count) {
+        if (!screen_count) {
             fclose(file);
-            return true;
+            return RENDER_PREVIEW_ERROR;
         }
 
-    } else if (FileUtils::hasTAPextension(fname.c_str())) {
-        unsigned block_count = 0;
+        if (screen_count < screen_number + 1) {
+            fclose(file);
+            return RENDER_PREVIEW_REQUEST_NO_FOUND; // no more screens, keep current
+        }
+
+        if (screen_count == screen_number + 1) {
+            ret = RENDER_PREVIEW_OK;
+        }
+
+        if (screen_count > screen_number + 1) {
+            ret = RENDER_PREVIEW_OK_MORE;
+        }
+
+    } else if (FileUtils::hasExtension(fname.c_str(), "tap")) {
+        unsigned screen_count = 0;
         unsigned pos = 0;
 
-        while (pos < filesize && block_count == 0) {
+        while (pos < filesize && screen_count <= screen_number + 1) {
             unsigned char length_low, length_high;
             unsigned short block_length;
 
@@ -794,7 +889,7 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
 
             pos += 2;
 
-            // Leer el pri ESPeccy no necesita generarlo si ya tiene la pantalla en el snapshot...mer byte del bloque (indicador de cabecera)
+            // Leer el primer byte del bloque (indicador de cabecera)
             unsigned char header_type;
             if (fread(&header_type, 1, 1, file) != 1) break;
 
@@ -802,36 +897,57 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                 (block_length >= 6912 && block_length <= 7200) ||
                 (block_length >= 49152 - 6912) ) {
 
-                unsigned seek_pos_add = 0;
+                if (screen_count == screen_number) {
+                    off_t seek_pos_add = 0;
 
-                if (block_length > 6912) {
-                    fseek(file, pos + 1, SEEK_SET);
-                    fread(aux_buff, 1, sizeof(aux_buff), file);
-                    seek_pos_add = check_screen_relocator(aux_buff);
-                }
+                    if (block_length > 6912) {
+                        fseek(file, pos + 1, SEEK_SET);
+                        fread(aux_buff, 1, sizeof(aux_buff), file);
+                        seek_pos_add = check_screen_relocator(aux_buff);
+                    }
 
-                fseek(file, pos + 1 + seek_pos_add, SEEK_SET);
-                // Posible pantalla
-//                printf("Saving [%s] (header type %d)(block_length %d)\n", base_name, header_type, block_length);
-                for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
-                    uint32_t word;
-                    fread(&word, sizeof(uint32_t), 1, file);
-                    snapshot[i] = word;
+                    off_t off = seek_pos_add;
+                    if (screen_offset) {
+                        off += *screen_offset;
+                        if (pos + 1 + off + 6912 > filesize) off = filesize - 6912 - ( pos + 1 );
+                        if (seek_pos_add + *screen_offset + 1 < 0) off = -1;
+                        *screen_offset = off - seek_pos_add;
+                    }
+
+                    fseek(file, pos + 1 + off, SEEK_SET);
+                    // Posible pantalla
+                    for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                        uint32_t word;
+                        fread(&word, sizeof(uint32_t), 1, file);
+                        snapshot[i] = word;
+                    }
                 }
-//                dump_scr(file, base_name, block_count++);
-                block_count++;
+                screen_count++;
             }
 
             pos += block_length;
         }
 
-        if (!block_count) {
+        if (!screen_count) {
             fclose(file);
-            return true;
+            return RENDER_PREVIEW_ERROR;
+        }
+
+        if (screen_count < screen_number + 1) {
+            fclose(file);
+            return RENDER_PREVIEW_REQUEST_NO_FOUND; // no more screens, keep current
+        }
+
+        if (screen_count == screen_number + 1) {
+            ret = RENDER_PREVIEW_OK;
+        }
+
+        if (screen_count > screen_number + 1) {
+            ret = RENDER_PREVIEW_OK_MORE;
         }
 
     } else {
-        bool isZ80 = FileUtils::hasZ80extension(fname.c_str());
+        bool isZ80 = FileUtils::hasExtension(fname.c_str(), "z80");
 
         off_t seekOff = 0;
 
@@ -870,7 +986,7 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                 default:
                     printf("error\n");
                     fclose(file);
-                    return true;
+                    return RENDER_PREVIEW_ERROR;
 
             }
         }
@@ -904,7 +1020,7 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
                 else {
                     printf("Z80.load: unknown version, ahdrlen = %u\n", (unsigned int) ahdrlen);
                     fclose(file);
-                    return true;
+                    return RENDER_PREVIEW_ERROR;
                 }
             }
 
@@ -914,7 +1030,7 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
             uint8_t bank = 0;
 
             if (z80version != 1) {
-                off_t dataOffset = 30 + 2 + ahdrlen;
+                int32_t dataOffset = 30 + 2 + ahdrlen;
                 dataCompressed = true;
                 while (dataOffset < filesize) {
                     fseek(file, dataOffset, SEEK_SET);
@@ -962,7 +1078,7 @@ bool OSD::renderScreen(int x0, int y0, const char* filename) {
 
     renderScreenScaled(x0, y0, snapshot, 2, monocrome);
 
-    return false;
+    return ret;
 }
 
 #define REP_MARKER 0xAA  // Marca para las secuencias repetidas
@@ -1038,21 +1154,13 @@ void OSD::drawKbdLayout(uint8_t layout) {
 
     string vmode;
 
-    string bottom[5];
-
-    if (ZXKeyb::Exists) {
-        bottom[0] = "SS+P: PS/2 | SS+T: TK | SS+Z ZX | SS+8 ZX81"; // ZX Spectrum 48K layout
-        bottom[1] = "SS+4: 48K | SS+P: PS/2 | SS+Z ZX | SS+8 ZX81"; // TK 90x layout
-        bottom[2] = "SS+4: 48K | SS+T: TK | SS+Z ZX | SS+8 ZX81"; // PS/2 kbd help
-        bottom[3] = "SS+4: 48K | SS+T: TK | SS+P PS/2 | SS+8 ZX81"; // ZX kbd help
-        bottom[4] = "SS+4: 48K | SS+T: TK | SS+Z ZX | SS+P PS/2"; // ZX81+ layout
-    } else {
-        bottom[0] = "P: PS/2 | T: TK | Z: ZX | 8: ZX81"; // ZX Spectrum 48K layout
-        bottom[1] = "4: 48K | P: PS/2 | Z: ZX | 8: ZX81"; // TK 90x layout
-        bottom[2] = "4: 48K | T: TK | Z: ZX | 8: ZX81"; // PS/2 kbd help
-        bottom[3] = "4: 48K | T: TK | P: PS/2 | 8: ZX81"; // ZX kbd help
-        bottom[4] = "4: 48K | T: TK | Z: ZX | P: PS/2"; // ZX81+ layout
-    }
+    string bottom[5] = {
+        { "P: PS/2 | T: TK | Z: ZX | 8: ZX81" },  // ZX Spectrum 48K layout
+        { "4: 48K | P: PS/2 | Z: ZX | 8: ZX81" },  // TK 90x layout
+        { "4: 48K | T: TK | Z: ZX | 8: ZX81" }, // PS/2 kbd help
+        { "4: 48K | T: TK | P: PS/2 | 8: ZX81" },  // ZX kbd help
+        { "4: 48K | T: TK | Z: ZX | P: PS/2" }  // ZX81+ layout
+    };
 
     switch(Config::videomode) {
         case 0: vmode = "Mode VGA"; break;
@@ -1121,7 +1229,7 @@ void OSD::drawKbdLayout(uint8_t layout) {
 
         while (1) {
 
-            if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
+            if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(ZXKDBREAD_MODEKBDLAYOUT);
 
             ESPectrum::readKbdJoy();
 
@@ -1483,11 +1591,11 @@ static string getStringPersistCatalog()
     if ((dir = opendir(fdir.c_str())) != nullptr) {
         while ((de = readdir(dir)) != nullptr) {
             string fname = de->d_name;
-            if (de->d_type == DT_REG && ( FileUtils::hasSNAextension(fname) ) ) {
+            if (de->d_type == DT_REG && FileUtils::hasExtension(fname, "sna")) {
                 if (fname.substr(0,7) == "persist") {
                     // Extraer la parte entre "persist" y la extension
                     int index = stoi(fname.substr(7, fname.length() - 4 - 7))-1;
-                    if ( cat[index] == "" ) cat[index] = "*";
+                    if (cat[index] == "") cat[index] = "*";
                 }
             }
         }
@@ -1501,8 +1609,8 @@ static string getStringPersistCatalog()
                                                 "<Slot Livre ") + to_string(i+1) + ">\n";
             } else {
                 cat[i].erase(0,1);
-                if ( cat[i] == "" ) catalog += "Snapshot " + to_string(i+1) + "\n";
-                else                catalog += cat[i] + "\n";
+                if (cat[i] == "") catalog += "Snapshot " + to_string(i+1) + "\n";
+                else              catalog += cat[i] + "\n";
             }
         }
 
@@ -1817,8 +1925,26 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     // menu_saverect = false;
                 }
             }
-
         } else
+        if (KeytoESP == fabgl::VK_F5) { // SCR
+            menu_level = 0;
+            menu_saverect = false;
+
+            if ( FileUtils::isSDReady() ) {
+                string mFile = fileDialog(FileUtils::SCR_Path, MENU_SCR_TITLE[Config::lang], DISK_SCRFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
+                if (mFile != "") {
+
+                    uint32_t *screen_scr = (uint32_t *) VIDEO::SaveRect;
+                    uint32_t *screen_mem = (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]);
+
+                    // Escribe los primeros 6912 bytes del bitmap en palabras de 32 bits
+                    for(int i = 0; i < WORDS_IN_SCREEN; ++i) *screen_mem++ = *screen_scr++;
+
+                    return;
+                }
+            }
+            if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
+        }
         // if (KeytoESP == fabgl::VK_F5) { // UART test
         //     OSD::UART_test();
         // } else
@@ -4005,8 +4131,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             menu_curopt = 1;
                             menu_saverect = true;
                             while (1) {
-                                // options for OSD
-                                string opt_menu = MENU_OSD[Config::lang];
+                                // options for UI
+                                string opt_menu = MENU_UI[Config::lang];
                                 uint8_t opt2 = menuRun(opt_menu);
                                 if (opt2) {
                                     if (opt2 == 1)
@@ -4016,7 +4142,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
 
                                         while (1){
-                                            string opt_menu = MENU_OSD_OPT1[Config::lang];
+                                            string opt_menu = MENU_UI_OPT[Config::lang];
                                             opt_menu += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::osd_LRNav;
                                             if (prev_opt) {
@@ -4031,14 +4157,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::osd_LRNav = 1;
-                                                else
-                                                    Config::osd_LRNav = 0;
+                                                if (opt2 == 1)  Config::osd_LRNav = 1;
+                                                else            Config::osd_LRNav = 0;
 
-                                                if (Config::osd_LRNav != prev_opt) {
-                                                    Config::save("osd_LRNav");
-                                                }
+                                                if (Config::osd_LRNav != prev_opt) Config::save("osd_LRNav");
+
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
                                             } else {
@@ -4055,8 +4178,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
 
                                         while (1){
-                                            string opt_menu = MENU_OSD_OPT2[Config::lang];
-                                            opt_menu += MENU_OSD_TEXT_SCROLL;
+                                            string opt_menu = MENU_UI_OPT[Config::lang];
+                                            opt_menu += MENU_UI_TEXT_SCROLL;
                                             bool prev_opt = Config::osd_AltRot;
                                             if (prev_opt) {
                                                 menu_curopt = 2;
@@ -4070,14 +4193,86 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::osd_AltRot = 0;
-                                                else
-                                                    Config::osd_AltRot = 1;
+                                                if (opt2 == 1)  Config::osd_AltRot = 0;
+                                                else            Config::osd_AltRot = 1;
 
                                                 menu_curopt = opt2;
 
                                                 if (Config::osd_AltRot != prev_opt) Config::save("osd_AltRot");
+
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (opt2==3)
+                                    {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+
+                                        while (1){
+                                            string opt_menu = MENU_UI_OPT[Config::lang];
+                                            opt_menu += MENU_YESNO[Config::lang];
+                                            bool prev_opt = Config::thumbsEnabled;
+                                            if (prev_opt) {
+                                                menu_curopt = 1;
+                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
+                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                            } else {
+                                                menu_curopt = 2;
+                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
+                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                            }
+
+                                            uint8_t opt2 = menuRun(opt_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)  Config::thumbsEnabled = 1;
+                                                else            Config::thumbsEnabled = 0;
+
+                                                menu_curopt = opt2;
+
+                                                if (Config::thumbsEnabled != prev_opt) Config::save("thumbsEnabled");
+
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (opt2==4)
+                                    {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+
+                                        while (1){
+                                            string opt_menu = MENU_UI_OPT[Config::lang];
+                                            opt_menu += MENU_YESNO[Config::lang];
+                                            bool prev_opt = Config::instantPreview;
+                                            if (prev_opt) {
+                                                menu_curopt = 1;
+                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
+                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                            } else {
+                                                menu_curopt = 2;
+                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
+                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                            }
+
+                                            uint8_t opt2 = menuRun(opt_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)  Config::instantPreview = 1;
+                                                else            Config::instantPreview = 0;
+
+                                                menu_curopt = opt2;
+
+                                                if (Config::instantPreview != prev_opt) Config::save("instantPreview");
 
                                                 menu_saverect = false;
                                             } else {
@@ -6860,11 +7055,15 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
     bool mode_E = false;
 
-    int displayeLimit = maxSize > maxDisplaySize ? maxDisplaySize : maxSize;
+    int displayLimit = maxSize > maxDisplaySize ? maxDisplaySize : maxSize;
+
+    int cursor_pos = inputValue.size();
+
+    size_t pos_begin = 0;
 
     while (1) {
 
-        if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
+        if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(ZXKDBREAD_MODEINPUT);
 
         ESPectrum::readKbdJoy();
 
@@ -6874,65 +7073,116 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
             if(!Nextkey.down) continue;
 
-            int ascii = VirtualKey2ASCII(Nextkey, &mode_E);
+            if (Nextkey.vk == fabgl::VK_LEFT) {
+                if (cursor_pos > 0) cursor_pos--;
+                continue;
+            } else
+            if (Nextkey.vk == fabgl::VK_RIGHT) {
+                if (cursor_pos < inputValue.size()) cursor_pos++;
+                continue;
+            } else
+            if (Nextkey.vk == fabgl::VK_HOME) {
+                cursor_pos = 0;
+                continue;
+            } else
+            if (Nextkey.vk == fabgl::VK_END) {
+                cursor_pos = inputValue.size();
+                continue;
+            } else {
+                int ascii = VirtualKey2ASCII(Nextkey, &mode_E);
 
-            size_t charfilterpos = filterchars.find(ascii);
+                size_t charfilterpos = filterchars.find(ascii);
 
-            if ( ascii &&
-                    (
-                        ( filterbehavior == FILTER_FORBIDDEN && charfilterpos != std::string::npos ) ||
-                        ( filterbehavior == FILTER_ALLOWED && charfilterpos == std::string::npos )
+                if ( ascii &&
+                        (
+                            ( filterbehavior == FILTER_FORBIDDEN && charfilterpos != std::string::npos ) ||
+                            ( filterbehavior == FILTER_ALLOWED && charfilterpos == std::string::npos )
+                        )
                     )
-                )
-            {
-//                OSD::osdCenteredMsg(OSD_INVALIDCHAR[Config::lang], LEVEL_WARN);
-                ascii = 0;
-            }
-
-            if ( ascii && inputValue.length() < maxSize ) {
-                inputValue += char(ascii);
-                click();
-                mode_E = false;
-
-            } else
-            if (Nextkey.vk == fabgl::VK_BACKSPACE) {
-                if (inputValue != "") inputValue.pop_back();
-                click();
-
-            } else
-            if (Nextkey.vk == fabgl::VK_RETURN) {
-                click();
-                if ( result_flags ) *result_flags = 0;
-                if ( default_value != "" && inputValue == default_value ) {
-                    if ( result_flags ) *result_flags = 1;
-                    return "";
+                {
+    //                OSD::osdCenteredMsg(OSD_INVALIDCHAR[Config::lang], LEVEL_WARN);
+                    ascii = 0;
                 }
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
-                return inputValue;
 
-            } else
-            if (Nextkey.vk == fabgl::VK_ESCAPE) {
-                click();
-                break;
+                if ( ascii && inputValue.length() < maxSize ) {
+                    inputValue = inputValue.substr(0,cursor_pos) + char(ascii) + inputValue.substr(cursor_pos);
+                    cursor_pos++;
+                    click();
+                    mode_E = false;
 
+                } else
+                if (Nextkey.vk == fabgl::VK_BACKSPACE) {
+                    if (cursor_pos > 0) {
+                        inputValue = inputValue.substr(0,cursor_pos - 1) + inputValue.substr(cursor_pos);
+                        cursor_pos--;
+                    }
+                    click();
+
+                } else
+                if (Nextkey.vk == fabgl::VK_RETURN) {
+                    click();
+                    if ( result_flags ) *result_flags = 0;
+                    if ( default_value != "" && inputValue == default_value ) {
+                        if ( result_flags ) *result_flags = 1;
+                        return "";
+                    }
+                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
+                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
+                    return inputValue;
+
+                } else
+                if (Nextkey.vk == fabgl::VK_ESCAPE) {
+                    click();
+                    break;
+
+                }
             }
-
         }
 
         if ((++CursorFlash & 0xF) == 0) {
+            // Determina el texto visible basado en la posición del cursor
+            if (cursor_pos < pos_begin) {
+                // Si el cursor se mueve antes del inicio actual, ajusta el inicio
+                pos_begin = cursor_pos;
+            } else
+            if (cursor_pos - pos_begin >= displayLimit) {
+                // Si el cursor está más allá del límite visible, ajusta el inicio
+                pos_begin = cursor_pos - displayLimit;
+            }
+
+            // Calcula el segmento visible del texto
+            std::string visibleText = inputValue.substr(pos_begin, displayLimit);
+
+            // Imprime la etiqueta
             menuAt(y, x);
             VIDEO::vga.setTextColor(ink_color, paper_color);
-//            VIDEO::vga.print((inputLabel + inputValue).c_str());
-            VIDEO::vga.print( ( inputLabel + ( inputValue.size() > displayeLimit ? inputValue.substr( inputValue.size() - displayeLimit) : inputValue ) ).c_str() );
+            VIDEO::vga.print(inputLabel.c_str());
 
-            if (CursorFlash > 63) {
-                VIDEO::vga.setTextColor(paper_color, ink_color);
-                if (CursorFlash == 128) CursorFlash = 0;
+            // Imprime el primer segmento del texto hasta el cursor
+            size_t relativeCursorPos = cursor_pos - pos_begin;
+            if (relativeCursorPos > 0) {
+                VIDEO::vga.print(visibleText.substr(0, relativeCursorPos).c_str());
             }
-            VIDEO::vga.print(mode_E?"E":"L");
+
+            // Configura el color del cursor si está activo
+            if (CursorFlash > 63) VIDEO::vga.setTextColor(paper_color, ink_color);
+            if (CursorFlash == 128) CursorFlash = 0;
+
+            // Imprime el cursor
+            VIDEO::vga.print(mode_E ? "E" : "L");
+
+            // Restaura color texto
             VIDEO::vga.setTextColor(ink_color, paper_color);
-            if ( inputValue.size() < displayeLimit ) VIDEO::vga.print(string( displayeLimit - inputValue.size() , ' ').c_str());
+
+            // Imprime el resto del texto después del cursor
+            if (relativeCursorPos < visibleText.size()) {
+                VIDEO::vga.print(visibleText.substr(relativeCursorPos).c_str());
+            }
+
+            // Rellena el espacio restante si el texto visible es menor al límite
+            if (visibleText.size() < displayLimit) {
+                VIDEO::vga.print(std::string(displayLimit - visibleText.size(), ' ').c_str());
+            }
 
         }
 

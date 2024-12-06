@@ -65,58 +65,6 @@ RowScrollContext OSD::fdRowScrollCTX;
 uint8_t OSD::fdCursorFlash;
 bool OSD::fdSearchRefresh;
 
-void OSD::restoreBackbufferData(bool force) {
-    if ( !SaveRectpos ) return;
-    if (menu_saverect || force) {
-        printf("--- OSD::restoreBackbufferData %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
-
-        uint16_t w = VIDEO::SaveRect[--SaveRectpos] >> 16;
-        uint16_t h = VIDEO::SaveRect[SaveRectpos] & 0xffff;
-
-        uint16_t x = VIDEO::SaveRect[--SaveRectpos] >> 16;
-        uint16_t y = VIDEO::SaveRect[SaveRectpos] & 0xffff;
-
-        SaveRectpos -= ( ( ( ( x + w ) >> 2 ) + 1 ) - ( x >> 2 ) ) * h;
-
-        uint32_t j = SaveRectpos;
-
-        printf("OSD::restoreBackbufferData x=%hd y=%hd w=%hd h=%hd\n", x, y, w, h );
-
-        for (uint32_t m = y; m < y + h; m++) {
-            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
-            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
-                backbuffer32[n] = VIDEO::SaveRect[j++];
-            }
-        }
-        printf("OSD::restoreBackbufferData exit %d 0x%x j:%d 0x%x\n", SaveRectpos, SaveRectpos * 4, j, j * 4);
-//        if ( !force )
-        menu_saverect = false;
-    }
-}
-
-void OSD::saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool force) {
-
-    if ( force || menu_saverect ) {
-        printf("OSD::saveBackbufferData x=%hd y=%hd w=%hd h=%hd pos=%d 0x%x\n", x, y, w, h, SaveRectpos, SaveRectpos * 4);
-
-        for (uint32_t m = y; m < y + h; m++) {
-            uint32_t *backbuffer32 = (uint32_t *)(VIDEO::vga.frameBuffer[m]);
-            for (uint32_t n = x >> 2; n < ( ( x + w ) >> 2 ) + 1; n++) {
-                VIDEO::SaveRect[SaveRectpos++] = backbuffer32[n];
-            }
-        }
-
-        VIDEO::SaveRect[SaveRectpos++] = ( x << 16 ) | y;
-        VIDEO::SaveRect[SaveRectpos++] = ( w << 16 ) | h;
-
-        printf("OSD::saveBackbufferData exit %d 0x%x\n", SaveRectpos, SaveRectpos * 4);
-    }
-}
-
-void OSD::saveBackbufferData(bool force) {
-    OSD::saveBackbufferData(x, y, w, h, force);
-}
-
 // Función para convertir una cadena de dígitos en un número
 // se agrega esta funcion porque atoul crashea si no hay digitos en el buffer
 unsigned long getLong(char *buffer) {
@@ -148,7 +96,14 @@ void OSD::fd_StatusbarDraw(const string& statusbar, bool fdMode) {
 // Run a new file menu
 string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows) {
 
+    bool scr_loaded = false;
+
+    int screen_number = 0;
+    off_t screen_offset = 0;
+
     string lastFile = "";
+    int last_screen_number = 0;
+    off_t last_screen_offset = 0;
 
     // struct stat stat_buf;
     long dirfilesize;
@@ -183,7 +138,8 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
         y += (Config::aspect_16_9 ? OSD_FONT_H : OSD_FONT_H) + (4 /*8*/ * (menu_level - 1));
     }
 
-    bool thumb_enabled = menu_level == 0 && (ftype == DISK_TAPFILE || ftype == DISK_SNAFILE);
+    bool is_scr = menu_level == 0 && ftype == DISK_SCRFILE;
+    bool thumb_enabled = menu_level == 0 && (((ftype == DISK_TAPFILE || ftype == DISK_SNAFILE) && Config::thumbsEnabled) || is_scr);
 
     // Adjust dialog size if needed
     w = (cols * OSD_FONT_W) + 2;
@@ -241,7 +197,7 @@ reset:
 
     // Draw shortcut help
     string StatusBar = "";
-    if ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) { // Dirty hack
+    if (ftype == DISK_TAPFILE || ftype == DISK_SNAFILE) { // Dirty hack
         if (ZXKeyb::Exists) {
             StatusBar += Config::lang == 0 ? "N: New | " :
                          Config::lang == 1 ? "N: Nuevo | " :
@@ -252,11 +208,11 @@ reset:
                                              "F2: Novo | " ;
         }
 
-        if ( ftype == DISK_SNAFILE ) {
+        if (ftype == DISK_SNAFILE) {
             if (ZXKeyb::Exists) {
-                StatusBar += Config::lang == 0 ? "S+N: New w/ROM | " :
-                             Config::lang == 1 ? "S+N: Nuevo c/ROM | " :
-                                                 "S+N: Novo c/ROM | ";
+                StatusBar += Config::lang == 0 ? "CS+N: New w/ROM | " :
+                             Config::lang == 1 ? "CS+N: Nuevo c/ROM | " :
+                                                 "CS+N: Novo c/ROM | ";
             } else {
                 StatusBar += Config::lang == 0 ? "S+F2: New w/ROM | " :
                              Config::lang == 1 ? "S+F2: Nuevo c/ROM | " :
@@ -274,6 +230,30 @@ reset:
         StatusBar += Config::lang == 0 ? "F3: Search | F8: Delete" :
                      Config::lang == 1 ? "F3: Buscar | F8: Borrar" :
                                          "F3: Procurar | F8: Excluir" ;
+    }
+
+    if ( thumb_enabled && !is_scr ) {
+        if ( ftype == DISK_TAPFILE ) {
+            if (ZXKeyb::Exists) {
+                StatusBar += Config::lang == 0 ? " | CS+\x1B\x1A: Change SCR | Z/X/C/V: SCR offset" :
+                             Config::lang == 1 ? " | CS+\x1B\x1A: Cambiar SCR | Z/X/C/V: Centrar SCR" :
+                                                 " | CS+\x1B\x1A: Cambiar SCR | Z/X/C/V: Centralizar SCR";
+            } else {
+                StatusBar += Config::lang == 0 ? " | S+\x1B\x1A: Change SCR | CTRL+\x1B\x19\x18\x1A: SCR offset" :
+                             Config::lang == 1 ? " | S+\x1B\x1A: Cambiar SCR | CTRL+\x1B\x19\x18\x1A: Centrar SCR" :
+                                                 " | S+\x1B\x1A: Cambiar SCR | CTRL+\x1B\x19\x18\x1A: Centralizar SCR";
+            }
+        }
+
+        if (ZXKeyb::Exists) {
+            StatusBar += Config::lang == 0 ? " | G: Save SCR" :
+                         Config::lang == 1 ? " | G: Guarda SCR" :
+                                             " | G: Salvar SCR";
+        } else {
+            StatusBar += Config::lang == 0 ? " | PtrScr: Save SCR" :
+                         Config::lang == 1 ? " | PtrScr: Guarda SCR" :
+                                             " | PtrScr: Salvar SCR";
+        }
     }
 
     while(1) {
@@ -441,6 +421,8 @@ reset:
         fabgl::VirtualKeyItem Menukey;
         const string fat32forbidden="\\/:*?\"<>|\x7F"; // Characters not valid for FAT32 filenames
 
+        int idle = 0;
+
         while (1) {
 
             if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
@@ -449,6 +431,8 @@ reset:
 
             // Process external keyboard
             if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+
+                idle = 0;
 
                 ResetRowScrollContext(fdRowScrollCTX);
 
@@ -536,7 +520,7 @@ reset:
 
                     } else if (Menukey.vk == fabgl::VK_F2 && ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) ) {  // Dirty hack
 
-                        bool save_withrom = Menukey.CTRL;
+                        bool save_withrom = Menukey.SHIFT;
 
                         string new_tap = OSD::input( 1, h/OSD_FONT_H-1, Config::lang == 0 ? "Name: " :
                                                                         Config::lang == 1 ? "Nomb: " :
@@ -556,7 +540,7 @@ reset:
 
                             string ext;
                             if ( ftype == DISK_TAPFILE ) ext = ".tap";
-                            else if ( FileUtils::hasZ80extension(new_tap) || FileUtils::hasSNAextension(new_tap) || FileUtils::hasExtension(new_tap, "sp") ) {
+                            else if ( FileUtils::hasExtension(new_tap,"z80") || FileUtils::hasExtension(new_tap,"sna") || FileUtils::hasExtension(new_tap, "sp") ) {
                                 ext = "";
                             } else
                                 ext = ".sna";
@@ -600,6 +584,33 @@ reset:
 
                         click();
 
+                    } else if (Menukey.CTRL && Menukey.vk == fabgl::VK_LEFT) {
+                        if (thumb_enabled && !is_scr && ftype == DISK_TAPFILE && screen_offset > -256) screen_offset--;
+                    } else if (Menukey.CTRL && Menukey.vk == fabgl::VK_RIGHT) {
+                        if (thumb_enabled && !is_scr && ftype == DISK_TAPFILE && screen_offset < 256) screen_offset++;
+                    } else if (Menukey.CTRL && Menukey.vk == fabgl::VK_UP) {
+                        if (thumb_enabled && !is_scr && ftype == DISK_TAPFILE && screen_offset > -256 + 32) screen_offset-=32;
+                    } else if (Menukey.CTRL && !is_scr && Menukey.vk == fabgl::VK_DOWN) {
+                        if (thumb_enabled && !is_scr && ftype == DISK_TAPFILE && screen_offset < 256 - 32) screen_offset+=32;
+                    } else if (Menukey.SHIFT && !is_scr && Menukey.vk == fabgl::VK_LEFT) {
+                        if (thumb_enabled && screen_number > 0) screen_number--;
+                    } else if (Menukey.SHIFT && !is_scr && Menukey.vk == fabgl::VK_RIGHT) {
+                        if (thumb_enabled) screen_number++;
+                    } else if (Menukey.SHIFT && Menukey.vk == fabgl::VK_PRINTSCREEN) {
+                        CaptureToBmp();
+                    } else if (Menukey.vk == fabgl::VK_PRINTSCREEN) {
+                        if (thumb_enabled && scr_loaded && !is_scr) {
+                            string _fname = lastFile;
+                            rtrim(_fname);
+                            OSD::saveSCR((FileUtils::MountPoint+fdir+_fname).c_str(), (uint32_t *) VIDEO::SaveRect);
+                            screen_offset = 0;
+                            screen_number = 0;
+                            VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/4);
+                            VIDEO::vga.print(" ");
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols*3/4);
+                            VIDEO::vga.print(" ");
+                        }
                     } else if (Menukey.vk == fabgl::VK_F8) {
                         click();
 
@@ -749,7 +760,7 @@ reset:
 
                             // if ((Menukey.CTRL && Menukey.vk == fabgl::VK_RETURN) || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C) return "S" + filedir;
 
-                            return "R" + filedir;
+                            return (is_scr && !scr_loaded) ? "" : "R" + filedir;
 
                         }
 
@@ -767,19 +778,28 @@ reset:
 
             } else {
                 fd_PrintRow(FileUtils::fileTypes[ftype].focus, IS_FOCUSED);
-                if (thumb_enabled) {
+                if (thumb_enabled && (idle > 20 || Config::instantPreview)) {
                     string _fname = rowGet(menu,FileUtils::fileTypes[ftype].focus);
 
                     if (lastFile != _fname) {
-                        bool clsPreview = false;
+                        screen_number = 0;
+                        screen_offset = 0;
+                        scr_loaded = false;
+                    }
+
+                    if (lastFile != _fname || screen_number != last_screen_number || screen_offset != last_screen_offset) {
+                        int retPreview;
                         lastFile = _fname;
+                        last_screen_number = screen_number;
+                        last_screen_offset = screen_offset;
                         if (_fname[0] != ' ') {
                             rtrim(_fname);
-                            clsPreview = OSD::renderScreen(x+(w/2)-128/2, y+1+mf_rows*OSD_FONT_H, (FileUtils::MountPoint+fdir+_fname).c_str());
+                            retPreview = OSD::renderScreen(x+(w/2)-128/2, y+1+mf_rows*OSD_FONT_H, (FileUtils::MountPoint+fdir+_fname).c_str(), screen_number, &screen_offset);
                         } else {
-                            clsPreview = true;
+                            retPreview = RENDER_PREVIEW_ERROR;
                         }
-                        if (clsPreview) {
+
+                        if (retPreview == RENDER_PREVIEW_ERROR) {
                             for (int r = row; r < h/OSD_FONT_H-1; r++) {
                                 VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
                                 menuAt(r, 0);
@@ -791,9 +811,28 @@ reset:
                             menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2 - no_preview_txt.length()/2);
                             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
                             VIDEO::vga.print(no_preview_txt.c_str());
+                            scr_loaded = false;
+                        } else if (retPreview == RENDER_PREVIEW_OK) {
+                            VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/4);
+                            VIDEO::vga.print((screen_number > 0)?"<":" ");
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols*3/4);
+                            VIDEO::vga.print(" ");
+                            scr_loaded = true;
+                        } else if (retPreview == RENDER_PREVIEW_OK_MORE) {
+                            VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/4);
+                            VIDEO::vga.print((screen_number > 0)?"<":" ");
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols*3/4);
+                            VIDEO::vga.print(">");
+                            scr_loaded = true;
+                        } else if (retPreview == RENDER_PREVIEW_REQUEST_NO_FOUND) {
+                            if (screen_number > 0) screen_number--;
+                            else scr_loaded = false;
                         }
                     }
                 }
+                idle++;
             }
 
             if (FileUtils::fileTypes[ftype].fdMode) {

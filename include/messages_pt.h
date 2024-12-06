@@ -112,6 +112,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_CHT_TITLE_PT "Escolha o arq. de cheats"
 
+#define MENU_SCR_TITLE_PT "Escolha o arq. .SCR"
+
 #define MENU_DELETE_TAP_BLOCKS_PT "Excluir sele\x87\x84o"
 
 #define MENU_DELETE_CURRENT_TAP_BLOCK_PT "Excluir bloco"
@@ -189,7 +191,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Tela\t>\n"\
     "Outros\t>\n"\
     "Idioma\t>\n"\
-    "OSD\t>\n"
+    "Interface do Usu\xA0rio\t>\n"
 
 #define MENU_UPDATE_PT \
     "Atualizar\n"\
@@ -316,8 +318,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
 
-#define MENU_OSD_PT "OSD\n"\
+#define MENU_UI_PT "Interface do Usu\xA0rio\n"\
     "Menu com setas\t>\n"\
-    "Rota\x87\x84o do texto\t>\n"
+    "Rota\x87\x84o do texto\t>\n"\
+    "Miniaturas\t>\n"\
+    "Tela instant\x83nea\t>\n"
 
 #endif // ESPECTRUM_MESSAGES_PT_h

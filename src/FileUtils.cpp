@@ -67,15 +67,17 @@ string FileUtils::TAP_Path = "/"; // DISK_TAP_DIR; // Current path on the SD (fo
 string FileUtils::DSK_Path = "/"; // DISK_DSK_DIR; // Current path on the SD (for future folder support)
 string FileUtils::ROM_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
 string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
-string FileUtils::CHT_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
+string FileUtils::CHT_Path = "/"; // DISK_CHR_DIR; // Current path on the SD (for future folder support)
+string FileUtils::SCR_Path = "/"; // DISK_SCR_DIR; // Current path on the SD (for future folder support)
 
-DISK_FTYPE FileUtils::fileTypes[6] = {
+DISK_FTYPE FileUtils::fileTypes[] = {
     {"sna,z80,sp,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
     {"rom",".r",2,2,0,""},
     {"esp",".e",2,2,0,""},
-    {"pok",".c.idx",2,2,0,""}
+    {"pok",".c.idx",2,2,0,""},
+    {"scr",".scr.idx",2,2,0,""}
 };
 
 string toLower(const std::string& str) {
@@ -591,30 +593,6 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
 
 bool FileUtils::hasExtension(string filename, string extension) {
     return ( getLCaseExt(filename) == toLower(extension) );
-}
-
-bool FileUtils::hasSNAextension(string filename) {
-    return ( getLCaseExt(filename) == "sna" );
-}
-
-bool FileUtils::hasZ80extension(string filename) {
-    return ( getLCaseExt(filename) == "z80" );
-}
-
-bool FileUtils::hasPextension(string filename) {
-    return ( getLCaseExt(filename) == "p" );
-}
-
-bool FileUtils::hasTAPextension(string filename) {
-    return ( getLCaseExt(filename) == "tap" );
-}
-
-bool FileUtils::hasTZXextension(string filename) {
-    return ( getLCaseExt(filename) == "tzx" );
-}
-
-bool FileUtils::hasPOKextension(string filename) {
-    return ( getLCaseExt(filename) == "pok" );
 }
 
 void FileUtils::deleteFilesWithExtension(const char *folder_path, const char *extension) {

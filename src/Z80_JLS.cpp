@@ -4643,7 +4643,7 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
                     struct stat stat_buf;
                     if ( /*Tape::tapeSaveName == "" || Tape::tapeSaveName == "none" ||*/
                          !Tape::tape || // Check if exists a tap opened
-                         !FileUtils::hasTAPextension(Tape::tapeSaveName) || // check if file is tap
+                         !FileUtils::hasExtension(Tape::tapeSaveName, "tap") || // check if file is tap
                          stat(Tape::tapeSaveName.c_str(), &stat_buf) // check if exists and if SD is present
                     ) {
                         OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
