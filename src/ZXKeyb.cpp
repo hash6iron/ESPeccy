@@ -168,7 +168,6 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
             else if ((!bitRead(ZXcols[7], 0)) || (!bitRead(ZXcols[4], 1))) injectKey = fabgl::VK_ESCAPE; // BREAK -> ESCAPE
             else if (!bitRead(ZXcols[3], 4)) injectKey = fabgl::VK_LEFT; // 5 -> PGUP
             else if (!bitRead(ZXcols[4], 2)) injectKey = fabgl::VK_RIGHT; // 8 -> PGDOWN
-            else if (!bitRead(ZXcols[7], 4)) { shift_down = true; injectKey = fabgl::VK_PRINTSCREEN; } // B -> BMP CAPTURE
             else if (!bitRead(ZXcols[1], 4)) injectKey = fabgl::VK_PRINTSCREEN; // G -> USE THIS SCR
             else if (!bitRead(ZXcols[5], 0)) injectKey = fabgl::VK_PAUSE; // P -> PAUSE
             else if (!bitRead(ZXcols[7], 3)) injectKey = fabgl::VK_F2; // N -> NUEVO / RENOMBRAR
@@ -210,6 +209,8 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
         else if (mode == ZXKDBREAD_MODEKBDLAYOUT) {
                  if (!bitRead(ZXcols[6], 0)) injectKey = fabgl::VK_RETURN; // ENTER
             else if (!bitRead(ZXcols[0], 0) && !bitRead(ZXcols[7], 0) && bitRead(ZXcols[7], 1)) injectKey = fabgl::VK_ESCAPE; // CS + SPACE && !SS -> ESCAPE
+        } else {
+            if (!bitRead(ZXcols[0], 0) && !bitRead(ZXcols[7], 1) && !bitRead(ZXcols[7], 4)) { shift_down = true; injectKey = fabgl::VK_PRINTSCREEN; } // CS + SS + B -> BMP CAPTURE
         }
 
         if (injectKey == fabgl::VK_NONE) {
