@@ -197,12 +197,12 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
             }
 
                  if (!bitRead(ZXcols[6], 0) && bitRead(ZXcols[7], 1)) injectKey = fabgl::VK_RETURN; // ENTER + !SS
-            else if (!bitRead(ZXcols[4], 3)) injectKey = fabgl::VK_END; // 7 -> END
-            else if (!bitRead(ZXcols[4], 4)) injectKey = fabgl::VK_HOME; // 6 -> HOME
-            else if (!bitRead(ZXcols[3], 4)) injectKey = fabgl::VK_LEFT; // 5 -> LEFT
-            else if (!bitRead(ZXcols[4], 2)) injectKey = fabgl::VK_RIGHT; // 8 -> RIGHT
             else if (!bitRead(ZXcols[0], 0)) { // CS
-                     if (!bitRead(ZXcols[4], 0)) injectKey = fabgl::VK_BACKSPACE; // CS + 0 -> BACKSPACE
+                     if (!bitRead(ZXcols[4], 3)) injectKey = fabgl::VK_END; // 7 -> END
+                else if (!bitRead(ZXcols[4], 4)) injectKey = fabgl::VK_HOME; // 6 -> HOME
+                else if (!bitRead(ZXcols[3], 4)) injectKey = fabgl::VK_LEFT; // 5 -> LEFT
+                else if (!bitRead(ZXcols[4], 2)) injectKey = fabgl::VK_RIGHT; // 8 -> RIGHT
+                else if (!bitRead(ZXcols[4], 0)) injectKey = fabgl::VK_BACKSPACE; // CS + 0 -> BACKSPACE
                 else if (!bitRead(ZXcols[7], 0) && bitRead(ZXcols[7], 1)) injectKey = fabgl::VK_ESCAPE; // CS + SPACE && !SS -> ESCAPE
             }
         }

@@ -229,6 +229,11 @@ void OSD::WindowDraw() {
     // Menu border
     VIDEO::vga.rect(x, y, w, h, zxColor(0, 0));
 
+    // Title Background
+    for (uint8_t i = 0; i < OSD_FONT_H; ++i) {
+        VIDEO::vga.line(x, y + i + 1, x + w - 1, y + i + 1, zxColor(0, 0));
+    }
+
     // Title
     PrintRow(0, IS_TITLE);
 
@@ -721,6 +726,236 @@ unsigned short OSD::simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy,
                 }
             }
         }
+
+        vTaskDelay(5 / portTICK_PERIOD_MS);
+
+    }
+
+}
+
+// Run a new menu slot with preview (dirty)
+short OSD::menuSlotsWithPreview(const string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) ) {
+
+    if (menu_level != 0) return 0; // only menu_level 0
+
+    fabgl::VirtualKeyItem Menukey;
+
+    menu = new_menu;
+
+    // CRT Overscan compensation
+    if (Config::videomode == 2) {
+        x = 0;
+        if (Config::arch[0] == 'T' && Config::ALUTK == 2) {
+            y = Config::aspect_16_9 ? OSD_FONT_H * 2 : OSD_FONT_H;
+        } else {
+            y = OSD_FONT_H * 3;
+        }
+    } else {
+        x = 0;
+        y = 0;
+    }
+
+    // Position
+    x += (Config::aspect_16_9 ? OSD_FONT_W * 4 : OSD_FONT_W * 3);
+    y += OSD_FONT_H;
+
+    // Rows
+    real_rows = rowCount(menu);
+    virtual_rows = (real_rows > MENU_MAX_ROWS ? MENU_MAX_ROWS : real_rows);
+
+// printf("Cols final: %d\n",cols);
+
+    cols = scrW / OSD_FONT_W - 6 - ( 128 / OSD_FONT_W + 1 );
+
+    // Size
+    w = (cols * OSD_FONT_W) + 2 + 128;
+    h = ((virtual_rows + (statusbar!=""?1:0) ) * OSD_FONT_H) + 2;
+
+    int rmax = scrW == 320 ? 52 : 55;
+    if ( x + cols * OSD_FONT_W > rmax * OSD_FONT_W ) x = ( rmax - cols ) * OSD_FONT_W;
+
+    WindowDraw(); // Draw menu outline
+
+    // Scrollbar Background (don't worry about update or scroll)
+    for (uint8_t i = h - OSD_FONT_H - 1; i < h - 2; ++i) {
+        VIDEO::vga.line(x + 1, y + i + 1, x + w - 2, y + i + 1, zxColor(5, 0));
+    }
+
+    if (!use_current_menu_state) {
+        begin_row = 1;
+        focus = menu_curopt;
+        last_begin_row = last_focus = 0;
+    }
+
+    menuRedraw(); // Draw menu content
+
+    ResetRowScrollContext(statusBarScrollCTX);
+
+    if ( statusbar != "" ) statusbarDraw(statusbar);
+
+    int idle = 0;
+    string lastFile = "";
+
+    while (1) {
+
+        if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
+
+        ESPectrum::readKbdJoy();
+
+        // Process external keyboard
+        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPectrum::readKbd(&Menukey)) {
+                if (!Menukey.down) continue;
+                if (proc_cb) {
+                    int retcb = proc_cb(Menukey);
+                    // 0 = stop this key process (stop propagation)
+                    // 1 = continue process
+                    // else return with callback return result
+                    if (!retcb) continue;
+                    if (retcb != 1) {
+                        if (menu_level!=0) OSD::restoreBackbufferData(true);
+                        use_current_menu_state = false;
+                        return retcb;
+                    }
+                }
+                if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
+                    if (focus == 1 and begin_row > 1) {
+                        menuScroll(DOWN);
+                    } else {
+                        last_focus = focus;
+                        focus--;
+                        if (focus < 1) {
+                            focus = virtual_rows - 1;
+                            last_begin_row = begin_row;
+                            begin_row = real_rows - virtual_rows + 1;
+                            menuRedraw();
+                            menuPrintRow(focus, IS_FOCUSED);
+                        }
+                        else {
+                            menuPrintRow(focus, IS_FOCUSED);
+                            menuPrintRow(last_focus, IS_NORMAL);
+                        }
+                    }
+                    click();
+                } else if (Menukey.vk == fabgl::VK_DOWN || Menukey.vk == fabgl::VK_JOY1DOWN || Menukey.vk == fabgl::VK_JOY2DOWN) {
+                    if (focus == virtual_rows - 1 && virtual_rows + begin_row - 1 < real_rows) {
+                        menuScroll(UP);
+                    } else {
+                        last_focus = focus;
+                        focus++;
+                        if (focus > virtual_rows - 1) {
+                            focus = 1;
+                            last_begin_row = begin_row;
+                            begin_row = 1;
+                            menuRedraw();
+                            menuPrintRow(focus, IS_FOCUSED);
+                        }
+                        else {
+                            menuPrintRow(focus, IS_FOCUSED);
+                            menuPrintRow(last_focus, IS_NORMAL);
+                        }
+                    }
+                    click();
+                } else if (Menukey.vk == fabgl::VK_PAGEUP || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
+                    if (begin_row > virtual_rows) {
+                        focus = 1;
+                        begin_row -= virtual_rows - 1;
+                    } else {
+                        focus = 1;
+                        begin_row = 1;
+                    }
+                    menuRedraw();
+                    click();
+                } else if (Menukey.vk == fabgl::VK_PAGEDOWN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 0)) || Menukey.vk == fabgl::VK_JOY1RIGHT || Menukey.vk == fabgl::VK_JOY2RIGHT) {
+                    if (real_rows - begin_row - virtual_rows > virtual_rows) {
+                        focus = 1;
+                        begin_row += virtual_rows - 1;
+                    } else {
+                        focus = virtual_rows - 1;
+                        begin_row = real_rows - virtual_rows + 1;
+                    }
+                    menuRedraw();
+                    click();
+                } else if (Menukey.vk == fabgl::VK_HOME) {
+                    focus = 1;
+                    begin_row = 1;
+                    menuRedraw();
+                    click();
+                } else if (Menukey.vk == fabgl::VK_END) {
+                    focus = virtual_rows - 1;
+                    begin_row = real_rows - virtual_rows + 1;
+                    menuRedraw();
+                    click();
+                } else if (Menukey.vk == fabgl::VK_RETURN || ((Menukey.vk == fabgl::VK_RIGHT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C) {
+                    click();
+                    menu_prevopt = menuRealRowFor(focus);
+                    use_current_menu_state = false;
+                    return menu_prevopt;
+                } else if (Menukey.vk == fabgl::VK_ESCAPE || ((Menukey.vk == fabgl::VK_LEFT) && (Config::osd_LRNav == 1)) || Menukey.vk == fabgl::VK_F1 || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A) {
+                    if (menu_level!=0) OSD::restoreBackbufferData(true);
+                    click();
+                    use_current_menu_state = false;
+                    return 0;
+                }
+            }
+        } else {
+            // menuPrintRow(focus, IS_FOCUSED);
+            if (idle > 20 || Config::instantPreview) {
+                uint8_t slotnumber = menuRealRowFor(focus);
+
+                char persistfname[sizeof(DISK_PSNA_FILE) + 7];
+
+                sprintf(persistfname, DISK_PSNA_FILE "%u.sna",slotnumber);
+
+                string _fname = FileUtils::MountPoint + DISK_PSNA_DIR + "/" + persistfname;
+
+                if (lastFile != _fname ) {
+                    int retPreview;
+                    lastFile = _fname;
+                    if (_fname[0] != ' ') {
+                        rtrim(_fname);
+                        retPreview = OSD::renderScreen(x + w - 128 - 1, y + 1 + OSD_FONT_H, _fname.c_str(), 0);
+
+                        // fix issue render overlap (antialiasing issue)
+                        VIDEO::vga.line(x + w - 1 - 128, y + h - 1 - OSD_FONT_H, x + w - 2, y + h - 1 - OSD_FONT_H, zxColor(5, 0));
+
+                    } else {
+                        retPreview = RENDER_PREVIEW_ERROR;
+                    }
+
+                    if (retPreview == RENDER_PREVIEW_ERROR) {
+                        // Clean Preview Area
+                        for (uint8_t i = 0; i < 192 / 2; ++i) {
+                            VIDEO::vga.line(x + w - 128 - 1,
+                                            y + i + OSD_FONT_H + 1,
+                                            x + w - 2,
+                                            y + i + OSD_FONT_H + 1,
+                                            zxColor(7, 0));
+                        }
+
+                        VIDEO::vga.line(x + w - 1 - 128, y + OSD_FONT_H + 1              ,
+                                        x + w - 2      , y + OSD_FONT_H + 1 + 192 / 2 - 1,
+                                        zxColor(2, 0));
+                        VIDEO::vga.line(x + w - 1 - 128, y + OSD_FONT_H + 1 + 192 / 2 - 1,
+                                        x + w - 2      , y + OSD_FONT_H + 1              ,
+                                        zxColor(2, 0));
+
+                        #if 0
+                        string no_preview_txt = Config::lang == 0 ? "NO PREVIEW AVAILABLE" :
+                                                Config::lang == 1 ? "SIN VISTA PREVIA" :
+                                                                    "TELA N\x8EO DISPON\x8BVEL";
+                        menuAt(2+((h/OSD_FONT_H)-2)/2, ( w / OSD_FONT_W ) + 1 + cols/2 - no_preview_txt.length()/2);
+                        VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
+                        VIDEO::vga.print(no_preview_txt.c_str());
+                        #endif
+                    }
+                }
+            }
+            idle++;
+
+        }
+
+        if ( statusbar != "" ) statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 

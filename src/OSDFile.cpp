@@ -139,7 +139,7 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
     }
 
     bool is_scr = menu_level == 0 && ftype == DISK_SCRFILE;
-    bool thumb_enabled = menu_level == 0 && (((ftype == DISK_TAPFILE || ftype == DISK_SNAFILE) && Config::thumbsEnabled) || is_scr);
+    bool thumb_enabled = menu_level == 0 && (((ftype == DISK_TAPFILE || ftype == DISK_SNAFILE || ftype == DISK_ROMFILE) && Config::thumbsEnabled) || is_scr);
 
     // Adjust dialog size if needed
     w = (cols * OSD_FONT_W) + 2;
@@ -814,16 +814,16 @@ reset:
                             scr_loaded = false;
                         } else if (retPreview == RENDER_PREVIEW_OK) {
                             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
-                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/4);
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2-(128/OSD_FONT_W)/2-3);
                             VIDEO::vga.print((screen_number > 0)?"<":" ");
-                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols*3/4);
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2+(128/OSD_FONT_W)/2+2);
                             VIDEO::vga.print(" ");
                             scr_loaded = true;
                         } else if (retPreview == RENDER_PREVIEW_OK_MORE) {
                             VIDEO::vga.setTextColor(zxColor(0, 1), zxColor(7, 0));
-                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/4);
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2-(128/OSD_FONT_W)/2-3);
                             VIDEO::vga.print((screen_number > 0)?"<":" ");
-                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols*3/4);
+                            menuAt(row+((h/OSD_FONT_H)-row)/2, cols/2+(128/OSD_FONT_W)/2+2);
                             VIDEO::vga.print(">");
                             scr_loaded = true;
                         } else if (retPreview == RENDER_PREVIEW_REQUEST_NO_FOUND) {

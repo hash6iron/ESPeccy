@@ -1899,7 +1899,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     menu_level = 0;
                     // menu_saverect = true;
                     menu_saverect = false;
-                    string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, 51, 12);
+                    string mFile = fileDialog(FileUtils::ROM_Path, MENU_ROM_TITLE[Config::lang], DISK_ROMFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
                     if (mFile != "") {
                         if (FileUtils::isSDReady()) {
                             mFile.erase(0, 1);
@@ -2228,7 +2228,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                     "F2: Renomear | F8: Excluir";
                 }
 
-                uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
+                //uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
+                uint8_t opt2 = menuSlotsWithPreview(menuload, statusbar, menuProcessSnapshot);
                 if (opt2 && FileUtils::isSDReady()) {
                     if ( persistLoad(opt2) ) {
                         // Clear Cheat data
@@ -2257,7 +2258,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                     "F2: Renomear | F8: Excluir";
                 }
 
-                uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
+                //uint8_t opt2 = menuRun(menusave, statusbar, menuProcessSnapshotSave);
+                uint8_t opt2 = menuSlotsWithPreview(menusave, statusbar, menuProcessSnapshotSave);
                 if (opt2) {
                     if ( FileUtils::isSDReady() ) if (persistSave(opt2)) return;
                     menu_curopt = opt2;
