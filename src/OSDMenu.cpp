@@ -1470,7 +1470,7 @@ void OSD::menuRedrawCheat(const string title, bool force) {
 int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
     int idx = menuRealRowFor( focus );
 
-    if ( menu_level == 0 && ((Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C)) {
+    if ( menu_level == 0 && ((Menukey.vk == fabgl::VK_LEFT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY2B )) {
         return 0;
 
     } else
@@ -1479,7 +1479,7 @@ int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
         return SHRT_MIN;
 
     } else
-    if (Menukey.vk == fabgl::VK_SPACE && begin_row - 1 + focus < real_rows) {
+    if ((Menukey.vk == fabgl::VK_SPACE || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
         click();
 
         CheatMngr::toggleCheat(idx - 1);
@@ -1502,7 +1502,7 @@ int OSD::menuProcessCheat(fabgl::VirtualKeyItem Menukey) {
         return SHRT_MAX;
 
     } else
-    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1B || Menukey.vk == fabgl::VK_JOY1C || Menukey.vk == fabgl::VK_JOY2B || Menukey.vk == fabgl::VK_JOY2C ) && begin_row - 1 + focus < real_rows) {
+    if ((Menukey.vk == fabgl::VK_RETURN || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1) || Menukey.vk == fabgl::VK_JOY1A || Menukey.vk == fabgl::VK_JOY2A ) && begin_row - 1 + focus < real_rows) {
         click();
 
         Cheat t = CheatMngr::getCheat(idx - 1);

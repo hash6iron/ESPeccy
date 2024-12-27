@@ -961,16 +961,13 @@ int OSD::renderScreen(int x0, int y0, const char* filename, int screen_number, o
 
                 // SNA
                 case SNA_48K_SIZE:
+                case SNA_128K_SIZE1:
                     seekOff = 27;
                     break;
 
                 case SNA_48K_WITH_ROM_SIZE:
-                case SNA_128K_SIZE1:
-                    seekOff = 16411;
-                    break;
-
                 case SNA_128K_SIZE2:
-                    seekOff = 16411+16384;
+                    seekOff = 16411;
                     break;
 
                 // SP
