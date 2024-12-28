@@ -74,7 +74,7 @@ DISK_FTYPE FileUtils::fileTypes[] = {
     {"sna,z80,sp,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
-    {"rom",".r",2,2,0,""},
+    {"bin,rom",".r",2,2,0,""},
     {"esp",".e",2,2,0,""},
     {"pok",".c.idx",2,2,0,""},
     {"scr",".scr.idx",2,2,0,""}
