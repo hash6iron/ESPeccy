@@ -51,11 +51,15 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
     - PS2 keyboard: F2 for VGA mode, F3 for CRT mode.
     - ZX Keyboard: 2 for VGA mode, 3 for CRT mode.
 - Configuration backup/restore feature to SD card.
-
+- Covox sound support.
+- Kempston mouse support with configurable sample rate, DPI, and scaling.
+- Spectrum +2A model support.
+- SCR file support and screen autodetection in tape/snapshot/ROM files.
+- Persistent snapshot screen preview in slots.
 
 ## Work in progress
 
-- +2A/+3 models.
+- +3 models.
 - DSK support.
 
 ## Installing
@@ -233,3 +237,4 @@ Pin assignment in `hardpins.h` is set to match the boards we've tested emulator 
 If you enjoy using **ESPeccy** and would like to show your support, you have the option to make a donation. Thank you for being part of this journey!
 
 [![Donate to this project](https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png)](https://paypal.me/bennugd?country.x=AR&locale.x=es_XC)
+

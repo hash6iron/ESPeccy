@@ -50,11 +50,15 @@ string   Config::arch = "48K";
 string   Config::romSet = "48K";
 string   Config::romSet48 = "48K";
 string   Config::romSet128 = "128K";
+string   Config::romSet2A = "+2A";
+string   Config::romSet3 = "+3";
 string   Config::romSetTK90X = "v1es";
 string   Config::romSetTK95 = "95es";
 string   Config::pref_arch = "48K";
 string   Config::pref_romSet_48 = "48K";
 string   Config::pref_romSet_128 = "128K";
+string   Config::pref_romSet_2A = "+2A";
+string   Config::pref_romSet_3 = "+3";
 string   Config::pref_romSet_TK90X = "v1es";
 string   Config::pref_romSet_TK95 = "95es";
 string   Config::ram_file = NO_RAM_FILE;
@@ -106,7 +110,7 @@ uint16_t Config::joydef[24] = {
 
 uint8_t  Config::joyPS2 = JOY_KEMPSTON;
 uint8_t  Config::AluTiming = 0;
-uint8_t  Config::ps2_dev2 = 0; // Second port PS/2 device: 0 -> None, 1 -> PS/2 keyboard, 2 -> PS/2 Mouse (TO DO)
+uint8_t  Config::ps2_dev2 = 0; // Second port PS/2 device: 0 -> None, 1 -> PS/2 keyboard, 2 -> PS/2 Mouse
 bool     Config::CursorAsJoy = false;
 int8_t   Config::CenterH = 0;
 int8_t   Config::CenterV = 0;
@@ -144,12 +148,18 @@ uint8_t Config::DiskCtrl = 1; // 0 -> None, 1 -> Betadisk
 
 bool Config::TimeMachine = false;
 
+uint8_t Config::Covox = CovoxNONE;
+
 int8_t Config::volume = ESP_VOLUME_DEFAULT;
 
 bool Config::TapeAutoload = false;
 
 bool Config::thumbsEnabled = true;
 bool Config::instantPreview = true;
+
+uint8_t Config::mousesamplerate = 60; // Valid values: 10, 20, 40, 60, 80, 100, and 200
+uint8_t Config::mousedpi = 2; // 0 -> 25dpi, 1 -> 50dpi, 2 -> 100dpi, 3 -> 200dpi
+uint8_t Config::mousescaling = 1; // 1 -> 1:1, 2 -> 1:2
 
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
@@ -262,7 +272,13 @@ ConfigEntry configEntries[] = {
     {"TapeAutoload", CONFIG_TYPE_BOOL, &Config::TapeAutoload},
 
     {"thumbsEnabled", CONFIG_TYPE_BOOL, &Config::thumbsEnabled},
-    {"instantPreview", CONFIG_TYPE_BOOL, &Config::instantPreview}
+    {"instantPreview", CONFIG_TYPE_BOOL, &Config::instantPreview},
+
+    {"Covox", CONFIG_TYPE_UINT8, &Config::Covox},
+
+    {"MouseSampleRate", CONFIG_TYPE_UINT8, &Config::mousesamplerate},
+    {"MouseDPI", CONFIG_TYPE_UINT8, &Config::mousedpi},
+    {"MouseScaling", CONFIG_TYPE_UINT8, &Config::mousescaling}
 
 };
 
@@ -549,6 +565,19 @@ void Config::requestMachine(string newArch, string newRomSet) {
         } else if (romSet128 == "ZX81+") {
             MemESP::rom[0] = (uint8_t *) gb_rom_0_s128_zx81;
             MemESP::rom[1] = (uint8_t *) gb_rom_1_sinclair_128k;
+        }
+
+    } else if (arch == "+2A") {
+
+        if (newRomSet=="") romSet = "+2A"; else romSet = newRomSet;
+
+        if (newRomSet=="") romSet2A = "+2A"; else romSet2A = newRomSet;
+
+        if (romSet2A == "+2A") {
+            MemESP::rom[0] = (uint8_t *) gb_rom_0_2A_3_v41;
+            MemESP::rom[1] = (uint8_t *) gb_rom_1_2A_3_v41;
+            MemESP::rom[2] = (uint8_t *) gb_rom_2_2A_3_v41;
+            MemESP::rom[3] = (uint8_t *) gb_rom_3_2A_3_v41;
         }
 
     } else if (arch == "Pentagon") {

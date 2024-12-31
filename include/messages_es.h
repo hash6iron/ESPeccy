@@ -184,21 +184,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Joystick\t>\n"\
     "Emulaci\xA2n joystick\t>\n"\
     "Pantalla\t>\n"\
+    "Rat\xA2n\t>\n"\
+    "Sonido\t>\n"\
     "Otros\t>\n"\
     "Idioma\t>\n"\
     "Interfaz de Usuario\t>\n"
 
 #define MENU_UPDATE_ES \
     "Actualizar\n"\
-	"Firmware\n"\
-	"ROM Custom 48K\n"\
-	"ROM Custom 128k\n"\
-	"ROM Custom TK\n"
+    "Firmware\n"\
+    "ROM Custom 48K\n"\
+    "ROM Custom 128k\n"\
+    "ROM Custom TK\n"
 
 #define MENU_VIDEO_ES \
     "Pantalla\n"\
     "Tipo render\t>\n"\
-	"Resoluci\xA2n\t>\n"\
+    "Resoluci\xA2n\t>\n"\
     "Scanlines\t>\n"
 
 #define MENU_RENDER_ES \
@@ -214,7 +216,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_RESET_ES \
     "Resetear\n"\
     "Reset parcial\n"\
-	"Reset a TR-DOS \t(CF11)\n"\
+    "Reset a TR-DOS \t(CF11)\n"\
     "Reset completo\t(F11)\n"\
     "Resetear ESP32\t(F12)\n"
 
@@ -233,16 +235,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_YESNO_ES "S\xA1\t[Y]\n"\
     "No\t[N]\n"
 
-#define MENU_OTHER_ES "Otros\n"\
+#define MENU_MOUSE_ES "Rat\xA2n\n"\
+    "Tasa de muestreo\t>\n"\
+    "Resoluci\xA2n\t>\n"\
+    "Escalado\t>\n"
+
+#define MENU_SOUND_ES "Sonido\n"\
     "AY en 48K\t>\n"\
+    "Covox\t>\n"
+
+#define MENU_OTHER_ES "Otros\n"\
     "Timing ULA\t>\n"\
     "48K Issue 2\t>\n"\
-	"ULA TK\t>\n"\
+    "ULA TK\t>\n"\
     "Segundo disp. PS/2\t>\n"
 
 #define MENU_KBD2NDPS2_ES "Dispositivo\n"\
     "Nada\t[N]\n"\
-    "Teclado\t[K]\n"
+    "Teclado / Adapt. DB9\t[K]\n"\
+    "Rat\xA2n\t[M]\n"
 
 #define MENU_ALUTIMING_ES "Timing ULA\n"\
     "Early\t[E]\n"\
@@ -251,14 +262,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_ARCH_ES "Elija modelo\n"
 
 #define MENU_ROMS48_ES "Elija ROM\n"\
-	"48K\n"\
+    "48K\n"\
     "48K Espa\xA4ol\n"\
     "Custom\n"
 
 #define MENU_ROMS128_ES "Elija ROM\n"\
-	"128K\n"\
+    "128K\n"\
     "128K Espa\xA4ol\n"\
-	"+2\n"\
+    "+2\n"\
     "+2 Espa\xA4ol\n"\
     "ZX81+\n"\
     "Custom\n"
@@ -295,15 +306,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_ROMS128_PREF_ES "128K\t[128K]\n"\
     "128K Espa\xA4ol\t[128Kes]\n"\
-	"+2\t[+2]\n"\
+    "+2\t[+2]\n"\
     "+2 Espa\xA4ol\t[+2es]\n"\
     "ZX81+\t[ZX81+]\n"\
     "Custom\t[128Kcs]\n"
 
 #define MENU_INTERFACE_LANG_ES "Idioma\n"\
-    "Ingl\x82s\t[ ]\n"\
-    "Espa\xA4ol\t[ ]\n"\
-	"Portugu\x82s\t[ ]\n"
+    "Ingl\x82s\t[E]\n"\
+    "Espa\xA4ol\t[S]\n"\
+    "Portugu\x82s\t[P]\n"
 
 #define MENU_JOY_ES "Joystick\n"
 

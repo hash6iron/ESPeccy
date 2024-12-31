@@ -252,6 +252,9 @@ void Tape::LoadTape(string mFile) {
 
             uint8_t OSDprev = VIDEO::OSD;
 
+            // Read and analyze tap file
+            Tape::TAP_Open(mFile);
+
             if (Z80Ops::is48)
                 FileZ80::loader48();
             else
@@ -274,20 +277,20 @@ void Tape::LoadTape(string mFile) {
             if (OSDprev) {
                 VIDEO::OSD = OSDprev;
                 if (Config::aspect_16_9)
-                    VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
+                    VIDEO::Draw_OSD169 = Z80Ops::is2a3 ? VIDEO::MainScreen_OSD_2A3 : VIDEO::MainScreen_OSD;
                 else
                     VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
-                ESPectrum::TapeNameScroller = 0;
+
             }
 
         } else {
 
             OSD::osdCenteredMsg(OSD_TAPE_INSERT[Config::lang], LEVEL_INFO);
 
-        }
+            // Read and analyze tap file
+            Tape::TAP_Open(mFile);
 
-        // Read and analyze tap file
-        Tape::TAP_Open(mFile);
+        }
 
         ESPectrum::TapeNameScroller = 0;
 
@@ -446,8 +449,8 @@ void Tape::TAP_getBlockData() {
             } else {
 
                 // Get the block content length.
-                int contentLength;
-                int contentOffset;
+                long contentLength;
+                long contentOffset;
                 if (tapeBlkLen >= 2) {
                     // Normally the content length equals the block length minus two
                     // (the flag byte and the checksum are not included in the content).
@@ -521,14 +524,14 @@ uint32_t Tape::CalcTapBlockPos(int block) {
     if ( TapeListing.empty()) return 0;
 
     int TapeBlockRest = block & (TAPE_LISTING_DIV -1);
-    int CurrentPos = TapeListing[block / TAPE_LISTING_DIV].StartPosition;
+    long CurrentPos = TapeListing[block / TAPE_LISTING_DIV].StartPosition;
     // printf("TapeBlockRest: %d\n",TapeBlockRest);
     // printf("Tapecurblock: %d\n",tapeCurBlock);
 
     fseek(tape,CurrentPos,SEEK_SET);
 
     while (TapeBlockRest-- != 0) {
-        uint16_t tapeBlkLen=(readByteFile(tape) | (readByteFile(tape) << 8));
+        long tapeBlkLen=(readByteFile(tape) | (readByteFile(tape) << 8));
         // printf("Tapeblklen: %d\n",tapeBlkLen);
         fseek(tape,tapeBlkLen,SEEK_CUR);
         CurrentPos += tapeBlkLen + 2;
@@ -1283,7 +1286,7 @@ bool Tape::FlashLoad() {
 
     int count = 0;
     int addr = Z80::getRegIX();    // Address start
-    int nBytes = Z80::getRegDE();  // Lenght
+    long nBytes = Z80::getRegDE();  // Lenght
     int addr2 = addr & 0x3fff;
     uint8_t page = addr >> 14;
 

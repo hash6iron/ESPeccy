@@ -148,7 +148,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Eject Tape\n"\
     "Tape browser\t>\n"\
-	"Player mode\t>\n"
+    "Player mode\t>\n"
 
 #define MENU_BETADISK_EN \
     "Drives\n"\
@@ -159,7 +159,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_BETADRIVE_EN \
     "Drive#\n"\
-	"Insert disk\t>\n"\
+    "Insert disk\t>\n"\
     "Eject disk\n"
 
 #define MENU_ROM_CART_EN \
@@ -172,7 +172,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Tapes\t>\n"\
     "Betadisk\t>\n"\
     "Cartridges\t>\n"\
-	"Machine\t>\n"\
+    "Machine\t>\n"\
     "Reset\t>\n"\
     "Options\t>\n"\
     "Update\t>\n"\
@@ -187,16 +187,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Joystick\t>\n"\
     "Joystick emulation\t>\n"\
     "Display\t>\n"\
+    "Mouse\t>\n"\
+    "Sound\t>\n"\
     "Other\t>\n"\
     "Language\t>\n"\
     "User Interface\t>\n"
 
 #define MENU_UPDATE_EN \
     "Update\n"\
-	"Firmware\n"\
-	"Custom ROM 48K\n"\
-	"Custom ROM 128k\n"\
-	"Custom ROM TK\n"
+    "Firmware\n"\
+    "Custom ROM 48K\n"\
+    "Custom ROM 128k\n"\
+    "Custom ROM TK\n"
 
 #define MENU_VIDEO_EN \
     "Display\n"\
@@ -217,7 +219,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_RESET_EN \
     "Reset\n"\
     "Soft reset\n"\
-	"TR-DOS reset \t(CF11)\n"\
+    "TR-DOS reset \t(CF11)\n"\
     "Hard reset\t(F11)\n"\
     "ESP32 reset\t(F12)\n"
 
@@ -236,16 +238,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_YESNO_EN "Yes\t[Y]\n"\
     "No\t[N]\n"
 
-#define MENU_OTHER_EN "Other\n"\
+#define MENU_SOUND_EN "Sound\n"\
     "AY on 48K\t>\n"\
+    "Covox\t>\n"
+
+#define MENU_MOUSE_EN "Mouse\n"\
+    "Sample Rate\t>\n"\
+    "Resolution\t>\n"\
+    "Scaling\t>\n"
+
+#define MENU_OTHER_EN "Other\n"\
     "ULA Timing\t>\n"\
     "48K Issue 2\t>\n"\
-	"TK ULA\t>\n"\
+    "TK ULA\t>\n"\
     "Second PS/2 device\t>\n"
 
 #define MENU_KBD2NDPS2_EN "Device     \n"\
     "None\t[N]\n"\
-    "Keyboard\t[K]\n"
+    "Kbd / DB9 adapter\t[K]\n"\
+    "Mouse\t[M]\n"
 
 #define MENU_ALUTIMING_EN "ULA Timing\n"\
     "Early\t[E]\n"\
@@ -254,14 +265,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_ARCH_EN "Select machine\n"
 
 #define MENU_ROMS48_EN "Select ROM\n"\
-	"48K\n"\
+    "48K\n"\
     "48K Spanish\n"\
     "Custom\n"
 
 #define MENU_ROMS128_EN "Select ROM\n"\
-	"128K\n"\
+    "128K\n"\
     "128K Spanish\n"\
-	"+2\n"\
+    "+2\n"\
     "+2 Spanish\n"\
     "ZX81+\n"\
     "Custom\n"
@@ -304,9 +315,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Custom\t[128Kcs]\n"
 
 #define MENU_INTERFACE_LANG_EN "Language\n"\
-    "English\t[ ]\n"\
-    "Spanish\t[ ]\n"\
-    "Portuguese\t[ ]\n"
+    "English\t[E]\n"\
+    "Spanish\t[S]\n"\
+    "Portuguese\t[P]\n"
 
 #define MENU_JOY_EN "Joystick\n"
 

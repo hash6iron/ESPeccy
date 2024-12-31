@@ -51,7 +51,7 @@ public:
     static void ZXKbdRead(uint8_t mode);
 
     static uint8_t ZXcols[8];
-    static bool Exists;
+    static uint8_t Exists;
 
 private:
 

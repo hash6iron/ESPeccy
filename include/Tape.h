@@ -39,7 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 
-using namespace std;
+
 
 // Tape file types
 #define TAPE_FTYPE_EMPTY 0

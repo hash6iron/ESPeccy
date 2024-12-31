@@ -145,14 +145,13 @@ static const uint8_t click128[116] = {   0,8,32,32,32,32,32,32,32,32,32,32,32,32
                                         32,32,8,0
                                     };
 
-IRAM_ATTR void OSD::click() {
+/* IRAM_ATTR */ void OSD::click() {
     if (Config::tape_player) return; // Disable interface click on tape player mode
+    pwm_audio_set_volume(ESP_VOLUME_MAX);
     size_t written;
-        pwm_audio_set_volume(ESP_VOLUME_MAX);
     if (Z80Ops::is48)   pwm_audio_write((uint8_t *) click48, sizeof(click48), &written,  5 / portTICK_PERIOD_MS);
     else                pwm_audio_write((uint8_t *) click128, sizeof(click128), &written, 5 / portTICK_PERIOD_MS);
     pwm_audio_set_volume(ESPectrum::aud_volume);
-
 }
 
 void OSD::esp_hard_reset() {
@@ -986,9 +985,15 @@ int OSD::renderScreen(int x0, int y0, const char* filename, int screen_number, o
                     return RENDER_PREVIEW_ERROR;
 
             }
-        }
 
-        if (isZ80) {
+            fseek(file, seekOff, SEEK_SET);
+            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
+                uint32_t word;
+                fread(&word, sizeof(uint32_t), 1, file);
+                snapshot[i] = word;
+            }
+        }
+        else { // Z80 format
             // Check Z80 version and arch
             uint8_t z80version;
             uint16_t ahdrlen = 0;
@@ -1060,14 +1065,6 @@ int OSD::renderScreen(int x0, int y0, const char* filename, int screen_number, o
                     }
                 }
             }
-
-        } else {
-            fseek(file, seekOff, SEEK_SET);
-            for(int i = 0; i < WORDS_IN_SCREEN; ++i) {
-                uint32_t word;
-                fread(&word, sizeof(uint32_t), 1, file);
-                snapshot[i] = word;
-            }
         }
     }
 
@@ -1131,16 +1128,10 @@ void OSD::drawOSD(bool bottom_info) {
             case 2: bottom_line = Config::arch[0] == 'T' && Config::ALUTK == 2 ? " Video mode: CRT 60hz          " : " Video mode: CRT 50hz          "; break;
         }
 
-#ifdef ESPECCY_VERSION
         VIDEO::vga.print(bottom_line.append("   c"+string(getShortCommitDate())+" ").c_str()); // For ESPeccy
-#else
-        VIDEO::vga.print(bottom_line.append(EMU_VERSION).c_str()); // Original
-#endif
     } else {
         VIDEO::vga.print(OSD_BOTTOM);
-#ifdef ESPECCY_VERSION
         VIDEO::vga.print(("   c"+string(getShortCommitDate())+" ").c_str()); // For ESPeccy
-#endif
     }
     osdHome();
 }
@@ -1287,15 +1278,6 @@ void OSD::drawKbdLayout(uint8_t layout) {
         };
 
         drawWindow(width, height, "", "", false);
-
-//        VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
-//        VIDEO::vga.setFont(Font6x8);
-//        VIDEO::vga.setCursor(x + 3, y + height - 11);
-//
-//        string text = " " + RotateLine(bottom[layout], &statusBarScrollCTX, maxW, 125, 25) + " ";
-//        printf("%s\n", text.c_str());
-//
-//        VIDEO::vga.print(text.c_str());
 
     }
 
@@ -1509,19 +1491,16 @@ static bool persistLoad(uint8_t slotnumber) {
         if ((result = fgets(buf, sizeof(buf),f)) != NULL) {
             persist_arch = buf;
             persist_arch.pop_back();
-//            printf("[%s]\n",persist_arch.c_str());
         }
 
         if ((result = fgets(buf, sizeof(buf),f)) != NULL) {
             persist_romset = buf;
             persist_romset.pop_back();
-//            printf("[%s]\n",persist_romset.c_str());
         }
 
         if ((result = fgets(buf, sizeof(buf),f)) != NULL) {
             persist_ALUTK = buf;
             persist_ALUTK.pop_back();
-//            printf("[%s]\n",persist_ALUTK.c_str());
         }
 
         fclose(f);
@@ -1847,6 +1826,42 @@ void OSD::showCheatDialog() {
     }
 }
 
+/**
+ * @brief Marks the selected option in a menu string.
+ *
+ * Replaces the `[?]` pattern with `[*]` to indicate the selected option,
+ * and resets all other `[X]` patterns to `[ ]`.
+ *
+ * @param menu The menu string to process.
+ * @param selectedKey The character(s) to mark as selected.
+ * @return std::string The updated menu string.
+ */
+std::string markSelectedOption(const std::string& menu, const std::string& selectedKey) {
+    std::string updatedMenu = menu;
+    size_t pos = 0;
+
+    while ((pos = updatedMenu.find('[', pos)) != std::string::npos) {
+        size_t endPos = updatedMenu.find(']', pos); // Find the closing bracket
+        if (endPos == std::string::npos) break; // No closing bracket, exit loop
+
+        // Extract content between brackets
+        std::string content = updatedMenu.substr(pos + 1, endPos - pos - 1);
+
+        if (content == selectedKey) {
+            // Replace `[?]` with `[*]`
+            updatedMenu.replace(pos, endPos - pos + 1, "[*]");
+        } else {
+            // Replace other `[X]` with `[ ]`
+            updatedMenu.replace(pos, endPos - pos + 1, "[ ]");
+        }
+
+        // Move past the current bracket
+        pos = pos + 3; // Length of `[ ]` or `[*]`
+    }
+
+    return updatedMenu;
+}
+
 // OSD Main Loop
 void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
     fabgl::VirtualKeyItem Nextkey;
@@ -2013,10 +2028,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 }
 
                 // Reset AY emulation
-                AySound::init();
+                //AySound::init();
                 AySound::set_sound_format(ESPectrum::Audio_freq[ESPectrum::ESP_delay],1,8);
-                AySound::set_stereo(AYEMU_MONO,NULL);
-                AySound::reset();
+                //AySound::set_stereo(AYEMU_MONO,NULL);
+                //AySound::reset();
+                AySound::prepare_generation();
 
             }
 
@@ -2029,7 +2045,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         } else
         if (KeytoESP == fabgl::VK_F11) { // Reset to TR-DOS (48K only)
 
-            if (Config::DiskCtrl || Z80Ops::isPentagon) {
+            if ((Config::DiskCtrl || Z80Ops::isPentagon) && !Z80Ops::is2a3) {
 
                 // Config::rom_file = NO_ROM_FILE;
                 // Config::last_rom_file = NO_ROM_FILE;
@@ -2275,7 +2291,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                     if ( fprefix == "N" || fprefix == "*" ) {
                         struct stat stat_buf;
-                        int status = stat(tapFile.c_str(), &stat_buf);
                         if (stat(tapFile.c_str(), &stat_buf) == 0) {
                             if (access(tapFile.c_str(), W_OK)) {
                                 OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
@@ -2364,7 +2379,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             if ((VIDEO::OSD & 0x03) > 2) {
                 if ((VIDEO::OSD & 0x04) == 0) {
                     if (Config::aspect_16_9)
-                        VIDEO::Draw_OSD169 = VIDEO::MainScreen;
+                        VIDEO::Draw_OSD169 = Z80Ops::is2a3 ? VIDEO::MainScreen_2A3 : VIDEO::MainScreen;
                     else
                         VIDEO::Draw_OSD43 = Z80Ops::isPentagon ? VIDEO::BottomBorder_Pentagon :  VIDEO::BottomBorder;
                 }
@@ -2373,7 +2388,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                 if ((VIDEO::OSD & 0x04) == 0) {
                     if (Config::aspect_16_9)
-                        VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
+                        VIDEO::Draw_OSD169 = Z80Ops::is2a3 ? VIDEO::MainScreen_OSD_2A3 : VIDEO::MainScreen_OSD;
                     else
                         VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
 
@@ -2414,7 +2429,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             if (VIDEO::OSD == 0) {
 
                 if (Config::aspect_16_9)
-                    VIDEO::Draw_OSD169 = VIDEO::MainScreen_OSD;
+                    VIDEO::Draw_OSD169 = Z80Ops::is2a3 ? VIDEO::MainScreen_OSD_2A3 : VIDEO::MainScreen_OSD;
                 else
                     VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
 
@@ -2505,9 +2520,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             menu_saverect = true;
                             if (sna_mnu == 1) {
                                 if ( FileUtils::isSDReady() ) {
-                                    // ESPectrum::showMemInfo("Before F2 file dialog");
                                     string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, 28, 13);
-                                    // ESPectrum::showMemInfo("After F2 file dialog");
                                     if (mFile != "" && FileUtils::isSDReady()) {
                                         string fprefix = mFile.substr(0,1);
                                         mFile.erase(0, 1);
@@ -2668,7 +2681,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         if ( fprefix == "N" || fprefix == "*" ) {
                                             struct stat stat_buf;
-                                            int status = stat(tapFile.c_str(), &stat_buf);
                                             if (stat(tapFile.c_str(), &stat_buf) == 0) {
                                                 if (access(tapFile.c_str(), W_OK)) {
                                                     OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);
@@ -2685,6 +2697,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             mFile[0] = 'S';
                                         }
                                         Tape::LoadTape(mFile);
+                                        if (Tape::tape) CheatMngr::closeCheatFile(); // Clear Cheat data
                                         return;
                                     }
                                 } else {
@@ -2749,16 +2762,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 menu_saverect = true;
                                 while (1) {
                                     string Mnustr = MENU_TAPEPLAYER[Config::lang];
-                                    Mnustr += MENU_YESNO[Config::lang];
                                     bool prev_opt = Config::tape_player;
                                     if (prev_opt) {
                                         menu_curopt = 1;
-                                        Mnustr.replace(Mnustr.find("[Y",0),2,"[*");
-                                        Mnustr.replace(Mnustr.find("[N",0),2,"[ ");
+                                        Mnustr += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                     } else {
                                         menu_curopt = 2;
-                                        Mnustr.replace(Mnustr.find("[Y",0),2,"[ ");
-                                        Mnustr.replace(Mnustr.find("[N",0),2,"[*");
+                                        Mnustr += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                     }
 
                                     uint8_t opt2 = menuRun(Mnustr);
@@ -2820,8 +2830,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             if (mFile != "" && FileUtils::isSDReady()) {
                                                 mFile.erase(0, 1);
                                                 string fname = FileUtils::MountPoint + FileUtils::DSK_Path + mFile;
+
                                                 ESPectrum::Betadisk.EjectDisk(dsk_num - 1);
                                                 ESPectrum::Betadisk.InsertDisk(dsk_num - 1,fname);
+
+                                            // rvmWD1793InsertDisk(&ESPectrum::fdd,dsk_num -1, fname);
+
                                                 return;
                                             }
                                         } else {
@@ -2924,9 +2938,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     // Set curopt to reflect current machine
                     if (Config::arch == "48K") menu_curopt = 1;
                     else if (Config::arch == "128K") menu_curopt = 2;
-                    else if (Config::arch == "Pentagon") menu_curopt = 3;
-                    else if (Config::arch == "TK90X") menu_curopt = 4;
-                    else if (Config::arch == "TK95") menu_curopt = 5;
+                    else if (Config::arch == "+2A") menu_curopt = 4;
+                    else if (Config::arch == "Pentagon") menu_curopt = 4;
+                    else if (Config::arch == "TK90X") menu_curopt = 5;
+                    else if (Config::arch == "TK95") menu_curopt = 6;
 
                     while (1) {
                         menu_level = 1;
@@ -2994,10 +3009,14 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_level = 2;
                                 }
                             } else if (arch_num == 3) {
+                                arch = "+2A";
+                                romset = "+2A";
+                                opt2 = 1;
+                            } else if (arch_num == 4) {
                                 arch = "Pentagon";
                                 romset = "Pentagon";
                                 opt2 = 1;
-                            } else if (arch_num == 4) { // TK90X
+                            } else if (arch_num == 5) { // TK90X
                                 menu_level = 2;
 
                                 // Set curopt to reflect current romset
@@ -3031,7 +3050,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = 1;
                                     menu_level = 2;
                                 }
-                            } else if (arch_num == 5) { // TK95
+                            } else if (arch_num == 6) { // TK95
                                 menu_level = 2;
 
                                 // Set curopt to reflect current romset
@@ -3273,16 +3292,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
                                         while (1) {
                                             string opt_menu = MENU_DISKCTRL[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::DiskCtrl;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
@@ -3309,16 +3325,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
                                         while (1) {
                                             string TapeAutoload_menu = MENU_AUTOLOAD[Config::lang];
-                                            TapeAutoload_menu += MENU_YESNO[Config::lang];
                                             bool prev_TapeAutoload = Config::TapeAutoload;
                                             if (prev_TapeAutoload) {
                                                 menu_curopt = 1;
-                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[Y",0),2,"[*");
-                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[N",0),2,"[ ");
+                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[Y",0),2,"[ ");
-                                                TapeAutoload_menu.replace(TapeAutoload_menu.find("[N",0),2,"[*");
+                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(TapeAutoload_menu);
                                             if (opt2) {
@@ -3345,16 +3358,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
                                         while (1) {
                                             string flash_menu = MENU_FLASHLOAD[Config::lang];
-                                            flash_menu += MENU_YESNO[Config::lang];
                                             bool prev_flashload = Config::flashload;
                                             if (prev_flashload) {
                                                 menu_curopt = 1;
-                                                flash_menu.replace(flash_menu.find("[Y",0),2,"[*");
-                                                flash_menu.replace(flash_menu.find("[N",0),2,"[ ");
+                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                flash_menu.replace(flash_menu.find("[Y",0),2,"[ ");
-                                                flash_menu.replace(flash_menu.find("[N",0),2,"[*");
+                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(flash_menu);
                                             if (opt2) {
@@ -3381,16 +3391,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
                                         while (1) {
                                             string mnu_str = MENU_RGTIMINGS[Config::lang];
-                                            mnu_str += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::tape_timing_rg;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                mnu_str.replace(mnu_str.find("[Y",0),2,"[*");
-                                                mnu_str.replace(mnu_str.find("[N",0),2,"[ ");
+                                                mnu_str += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                mnu_str.replace(mnu_str.find("[Y",0),2,"[ ");
-                                                mnu_str.replace(mnu_str.find("[N",0),2,"[*");
+                                                mnu_str += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(mnu_str);
                                             if (opt2) {
@@ -3428,57 +3435,31 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             menu_curopt = 1;
                             menu_saverect = true;
                             while (1) {
-                                string archprefmenu = MENU_ARCH_PREF[Config::lang];
+                                string archprefmenu;
                                 string prev_archpref = Config::pref_arch;
+                                menu_curopt = 7;
                                 if (Config::pref_arch == "48K") {
                                     menu_curopt = 1;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[*");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[ ");
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "4");
                                 } else if (Config::pref_arch == "128K") {
                                     menu_curopt = 2;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[*");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[ ");
-                                } else if (Config::pref_arch == "Pentagon") {
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "1");
+                                } else if (Config::pref_arch == "+2A") {
                                     menu_curopt = 3;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[*");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[ ");
-                                } else if (Config::pref_arch == "TK90X") {
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "2");
+                                } else if (Config::pref_arch == "Pentagon") {
                                     menu_curopt = 4;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[*");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[ ");
-                                } else if (Config::pref_arch == "TK95") {
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "P");
+                                } else if (Config::pref_arch == "TK90X") {
                                     menu_curopt = 5;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[*");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[ ");
-                                } else {
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "T");
+                                } else if (Config::pref_arch == "TK95") {
                                     menu_curopt = 6;
-                                    archprefmenu.replace(archprefmenu.find("[4",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[1",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[P",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[T",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[9",0),2,"[ ");
-                                    archprefmenu.replace(archprefmenu.find("[L",0),2,"[*");
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "9");
                                 }
+                                if (menu_curopt == 7)
+                                    archprefmenu = markSelectedOption(MENU_ARCH_PREF[Config::lang], "L");
+
                                 uint8_t opt2 = menuRun(archprefmenu);
                                 if (opt2) {
 
@@ -3489,15 +3470,18 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         Config::pref_arch = "128K";
                                     else
                                     if (opt2 == 3)
-                                        Config::pref_arch = "Pentagon";
+                                        Config::pref_arch = "+2A";
                                     else
                                     if (opt2 == 4)
-                                        Config::pref_arch = "TK90X";
+                                        Config::pref_arch = "Pentagon";
                                     else
                                     if (opt2 == 5)
-                                        Config::pref_arch = "TK95";
+                                        Config::pref_arch = "TK90X";
                                     else
                                     if (opt2 == 6)
+                                        Config::pref_arch = "TK95";
+                                    else
+                                    if (opt2 == 7)
                                         Config::pref_arch = "Last";
 
                                     if (Config::pref_arch != prev_archpref) {
@@ -3530,19 +3514,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = 1;
                                     menu_saverect = true;
                                     while (1) {
-                                        string joy_menu = MENU_DEFJOY[Config::lang];
+                                        string joy_menu = markSelectedOption(MENU_DEFJOY[Config::lang], to_string((opt2 == 1 ? Config::joystick1 : Config::joystick2)));
                                         joy_menu.replace(joy_menu.find("#",0),1,(string)" " + char(48 + opt2));
-                                        std::size_t pos = joy_menu.find("[",0);
-                                        int nfind = 0;
-                                        while (pos != string::npos) {
-                                            if (nfind == (opt2 == 1 ? Config::joystick1 : Config::joystick2)) {
-                                                joy_menu.replace(pos,2,"[*");
-                                                menu_curopt = nfind + 1;
-                                                break;
-                                            }
-                                            pos = joy_menu.find("[",pos + 1);
-                                            nfind++;
-                                        }
                                         uint8_t optjoy = menuRun(joy_menu);
                                         if (optjoy>0 && optjoy<6) {
                                             if (opt2 == 1) {
@@ -3585,18 +3558,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = 1;
                                     menu_saverect = true;
                                     while (1) {
-                                        string joy_menu = MENU_PS2JOYTYPE[Config::lang];
-                                        std::size_t pos = joy_menu.find("[",0);
-                                        int nfind = 0;
-                                        while (pos != string::npos) {
-                                            if (nfind == Config::joyPS2) {
-                                                joy_menu.replace(pos,2,"[*");
-                                                menu_curopt = nfind + 1;
-                                                break;
-                                            }
-                                            pos = joy_menu.find("[",pos + 1);
-                                            nfind++;
-                                        }
+                                        string joy_menu = markSelectedOption(MENU_PS2JOYTYPE[Config::lang], to_string(Config::joyPS2));
                                         uint8_t optjoy = menuRun(joy_menu);
                                         if (optjoy > 0 && optjoy < 6) {
                                             if (Config::joyPS2 != (optjoy - 1)) {
@@ -3618,15 +3580,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_saverect = true;
                                     while (1) {
                                         string csasjoy_menu = MENU_CURSORJOY[Config::lang];
-                                        csasjoy_menu += MENU_YESNO[Config::lang];
                                         if (Config::CursorAsJoy) {
                                             menu_curopt = 1;
-                                            csasjoy_menu.replace(csasjoy_menu.find("[Y",0),2,"[*");
-                                            csasjoy_menu.replace(csasjoy_menu.find("[N",0),2,"[ ");
+                                            csasjoy_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                         } else {
                                             menu_curopt = 2;
-                                            csasjoy_menu.replace(csasjoy_menu.find("[Y",0),2,"[ ");
-                                            csasjoy_menu.replace(csasjoy_menu.find("[N",0),2,"[*");
+                                            csasjoy_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                         }
                                         uint8_t opt2 = menuRun(csasjoy_menu);
                                         if (opt2) {
@@ -3655,16 +3614,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_saverect = true;
                                     while (1) {
                                         string csasjoy_menu = MENU_TABASFIRE[Config::lang];
-                                        csasjoy_menu += MENU_YESNO[Config::lang];
                                         bool prev_opt = Config::TABasfire1;
                                         if (prev_opt) {
                                             menu_curopt = 1;
-                                            csasjoy_menu.replace(csasjoy_menu.find("[Y",0),2,"[*");
-                                            csasjoy_menu.replace(csasjoy_menu.find("[N",0),2,"[ ");
+                                            csasjoy_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                         } else {
                                             menu_curopt = 2;
-                                            csasjoy_menu.replace(csasjoy_menu.find("[Y",0),2,"[ ");
-                                            csasjoy_menu.replace(csasjoy_menu.find("[N",0),2,"[*");
+                                            csasjoy_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                         }
                                         uint8_t opt2 = menuRun(csasjoy_menu);
                                         if (opt2) {
@@ -3718,16 +3674,14 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string opt_menu = MENU_RENDER[Config::lang];
+                                            string opt_menu;
                                             uint8_t prev_opt = Config::render;
                                             if (prev_opt) {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[S",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[A",0),2,"[*");
+                                                opt_menu = markSelectedOption(MENU_RENDER[Config::lang], "A");
                                             } else {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[S",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[A",0),2,"[ ");
+                                                opt_menu = markSelectedOption(MENU_RENDER[Config::lang], "S");
                                             }
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
@@ -3766,21 +3720,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         while (1) {
 
                                             // aspect ratio
-                                            string asp_menu = MENU_ASPECT[Config::lang];
+                                            string asp_menu;
                                             bool prev_asp = Config::aspect_16_9;
                                             if (prev_asp) {
                                                 menu_curopt = 2;
-                                                asp_menu.replace(asp_menu.find("[4",0),2,"[ ");
-                                                asp_menu.replace(asp_menu.find("[1",0),2,"[*");
+                                                asp_menu = markSelectedOption(MENU_ASPECT[Config::lang], "1");
                                             } else {
                                                 menu_curopt = 1;
-                                                asp_menu.replace(asp_menu.find("[4",0),2,"[*");
-                                                asp_menu.replace(asp_menu.find("[1",0),2,"[ ");
+                                                asp_menu = markSelectedOption(MENU_ASPECT[Config::lang], "4");
                                             }
                                             uint8_t opt2 = menuRun(asp_menu);
                                             if (opt2) {
 
-                                                if (Config::videomode == 2) opt2 = 1; // Can't change aspect ratio in CRT mode
+                                                if (Config::videomode == 2) opt2 = 1; // Force 4:3 aspect ratio in CRT mode
 
                                                 if (opt2 == 1)
                                                     Config::aspect_16_9 = false;
@@ -3812,16 +3764,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = true;
                                         while (1) {
                                             string opt_menu = MENU_SCANLINES[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
                                             uint8_t prev_opt = Config::scanlines;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(opt_menu);
                                             if (opt2) {
@@ -3859,42 +3808,23 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             menu_curopt = 1;
                             menu_saverect = true;
                             while (1) {
-                                // Other
-                                uint8_t options_num = menuRun(MENU_OTHER[Config::lang]);
+                                // Mouse
+                                uint8_t options_num = menuRun(MENU_MOUSE[Config::lang]);
                                 if (options_num > 0) {
                                     if (options_num == 1) {
                                         menu_level = 3;
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string ay_menu = MENU_AY48[Config::lang];
-                                            ay_menu += MENU_YESNO[Config::lang];
-                                            bool prev_ay48 = Config::AY48;
-                                            if (prev_ay48) {
-                                                menu_curopt = 1;
-                                                ay_menu.replace(ay_menu.find("[Y",0),2,"[*");
-                                                ay_menu.replace(ay_menu.find("[N",0),2,"[ ");
-                                            } else {
-                                                menu_curopt = 2;
-                                                ay_menu.replace(ay_menu.find("[Y",0),2,"[ ");
-                                                ay_menu.replace(ay_menu.find("[N",0),2,"[*");
-                                            }
-                                            uint8_t opt2 = menuRun(ay_menu);
+                                            string mouse_sample_rate_menu = markSelectedOption(MENU_MOUSE_SAMPLE_RATE[Config::lang], to_string(Config::mousesamplerate));
+                                            uint8_t opt2 = menuRun(mouse_sample_rate_menu);
                                             if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::AY48 = true;
-                                                else
-                                                    Config::AY48 = false;
-
-                                                if (Config::AY48 != prev_ay48) {
-                                                    Config::save("AY48");
+                                                uint8_t values[] = { 10, 20, 40, 60, 80, 100, 200 };
+                                                if (Config::mousesamplerate != values[opt2 - 1]) {
+                                                    Config::mousesamplerate = values[opt2 - 1];
+                                                    Config::save("MouseSampleRate");
+                                                    ESPectrum::PS2Controller.mouse()->setSampleRate(Config::mousesamplerate);
                                                 }
-
-                                                if (Z80Ops::is48) {
-                                                    ESPectrum::AY_emu = Config::AY48;
-                                                    if (Config::tape_player) ESPectrum::AY_emu = false; // Disable AY emulation if tape player mode is set
-                                                }
-
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
                                             } else {
@@ -3909,27 +3839,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string alu_menu = MENU_ALUTIMING[Config::lang];
-                                            uint8_t prev_AluTiming = Config::AluTiming;
-                                            if (prev_AluTiming == 0) {
-                                                menu_curopt = 1;
-                                                alu_menu.replace(alu_menu.find("[E",0),2,"[*");
-                                                alu_menu.replace(alu_menu.find("[L",0),2,"[ ");
-                                            } else {
-                                                menu_curopt = 2;
-                                                alu_menu.replace(alu_menu.find("[E",0),2,"[ ");
-                                                alu_menu.replace(alu_menu.find("[L",0),2,"[*");
-                                            }
-                                            uint8_t opt2 = menuRun(alu_menu);
+                                            string mouse_dpi_menu = markSelectedOption(MENU_MOUSE_DPI[Config::lang], to_string(Config::mousedpi));
+                                            uint8_t opt2 = menuRun(mouse_dpi_menu);
                                             if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::AluTiming = 0;
-                                                else
-                                                    Config::AluTiming = 1;
-
-                                                if (Config::AluTiming != prev_AluTiming) {
-                                                    CPU::latetiming = Config::AluTiming;
-                                                    Config::save("AluTiming");
+                                                if (Config::mousedpi != opt2 - 1) {
+                                                    Config::mousedpi = opt2 - 1;
+                                                    Config::save("MouseDPI");
+                                                    ESPectrum::PS2Controller.mouse()->setResolution(Config::mousedpi);
                                                 }
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
@@ -3945,17 +3861,186 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
+                                            string mouse_scaling_menu = markSelectedOption(MENU_MOUSE_SCALING[Config::lang], to_string(Config::mousescaling));
+                                            uint8_t opt2 = menuRun(mouse_scaling_menu);
+                                            if (opt2) {
+                                                if (Config::mousescaling != opt2) {
+                                                    Config::mousescaling = opt2;
+                                                    Config::save("MouseScaling");
+                                                    ESPectrum::PS2Controller.mouse()->setScaling(Config::mousescaling);
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 3;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    menu_curopt = 7;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (options_num == 8) {
+                            menu_level = 2;
+                            menu_curopt = 1;
+                            menu_saverect = true;
+                            while (1) {
+                                // Sound
+                                uint8_t options_num = menuRun(MENU_SOUND[Config::lang]);
+                                if (options_num > 0) {
+                                    if (options_num == 1) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
+                                            string ay_menu = MENU_AY48[Config::lang];
+                                            bool prev_ay48 = Config::AY48;
+                                            if (prev_ay48) {
+                                                menu_curopt = 1;
+                                                ay_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
+                                            } else {
+                                                menu_curopt = 2;
+                                                ay_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
+                                            }
+                                            uint8_t opt2 = menuRun(ay_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)
+                                                    Config::AY48 = true;
+                                                else
+                                                    Config::AY48 = false;
+
+                                                if (Config::AY48 != prev_ay48) {
+                                                if (Z80Ops::is48) {
+                                                    ESPectrum::AY_emu = Config::AY48;
+                                                    if (ESPectrum::AY_emu == false) {
+                                                    for (int i=0; i < ESPectrum::samplesPerFrame; i++)
+                                                        AySound::SamplebufAY[i] = ESPectrum::audioBuffer[i] = 0;
+                                                }
+                                                    ESPectrum::aud_active_sources = (Config::Covox & 0x01) | (ESPectrum::AY_emu << 1);
+                                                }
+                                                // if (Config::tape_player) ESPectrum::AY_emu = false; // Disable AY emulation if tape player mode is set
+                                                Config::save("AY48");
+                                            }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (options_num == 2) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
+                                            string optmenu;
+                                            uint8_t prev_opt = Config::Covox;
+                                            if (prev_opt == 0) {
+                                                menu_curopt = 1;
+                                                optmenu = markSelectedOption(MENU_COVOX[Config::lang], "N");
+                                            } else
+                                            if (prev_opt == 1) {
+                                                menu_curopt = 2;
+                                                optmenu = markSelectedOption(MENU_COVOX[Config::lang], "M");
+                                            } else
+                                            if (prev_opt == 2) {
+                                                menu_curopt = 3;
+                                                optmenu = markSelectedOption(MENU_COVOX[Config::lang], "S");
+                                            } else
+                                            if (prev_opt == 3) {
+                                                menu_curopt = 4;
+                                                optmenu = markSelectedOption(MENU_COVOX[Config::lang], "1");
+                                            } else
+                                            if (prev_opt == 4) {
+                                                menu_curopt = 5;
+                                                optmenu = markSelectedOption(MENU_COVOX[Config::lang], "2");
+                                            }
+                                            uint8_t opt2 = menuRun(optmenu);
+                                            if (opt2) {
+                                                if (Config::Covox != (opt2 - 1)) {
+                                                    Config::Covox = opt2 -1;
+                                                    Config::save("Covox");
+                                                    ESPectrum::covoxData[0] = ESPectrum::covoxData[1] = ESPectrum::covoxData[2] = ESPectrum::covoxData[3] = 0;
+                                                    for (int i=0; i < ESPectrum::samplesPerFrame; i++)
+                                                        ESPectrum::SamplebufCOVOX[i] = ESPectrum::audioBuffer[i] = 0;
+                                                    ESPectrum::aud_active_sources = (Config::Covox & 0x01) | (ESPectrum::AY_emu << 1);
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 2;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    menu_curopt = 8;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (options_num == 9) {
+                            menu_level = 2;
+                            menu_curopt = 1;
+                            menu_saverect = true;
+                            while (1) {
+                                // Other
+                                uint8_t options_num = menuRun(MENU_OTHER[Config::lang]);
+                                if (options_num > 0) {
+                                    if (options_num == 1) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
+                                            string alu_menu;
+                                            uint8_t prev_AluTiming = Config::AluTiming;
+                                            if (prev_AluTiming == 0) {
+                                                menu_curopt = 1;
+                                                alu_menu = markSelectedOption(MENU_ALUTIMING[Config::lang], "E");
+                                            } else {
+                                                menu_curopt = 2;
+                                                alu_menu = markSelectedOption(MENU_ALUTIMING[Config::lang], "L");
+                                            }
+                                            uint8_t opt2 = menuRun(alu_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)
+                                                    Config::AluTiming = 0;
+                                                else
+                                                    Config::AluTiming = 1;
+
+                                                if (Config::AluTiming != prev_AluTiming) {
+                                                    CPU::latetiming = Config::AluTiming;
+                                                    Config::save("AluTiming");
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = options_num;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (options_num == 2) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
                                             string iss_menu = MENU_ISSUE2[Config::lang];
-                                            iss_menu += MENU_YESNO[Config::lang];
                                             bool prev_iss = Config::Issue2;
                                             if (prev_iss) {
                                                 menu_curopt = 1;
-                                                iss_menu.replace(iss_menu.find("[Y",0),2,"[*");
-                                                iss_menu.replace(iss_menu.find("[N",0),2,"[ ");
+                                                iss_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                iss_menu.replace(iss_menu.find("[Y",0),2,"[ ");
-                                                iss_menu.replace(iss_menu.find("[N",0),2,"[*");
+                                                iss_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(iss_menu);
                                             if (opt2) {
@@ -3970,34 +4055,28 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
                                             } else {
-                                                menu_curopt = 3;
+                                                menu_curopt = options_num;
                                                 menu_level = 2;
                                                 break;
                                             }
                                         }
                                     }
-                                    else if (options_num == 4) {
+                                    else if (options_num == 3) {
                                         menu_level = 3;
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string alu_menu = MENU_ALUTK_PREF[Config::lang];
+                                            string alu_menu;
                                             int prev_alu = Config::ALUTK;
                                             if (prev_alu == 0) {
                                                 menu_curopt = 1;
-                                                alu_menu.replace(alu_menu.find("[F",0),2,"[*");
-                                                alu_menu.replace(alu_menu.find("[5",0),2,"[ ");
-                                                alu_menu.replace(alu_menu.find("[6",0),2,"[ ");
+                                                alu_menu = markSelectedOption(MENU_ALUTK_PREF[Config::lang], "F");
                                             } else if (prev_alu == 1) {
                                                 menu_curopt = 2;
-                                                alu_menu.replace(alu_menu.find("[F",0),2,"[ ");
-                                                alu_menu.replace(alu_menu.find("[5",0),2,"[*");
-                                                alu_menu.replace(alu_menu.find("[6",0),2,"[ ");
+                                                alu_menu = markSelectedOption(MENU_ALUTK_PREF[Config::lang], "5");
                                             } else if (prev_alu == 2) {
                                                 menu_curopt = 3;
-                                                alu_menu.replace(alu_menu.find("[F",0),2,"[ ");
-                                                alu_menu.replace(alu_menu.find("[5",0),2,"[ ");
-                                                alu_menu.replace(alu_menu.find("[6",0),2,"[*");
+                                                alu_menu = markSelectedOption(MENU_ALUTK_PREF[Config::lang], "6");
                                             }
                                             uint8_t opt2 = menuRun(alu_menu);
                                             if (opt2) {
@@ -4043,34 +4122,37 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
                                             } else {
-                                                menu_curopt = 4;
+                                                menu_curopt = options_num;
                                                 menu_level = 2;
                                                 break;
                                             }
                                         }
                                     }
-                                    else if (options_num == 5) {
+                                    else if (options_num == 4) {
                                         menu_level = 3;
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string ps2_menu = MENU_KBD2NDPS2[Config::lang];
+                                            string ps2_menu;
                                             uint8_t prev_ps2 = Config::ps2_dev2;
-                                            if (prev_ps2) {
+                                            if (prev_ps2 == 1) {
                                                 menu_curopt = 2;
-                                                ps2_menu.replace(ps2_menu.find("[N",0),2,"[ ");
-                                                ps2_menu.replace(ps2_menu.find("[K",0),2,"[*");
+                                                ps2_menu = markSelectedOption(MENU_KBD2NDPS2[Config::lang], "K");
+                                            } else if (prev_ps2 == 2) {
+                                                menu_curopt = 3;
+                                                ps2_menu = markSelectedOption(MENU_KBD2NDPS2[Config::lang], "M");
                                             } else {
                                                 menu_curopt = 1;
-                                                ps2_menu.replace(ps2_menu.find("[N",0),2,"[*");
-                                                ps2_menu.replace(ps2_menu.find("[K",0),2,"[ ");
+                                                ps2_menu = markSelectedOption(MENU_KBD2NDPS2[Config::lang], "N");
                                             }
                                             uint8_t opt2 = menuRun(ps2_menu);
                                             if (opt2) {
                                                 if (opt2 == 1)
                                                     Config::ps2_dev2 = 0;
-                                                else
+                                                else if (opt2 == 2)
                                                     Config::ps2_dev2 = 1;
+                                                else
+                                                    Config::ps2_dev2 = 2;
 
                                                 if (Config::ps2_dev2 != prev_ps2) {
                                                     Config::save("PS2Dev2");
@@ -4078,36 +4160,33 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
                                             } else {
-                                                menu_curopt = 5;
+                                                menu_curopt = options_num;
                                                 menu_level = 2;
                                                 break;
                                             }
                                         }
                                     }
                                 } else {
-                                    menu_curopt = 7;
+                                    menu_curopt = 9;
                                     break;
                                 }
                             }
                         }
-                        else if (options_num == 8) {
+                        else if (options_num == 10) {
                             menu_level = 2;
                             menu_curopt = 1;
                             menu_saverect = true;
                             while (1) {
                                 // language
                                 uint8_t opt2;
-                                string Mnustr = MENU_INTERFACE_LANG[Config::lang];
-                                std::size_t pos = Mnustr.find("[",0);
-                                int nfind = 0;
-                                while (pos != string::npos) {
-                                    if (nfind == Config::lang) {
-                                        Mnustr.replace(pos,2,"[*");
-                                        menu_curopt = nfind + 1;
-                                        break;
-                                    }
-                                    pos = Mnustr.find("[",pos + 1);
-                                    nfind++;
+                                string Mnustr;
+                                uint8_t prev_lang = Config::lang;
+                                if (prev_lang == 0) {
+                                    Mnustr = markSelectedOption(MENU_INTERFACE_LANG[Config::lang], "E");
+                                } else if (prev_lang == 1) {
+                                    Mnustr = markSelectedOption(MENU_INTERFACE_LANG[Config::lang], "S");
+                                } else if (prev_lang == 2) {
+                                    Mnustr = markSelectedOption(MENU_INTERFACE_LANG[Config::lang], "P");
                                 }
                                 opt2 = menuRun(Mnustr);
                                 if (opt2) {
@@ -4120,12 +4199,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = opt2;
                                     menu_saverect = false;
                                 } else {
-                                    menu_curopt = 8;
+                                    menu_curopt = 10;
                                     break;
                                 }
                             }
                         }
-                        else if (options_num == 9) {
+                        else if (options_num == 11) {
                             menu_level = 2;
                             menu_curopt = 1;
                             menu_saverect = true;
@@ -4142,16 +4221,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         while (1){
                                             string opt_menu = MENU_UI_OPT[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::osd_LRNav;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
 
                                             uint8_t opt2 = menuRun(opt_menu);
@@ -4178,16 +4254,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         while (1){
                                             string opt_menu = MENU_UI_OPT[Config::lang];
-                                            opt_menu += MENU_UI_TEXT_SCROLL;
                                             bool prev_opt = Config::osd_AltRot;
                                             if (prev_opt) {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[P",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_UI_TEXT_SCROLL, "P");
                                             } else {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[P",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_UI_TEXT_SCROLL, "N");
                                             }
 
                                             uint8_t opt2 = menuRun(opt_menu);
@@ -4215,16 +4288,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         while (1){
                                             string opt_menu = MENU_UI_OPT[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::thumbsEnabled;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
 
                                             uint8_t opt2 = menuRun(opt_menu);
@@ -4252,16 +4322,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         while (1){
                                             string opt_menu = MENU_UI_OPT[Config::lang];
-                                            opt_menu += MENU_YESNO[Config::lang];
                                             bool prev_opt = Config::instantPreview;
                                             if (prev_opt) {
                                                 menu_curopt = 1;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[*");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[ ");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
                                             } else {
                                                 menu_curopt = 2;
-                                                opt_menu.replace(opt_menu.find("[Y",0),2,"[ ");
-                                                opt_menu.replace(opt_menu.find("[N",0),2,"[*");
+                                                opt_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
                                             }
 
                                             uint8_t opt2 = menuRun(opt_menu);
@@ -4284,7 +4351,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     menu_curopt = opt2;
                                     menu_saverect = false;
                                 } else {
-                                    menu_curopt = 9;
+                                    menu_curopt = 11;
                                     break;
                                 }
 
@@ -5629,10 +5696,10 @@ static const char *MENU_JOYSELKEY[NLANGS] = { MENU_JOYSELKEY_EN, MENU_JOYSELKEY_
     "E\n"\
     "F\n"\
     "G\n"\
-	"H\n"\
-	"I\n"\
-	"J\n"\
-	"K\n"\
+    "H\n"\
+    "I\n"\
+    "J\n"\
+    "K\n"\
     "L\n"\
     "M\n"\
     "N\n"\
@@ -5640,17 +5707,17 @@ static const char *MENU_JOYSELKEY[NLANGS] = { MENU_JOYSELKEY_EN, MENU_JOYSELKEY_
     "P\n"\
     "Q\n"\
     "R\n"\
-	"S\n"\
-	"T\n"\
-	"U\n"\
-	"V\n"\
+    "S\n"\
+    "T\n"\
+    "U\n"\
+    "V\n"\
     "W\n"\
     "X\n"\
     "Y\n"\
     "Z\n"
 
 #define MENU_JOY_09 "0-9\n"\
-	"0\n"\
+    "0\n"\
     "1\n"\
     "2\n"\
     "3\n"\
@@ -5673,8 +5740,8 @@ static const char *MENU_JOYSELKEY[NLANGS] = { MENU_JOYSELKEY_EN, MENU_JOYSELKEY_
     "F3\n"\
     "F4\n"\
     "F5\n"\
-	"F6\n"\
-	"F7\n"\
+    "F6\n"\
+    "F7\n"\
     "F8\n"\
     "F9\n"\
     "F10\n"\
@@ -6967,7 +7034,6 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
 
                 case fabgl::VK_l        :
                 case fabgl::VK_L        : ascii = '='; break; /**< Equals: = */
-
 
                 case fabgl::VK_z        :
                 case fabgl::VK_Z        : ascii = ':'; break; /**< Colon: : */

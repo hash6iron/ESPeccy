@@ -150,7 +150,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Ejetar fita\n"\
     "Navegador fita\t>\n"\
-	"Modo reprodutor\t>\n"
+    "Modo reprodutor\t>\n"
 
 #define MENU_BETADISK_PT \
     "Drives\n"\
@@ -189,6 +189,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Joystick\t>\n"\
     "Emula\x87\x84o do joystick\t>\n"\
     "Tela\t>\n"\
+    "Mouse\t>\n"\
+    "Som\t>\n"\
     "Outros\t>\n"\
     "Idioma\t>\n"\
     "Interface do Usu\xA0rio\t>\n"
@@ -238,16 +240,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_YESNO_PT "Sim\t[Y]\n"\
     "N\x84o\t[N]\n"
 
-#define MENU_OTHER_PT "Outros\n"\
+#define MENU_MOUSE_PT "Mouse\n"\
+    "Taxa de amostragem\t>\n"\
+    "Resolu\x87\x84o\t>\n"\
+    "Escala\t>\n"
+
+#define MENU_SOUND_PT "Som\n"\
     "AY em 48K\t>\n"\
+    "Covox\t>\n"
+
+#define MENU_OTHER_PT "Outros\n"\
     "Timing ULA\t>\n"\
     "48K Issue 2\t>\n"\
-	"ULA TK\t>\n"\
+    "ULA TK\t>\n"\
     "Segundo disp. PS/2\t>\n"
 
 #define MENU_KBD2NDPS2_PT "Dispositivo\n"\
     "Nada\t[N]\n"\
-    "Teclado\t[K]\n"
+    "Teclado / Adapt. DB9\t[K]\n"\
+    "Mouse\t[M]\n"
 
 #define MENU_ALUTIMING_PT "Timing ULA\n"\
     "Early\t[E]\n"\
@@ -306,9 +317,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Custom\t[128Kcs]\n"
 
 #define MENU_INTERFACE_LANG_PT "Idioma\n"\
-    "Ingl\x88s\t[ ]\n"\
-    "Espanhol\t[ ]\n"\
-	"Portugu\x88s\t[ ]\n"
+    "Ingl\x88s\t[E]\n"\
+    "Espanhol\t[S]\n"\
+	"Portugu\x88s\t[P]\n"
 
 #define MENU_JOY_PT "Joystick\n"
 

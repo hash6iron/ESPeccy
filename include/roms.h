@@ -35,16 +35,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef ROMS_H
  #define ROMS_H
 
+// 48K ROMS
 #include "roms/romSinclair48K.h"
 #include "roms/rom48Kspanish.h"
 #include "roms/rom48Kcustom.h"
+
+// 128K ROMS
 #include "roms/romSinclair128K.h"
 #include "roms/rom128Kspanish.h"
 #include "roms/romPlus2.h"
-#include "roms/RomPlus2spanish.h"
+#include "roms/romPlus2spanish.h"
 #include "roms/rom128Kcustom.h"
-#include "roms/S128_ZX81+_ROM.h"
+
+// +2A/+3 ROMS
+#include "roms/rom+2A+3_4.1.h"
+
+// Pentagon 128K ROMS
 #include "roms/rompentagon128k.h"
+
+// TK ROMS
 #include "roms/romTK90X_v1.h"
 #include "roms/romTK90X_v2.h"
 #include "roms/romTK90X_v3ES.h"
@@ -52,7 +61,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "roms/romTK90X_v3EN.h"
 #include "roms/romTK95ES.h"
 #include "roms/romTKcustom.h"
+
+// TR-DOS ROM
 #include "roms/trdos.h"
-// #include "roms/romCBI95.h"
+
+// ZX81+ Paul Farrow's IF2 ROM
+#include "roms/S128_ZX81+_ROM.h"
 
 #endif

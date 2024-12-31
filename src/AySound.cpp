@@ -444,23 +444,23 @@ IRAM_ATTR void AySound::gen_sound(int sound_bufsize, int bufpos)
 
 }
 
-void AySound::updToneA() {
+IRAM_ATTR void AySound::updToneA() {
     ayregs.tone_a = regs[0] + ((regs[1] & 0x0f) << 8);
 }
 
-void AySound::updToneB() {
+IRAM_ATTR void AySound::updToneB() {
     ayregs.tone_b = regs[2] + ((regs[3] & 0x0f) << 8);
 }
 
-void AySound::updToneC() {
+IRAM_ATTR void AySound::updToneC() {
     ayregs.tone_c = regs[4] + ((regs[5] & 0x0f) << 8);
 }
 
-void AySound::updNoisePitch() {
+IRAM_ATTR void AySound::updNoisePitch() {
     ayregs.noise = regs[6] & 0x1f;
 }
 
-void AySound::updMixer() {
+IRAM_ATTR void AySound::updMixer() {
     ayregs.R7_tone_a = !(regs[7] & 0x01);
     ayregs.R7_tone_b = !(regs[7] & 0x02);
     ayregs.R7_tone_c = !(regs[7] & 0x04);
@@ -470,26 +470,26 @@ void AySound::updMixer() {
     ayregs.R7_noise_c = !(regs[7] & 0x20);
 }
 
-void AySound::updVolA() {
+IRAM_ATTR void AySound::updVolA() {
     ayregs.vol_a = regs[8] & 0x0f;
     ayregs.env_a = regs[8] & 0x10;
 }
 
-void AySound::updVolB() {
+IRAM_ATTR void AySound::updVolB() {
     ayregs.vol_b = regs[9] & 0x0f;
     ayregs.env_b = regs[9] & 0x10;
 }
 
-void AySound::updVolC() {
+IRAM_ATTR void AySound::updVolC() {
     ayregs.vol_c = regs[10] & 0x0f;
     ayregs.env_c = regs[10] & 0x10;
 }
 
-void AySound::updEnvFreq() {
+IRAM_ATTR void AySound::updEnvFreq() {
     ayregs.env_freq = regs[11] + (regs[12] << 8);
 }
 
-void AySound::updEnvType() {
+IRAM_ATTR void AySound::updEnvType() {
     
     // This shouldn't happen on AY
     // if (regs[13] == 0xff) { // R13 = 255 means continue current envelop
@@ -502,15 +502,15 @@ void AySound::updEnvType() {
 
 }
 
-void AySound::updIOPortA() {
+IRAM_ATTR void AySound::updIOPortA() {
     ayregs.IOPortA = regs[14] & 0xff;
 }
 
-void AySound::updIOPortB() {
+IRAM_ATTR void AySound::updIOPortB() {
     ayregs.IOPortB = regs[15] & 0xff;
 }
 
-uint8_t AySound::getRegisterData()
+IRAM_ATTR uint8_t AySound::getRegisterData()
 {
 
     if ((selectedRegister >= 14) && ((regs[7] >> (selectedRegister - 8)) & 1) == 0) {
@@ -541,23 +541,12 @@ uint8_t AySound::getRegisterData()
 
 }
 
-void AySound::selectRegister(uint8_t registerNumber)
-{
-    selectedRegister = registerNumber;
-}
-
-void AySound::setRegisterData(uint8_t data)
-{
-
-    if (selectedRegister < 16) {
+IRAM_ATTR void AySound::setRegisterData(uint8_t data) {
         regs[selectedRegister] = data;
         updateReg[selectedRegister]();
     }
 
-}
-
-void AySound::reset()
-{
+void AySound::reset() {
 
     cnt_a = cnt_b = cnt_c = cnt_n = cnt_e = 0;
     bit_a = bit_b = bit_c = bit_n = 0;
@@ -579,8 +568,18 @@ void AySound::reset()
     
     regs[7] = 0xff; // Mixer register
 
-    selectedRegister = 0xff;
+    selectedRegister = 0;
 
     for(int i=0; i < 16; i++) updateReg[i](); // Update all registers
+
+    // for (int i=0;i<16;i++) {
+    //     selectedRegister = i;
+    //     setRegisterData(0);
+    // }
+
+    // selectedRegister = 7;
+    // setRegisterData(0xff); // Mixer register
+
+    // selectedRegister = 0;
 
 }

@@ -129,21 +129,34 @@ public:
     // Audio
     static void BeeperGetSample();
     static void AYGetSample();
+    static void COVOXGetSample();
     static uint8_t audioBuffer[ESP_AUDIO_SAMPLES_PENTAGON];
+    static uint8_t SamplebufCOVOX[ESP_AUDIO_SAMPLES_PENTAGON];
+    static uint32_t audbufcntCOVOX;
+    static uint32_t faudbufcntCOVOX;
+    static uint8_t covoxData[4];
+    static uint16_t covoxMix;
+    static uint16_t fcovoxMix;
     static uint32_t* overSamplebuf;
     static unsigned char audioSampleDivider;
     static unsigned char audioAYDivider;
+    static unsigned char audioCOVOXDivider;
     static unsigned char audioOverSampleDivider;
     static signed char aud_volume;
     static uint32_t audbufcnt;
+    // static uint32_t faudbufcnt;
     static uint32_t audbufcntover;
+    static uint32_t faudbufcntover;
     static uint32_t audbufcntAY;
     static uint32_t faudbufcntAY;
     static int lastaudioBit;
-//    static int faudioBit;
+    static int flastaudioBit;
     static int samplesPerFrame;
     static bool AY_emu;
     static int Audio_freq[4];
+    static int audioBitBuf;
+    static unsigned char audioBitbufCount;
+    static uint8_t aud_active_sources;
 
     static uint8_t ESP_delay;
     static int sync_cnt;
@@ -166,10 +179,19 @@ public:
 
     static TaskHandle_t audioTaskHandle;
 
+    static bool ps2kbd;
     static bool ps2kbd2;
+    static bool ps2mouse;
+
+    static int zxDelay;
 
     static bool trdos;
     static WD1793 Betadisk;
+
+    static int32_t mouseX;
+    static int32_t mouseY;
+    static bool mouseButtonL;
+    static bool mouseButtonR;
 
     // static uint32_t sessid;
 

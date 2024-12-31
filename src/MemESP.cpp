@@ -67,18 +67,22 @@ uint8_t MemESP::videoLatch = 0;
 uint8_t MemESP::romLatch = 0;
 uint8_t MemESP::pagingLock = 0;
 uint8_t MemESP::romInUse = 0;
+uint8_t MemESP::pagingmode2A3 = 0;
+uint8_t MemESP::lastContendedMemReadWrite = 0xff;
 
 bool MemESP::Init() {
 
     #ifdef ESPECTRUM_PSRAM
+
+    // 48K pages in SRAM (faster)
+    MemESP::ram[0] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+    MemESP::ram[2] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
 
     // Video pages in SRAM (faster)
     MemESP::ram[5] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
     MemESP::ram[7] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
 
     // Rest of pages in PSRAM
-    MemESP::ram[0] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    MemESP::ram[2] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
     MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -133,6 +137,10 @@ void MemESP::Reset() {
     MemESP::ramContended[3] = false;
 
     MemESP::pagingLock = Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95" ? 1 : 0;
+
+    MemESP::pagingmode2A3 = 0;
+
+    MemESP::lastContendedMemReadWrite = 0xff;
 
     #ifndef ESPECTRUM_PSRAM
     if ( MemESP::pagingLock ) { // *48k

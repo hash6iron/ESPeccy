@@ -97,6 +97,10 @@ public:
     static uint8_t romLatch;
     static uint8_t pagingLock;
 
+    static uint8_t pagingmode2A3;
+
+    static uint8_t lastContendedMemReadWrite;
+
     static uint8_t romInUse;
 
     static bool Init();
@@ -123,18 +127,21 @@ public:
 
 inline uint8_t MemESP::readbyte(uint16_t addr) {
     uint8_t page = addr >> 14;
-    switch (page) {
-    case 0:
-        return rom[romInUse][addr];
-    case 1:
-        return ram[5][addr - 0x4000];
-    case 2:
-        return ram[2][addr - 0x8000];
-    case 3:
-        return ram[bankLatch][addr - 0xC000];
-    default:
-        return rom[romInUse][addr];
-    }
+    return MemESP::ramCurrent[page][addr & 0x3fff];
+
+    // switch (page) {
+    // case 0:
+    //     return rom[romInUse][addr];
+    // case 1:
+    //     return ram[5][addr - 0x4000];
+    // case 2:
+    //     return ram[2][addr - 0x8000];
+    // case 3:
+    //     return ram[bankLatch][addr - 0xC000];
+    // default:
+    //     return rom[romInUse][addr];
+    // }
+
 }
 
 inline uint16_t MemESP::readword(uint16_t addr) {
@@ -144,20 +151,27 @@ inline uint16_t MemESP::readword(uint16_t addr) {
 inline void MemESP::writebyte(uint16_t addr, uint8_t data)
 {
     uint8_t page = addr >> 14;
-    switch (page) {
-    case 0:
-        return;
-    case 1:
-        ram[5][addr - 0x4000] = data;
-        break;
-    case 2:
-        ram[2][addr - 0x8000] = data;
-        break;
-    case 3:
-        ram[bankLatch][addr - 0xC000] = data;
-        break;
-    }
-    return;
+
+    if (page == MemESP::pagingmode2A3) return;
+
+    MemESP::ramCurrent[page][addr & 0x3fff] = data;
+
+    // uint8_t page = addr >> 14;
+    // switch (page) {
+    // case 0:
+    //     return;
+    // case 1:
+    //     ram[5][addr - 0x4000] = data;
+    //     break;
+    // case 2:
+    //     ram[2][addr - 0x8000] = data;
+    //     break;
+    // case 3:
+    //     ram[bankLatch][addr - 0xC000] = data;
+    //     break;
+    // }
+    // return;
+
 }
 
 inline void MemESP::writeword(uint16_t addr, uint16_t data) {

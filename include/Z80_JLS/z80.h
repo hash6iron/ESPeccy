@@ -390,6 +390,7 @@ public:
     // Execute one instruction
     static void execute();
     static void exec_nocheck();
+    static void exec_nocheck_2A3();
 
     // Check INT
     static void checkINT(void);

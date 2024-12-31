@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ESPectrum.h"
 
 uint8_t ZXKeyb::ZXcols[8] = { 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf };
-bool ZXKeyb::Exists;
+uint8_t ZXKeyb::Exists = 0;
 
 void ZXKeyb::setup()
 {
@@ -54,7 +54,7 @@ void ZXKeyb::setup()
 
     // Check if membrane keyboard is present
     putRows(0xFF);
-    Exists = gpio_get_level((gpio_num_t)KM_COL_1) && gpio_get_level((gpio_num_t)KM_COL_2) && gpio_get_level((gpio_num_t)KM_COL_4);
+    if (gpio_get_level((gpio_num_t)KM_COL_1) && gpio_get_level((gpio_num_t)KM_COL_2) && gpio_get_level((gpio_num_t)KM_COL_4)) Exists = 1;
 
 }
 

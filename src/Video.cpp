@@ -101,7 +101,9 @@ static unsigned int curline;
 static unsigned int bmpOffset;  // offset for bitmap in graphic memory
 static unsigned int attOffset;  // offset for attrib in graphic memory
 
-static const uint8_t wait_st[128] = {
+static const uint8_t* wait_st;
+
+static const uint8_t wait_st_std[131] = {
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
@@ -110,6 +112,19 @@ static const uint8_t wait_st[128] = {
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
     6, 5, 4, 3, 2, 1, 0, 0, 6, 5, 4, 3, 2, 1, 0, 0,
+    0, 0, 0
+}; // sequence of wait states
+
+static const uint8_t wait_st_2a3[131] = {
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 7, 6, 5, 4, 3, 2, 1, 0, 7, 6, 5, 4, 3, 2,
+    1, 0, 0
 }; // sequence of wait states
 
 IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
@@ -205,6 +220,7 @@ void VIDEO::vgataskinit(void *unused) {
             Mode = Config::ALUTK == 0 ? 4 : Config::ALUTK == 1 ? 8 : 12; // Video mode depends on ULA chosen
             break;
         case '1':
+        case '+':
             Mode = 16;
             break;
         case 'P':
@@ -229,6 +245,7 @@ void VIDEO::vgataskinit(void *unused) {
             Mode = Config::ALUTK == 0 ? 24 : Config::ALUTK == 1 ? 25 : 26; // Video mode depends on ULA chosen
             break;
         case '1':
+        case '+':
             Mode = 27;
             break;
         case 'P':
@@ -312,9 +329,11 @@ void VIDEO::Reset() {
 
     OSD = 0;
 
-    Draw_OSD169 = MainScreen;
+    Draw_OSD169 = Config::arch == "+2A" || Config::arch == "+3" ? MainScreen_2A3 : MainScreen;
     Draw_OSD43 = BottomBorder;
     DrawBorder = TopBorder_Blank;
+
+    wait_st = (uint8_t *) wait_st_std;
 
     if (Config::arch == "48K") {
         tStatesPerLine = TSTATES_PER_LINE;
@@ -360,6 +379,22 @@ void VIDEO::Reset() {
         tStatesPerLine = TSTATES_PER_LINE_128;
         tStatesScreen = TS_SCREEN_128;
         tStatesBorder = Config::videomode == 2 ? TS_BORDER_352x272_128 : (is169 ? TS_BORDER_360x200_128 : TS_BORDER_320x240_128);
+        if (Config::videomode == 1) {
+            VsyncFinetune[0] = is169 ? 1 : 1;
+            VsyncFinetune[1] = is169 ? 123 : 123;
+        } else {
+            VsyncFinetune[0] = is169 ? 0 : 0;
+            VsyncFinetune[1] = is169 ? 0 : 0;
+        }
+
+    } else if (Config::arch == "+2A") {
+
+        wait_st = (uint8_t *) wait_st_2a3;
+
+        tStatesPerLine = TSTATES_PER_LINE_128;
+        tStatesScreen = TS_SCREEN_128 + 3;
+        tStatesBorder = Config::videomode == 2 ? TS_BORDER_352x272_128 : (is169 ? TS_BORDER_360x200_128 : TS_BORDER_320x240_128);
+        tStatesBorder += 3;
         if (Config::videomode == 1) {
             VsyncFinetune[0] = is169 ? 1 : 1;
             VsyncFinetune[1] = is169 ? 123 : 123;
@@ -422,7 +457,7 @@ void VIDEO::Reset() {
 
     grmem = MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5];
 
-    VIDEO::snow_toggle = Config::arch != "Pentagon" ? Config::render : false;
+    VIDEO::snow_toggle = Config::render;
 
     if (VIDEO::snow_toggle) {
         Draw = &Blank_Snow;
@@ -469,9 +504,44 @@ IRAM_ATTR void VIDEO::MainScreen_Blank(unsigned int statestoadd, bool contended)
 
 }
 
+IRAM_ATTR void VIDEO::MainScreen_Blank_2A3(unsigned int statestoadd, bool contended) {
+
+    if (contended && (CPU::tstates >= (tstateDraw - 3))) {
+        statestoadd += wait_st[CPU::tstates - (tstateDraw - 3)];
+    }
+
+    CPU::tstates += statestoadd;
+
+    if (CPU::tstates >= tstateDraw) {
+
+        if (brdChange) DrawBorder(); // Needed to avoid tearing in demos like Gabba (Pentagon)
+
+        lineptr32 = (uint32_t *)(vga.frameBuffer[linedraw_cnt]) + (Config::videomode == 2 ? 12 : is169 ? 13 : 8);
+
+        coldraw_cnt = 0;
+
+        curline = linedraw_cnt - lin_end;
+        bmpOffset = offBmp[curline];
+        attOffset = offAtt[curline];
+
+        Draw = linedraw_cnt >= 176 && linedraw_cnt <= 191 ? Draw_OSD169 : MainScreen_2A3;
+        Draw_Opcode = MainScreen_Opcode;
+
+        video_rest = CPU::tstates - tstateDraw;
+        Draw(0,false);
+
+    }
+
+}
+
 IRAM_ATTR void VIDEO::MainScreen_Blank_Opcode(bool contended) { MainScreen_Blank(4, contended); }
+IRAM_ATTR void VIDEO::MainScreen_Blank_Opcode_2A3(bool contended) { MainScreen_Blank_2A3(4, contended); }
 
 IRAM_ATTR void VIDEO::MainScreen_Blank_Snow(unsigned int statestoadd, bool contended) {
+
+    if (Z80Ops::is2a3 && contended && (CPU::tstates >= (tstateDraw - 3))) {
+        statestoadd += wait_st[CPU::tstates - (tstateDraw - 3)];
+    }
 
     CPU::tstates += statestoadd;
 
@@ -507,7 +577,10 @@ IRAM_ATTR void VIDEO::MainScreen_Blank_Snow(unsigned int statestoadd, bool conte
 
 IRAM_ATTR void VIDEO::MainScreen_Blank_Snow_Opcode(bool contended) {
 
-    CPU::tstates += 4;
+    if (Z80Ops::is2a3 && contended && (CPU::tstates >= (tstateDraw - 3))) {
+        CPU::tstates += 4 + wait_st[CPU::tstates - (tstateDraw - 3)];
+    } else
+    	CPU::tstates += 4;
 
     if (CPU::tstates >= tstateDraw) {
 
@@ -574,6 +647,88 @@ IRAM_ATTR void VIDEO::MainScreen(unsigned int statestoadd, bool contended) {
 
 }
 
+IRAM_ATTR void VIDEO::MainScreen_2A3(unsigned int statestoadd, bool contended) {
+
+    uint8_t att;
+
+    if (contended) statestoadd += wait_st[CPU::tstates - (tstateDraw - 3)];
+
+    CPU::tstates += statestoadd;
+    statestoadd += video_rest;
+    video_rest = statestoadd & 0x03;
+    unsigned int loopCount = statestoadd >> 2;
+    coldraw_cnt += loopCount;
+
+    if (coldraw_cnt >= 32) {
+        tstateDraw += tStatesPerLine;
+        if (++linedraw_cnt == lin_end2) {
+            Draw = &Blank;
+            Draw_Opcode = &Blank_Opcode;
+        } else {
+            Draw = &MainScreen_Blank_2A3;
+            Draw_Opcode = &MainScreen_Blank_Opcode_2A3;
+        }
+        loopCount -= coldraw_cnt - 32;
+    }
+
+    if (loopCount == 0) return;
+
+    for (;loopCount--;) {
+        att = grmem[attOffset++];
+        uint8_t bmp = att & flashing ? ~grmem[bmpOffset++] : grmem[bmpOffset++];
+        *lineptr32++ = AluByte[bmp >> 4][att];
+        *lineptr32++ = AluByte[bmp & 0xF][att];
+    }
+
+    if ((attOffset & 1) == 0) MemESP::lastContendedMemReadWrite = att;
+
+}
+
+IRAM_ATTR void VIDEO::MainScreen_OSD_2A3(unsigned int statestoadd, bool contended) {
+
+    uint8_t att;
+
+    if (contended) statestoadd += wait_st[CPU::tstates - (tstateDraw - 3)];
+
+    CPU::tstates += statestoadd;
+    statestoadd += video_rest;
+    video_rest = statestoadd & 0x03;
+    unsigned int loopCount = statestoadd >> 2;
+    unsigned int coldraw_osd = coldraw_cnt;
+    coldraw_cnt += loopCount;
+
+    if (coldraw_cnt >= 32) {
+        tstateDraw += tStatesPerLine;
+        if (++linedraw_cnt == lin_end2) {
+            Draw = &Blank;
+            Draw_Opcode = &Blank_Opcode;
+        } else {
+            Draw = &MainScreen_Blank_2A3;
+            Draw_Opcode = &MainScreen_Blank_Opcode_2A3;
+        }
+        loopCount -= coldraw_cnt - 32;
+    }
+
+    if (loopCount == 0) return;
+
+    for (;loopCount--;) {
+        if (coldraw_osd >= 13 && coldraw_osd <= 30) {
+            lineptr32+=2;
+            attOffset++;
+            bmpOffset++;
+        } else {
+            att = grmem[attOffset++];
+            uint8_t bmp = (att & flashing) ? ~grmem[bmpOffset++] : grmem[bmpOffset++];
+            *lineptr32++ = AluByte[bmp >> 4][att];
+            *lineptr32++ = AluByte[bmp & 0xF][att];
+        }
+        coldraw_osd++;
+    }
+
+    if ((attOffset & 1) == 0) MemESP::lastContendedMemReadWrite = att;
+
+}
+
 IRAM_ATTR void VIDEO::MainScreen_OSD(unsigned int statestoadd, bool contended) {
 
     if (contended) statestoadd += wait_st[CPU::tstates - tstateDraw];
@@ -622,12 +777,12 @@ IRAM_ATTR void VIDEO::MainScreen_Snow(unsigned int statestoadd, bool contended) 
 
     bool do_stats = false;
 
-    if (contended) statestoadd += wait_st[coldraw_cnt]; // [CPU::tstates - tstateDraw];
+    if (contended) statestoadd += wait_st[coldraw_cnt + (Z80Ops::is2a3 ? 3 : 0)];
 
     CPU::tstates += statestoadd;
 
     unsigned int col_osd = coldraw_cnt >> 2;
-    if (linedraw_cnt >= 176 && linedraw_cnt <= 191) do_stats = (VIDEO::Draw_OSD169 == VIDEO::MainScreen_OSD);
+    if (linedraw_cnt >= 176 && linedraw_cnt <= 191) do_stats = Draw_OSD169 == MainScreen_OSD || Draw_OSD169 == MainScreen_OSD_2A3;
 
     coldraw_cnt += statestoadd;
 
@@ -695,6 +850,12 @@ IRAM_ATTR void VIDEO::MainScreen_Snow(unsigned int statestoadd, bool contended) 
 
                 col_osd++;
 
+                break;
+
+            case 6:
+
+                MemESP::lastContendedMemReadWrite = att2;
+
         }
 
         ++dispUpdCycle &= 0x07; // Update the cycle counter.
@@ -714,12 +875,12 @@ IRAM_ATTR void VIDEO::MainScreen_Snow_Opcode(bool contended) {
 
     unsigned int statestoadd = video_opcode_rest ? video_opcode_rest : 4;
 
-    if (contended) statestoadd += wait_st[coldraw_cnt]; // [CPU::tstates - tstateDraw];
+    if (contended) statestoadd += wait_st[coldraw_cnt + (Z80Ops::is2a3 ? 3 : 0)];
 
     CPU::tstates += statestoadd;
 
     unsigned int col_osd = coldraw_cnt >> 2;
-    if (linedraw_cnt >= 176 && linedraw_cnt <= 191) do_stats = (VIDEO::Draw_OSD169 == VIDEO::MainScreen_OSD);
+    if (linedraw_cnt >= 176 && linedraw_cnt <= 191) do_stats = Draw_OSD169 == MainScreen_OSD || Draw_OSD169 == MainScreen_OSD_2A3;
 
     coldraw_cnt += statestoadd;
 
@@ -737,7 +898,8 @@ IRAM_ATTR void VIDEO::MainScreen_Snow_Opcode(bool contended) {
 
     }
 
-    if (dispUpdCycle == 6) {
+    // +2A/3 floating bus compatibility
+    if (!Z80Ops::is2a3 && dispUpdCycle == 6) {
         dispUpdCycle = 2;
         return;
     }
@@ -745,10 +907,10 @@ IRAM_ATTR void VIDEO::MainScreen_Snow_Opcode(bool contended) {
     // Determine if snow effect can be applied
     uint8_t page = Z80::getRegI() & 0xc0;
     if (page == 0x40) { // Snow 48K, 128K
-        snow_effect = 1;
+        snow_effect = Z80Ops::is48 || Z80Ops::is128;
         snowpage = MemESP::videoLatch ? 7 : 5;
     } else if (Z80Ops::is128 && (MemESP::bankLatch & 0x01) && page == 0xc0) {  // Snow 128K
-        snow_effect = 1;
+        snow_effect = Z80Ops::is48 || Z80Ops::is128;
         if (MemESP::bankLatch == 1 || MemESP::bankLatch == 3)
             snowpage = MemESP::videoLatch ? 3 : 1;
         else
@@ -827,6 +989,12 @@ IRAM_ATTR void VIDEO::MainScreen_Snow_Opcode(bool contended) {
 
                 col_osd++;
 
+                break;
+
+            case 6:
+
+                MemESP::lastContendedMemReadWrite = att2;
+
         }
 
         ++dispUpdCycle &= 0x07; // Update the cycle counter.
@@ -850,19 +1018,9 @@ IRAM_ATTR void VIDEO::EndFrame() {
         Draw = &MainScreen_Blank_Snow;
         Draw_Opcode = &MainScreen_Blank_Snow_Opcode;
     } else {
-        Draw = &MainScreen_Blank;
-        Draw_Opcode = &MainScreen_Blank_Opcode;
+        Draw = Z80Ops::is2a3 ? &MainScreen_Blank_2A3 : &MainScreen_Blank;
+        Draw_Opcode = Z80Ops::is2a3 ? &MainScreen_Blank_Opcode_2A3 : &MainScreen_Blank_Opcode;
     }
-
-    // if (brdChange) {
-    //     DrawBorder();
-    //     brdnextframe = true;
-    // } else {
-    //     if (brdnextframe) {
-    //         DrawBorder();
-    //         brdnextframe = false;
-    //     }
-    // }
 
     if (brdChange || brdnextframe) {
         DrawBorder();
@@ -871,6 +1029,7 @@ IRAM_ATTR void VIDEO::EndFrame() {
 
     // Restart border drawing
     DrawBorder = Z80Ops::isPentagon ? &TopBorder_Blank_Pentagon : &TopBorder_Blank;
+
     lastBrdTstate = tStatesBorder;
     brdChange = false;
 

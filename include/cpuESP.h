@@ -70,6 +70,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define INT_ENDTK 32
 #define INT_START128 0
 #define INT_END128 36 // 35 in real +2 and Weiv's Spectramine. I'll have to check those numbers
+#define INT_STARTPLUS2A3 0
+#define INT_ENDPLUS2A3 32
 #define INT_START_PENTAGON 0
 #define INT_END_PENTAGON 36
 
@@ -88,6 +90,10 @@ public:
 
     // CPU Tstates elapsed in current frame
     static uint32_t tstates;
+
+    static int32_t prev_tstates;
+
+    static uint32_t tstates_diff;
 
     // CPU Tstates elapsed since reset
     static uint64_t global_tstates;

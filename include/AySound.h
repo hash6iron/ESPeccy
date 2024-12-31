@@ -143,7 +143,6 @@ public:
     
     static void reset();
     static uint8_t getRegisterData();
-    static void selectRegister(uint8_t data);
     static void setRegisterData(uint8_t data);
 
     static void init();
@@ -157,6 +156,9 @@ public:
     static void(*updateReg[16])();
 
     static uint8_t SamplebufAY[ESP_AUDIO_SAMPLES_PENTAGON];
+
+    static uint8_t regs[16];
+    static uint8_t selectedRegister;
 
 private:
 
@@ -194,9 +196,6 @@ private:
     static int EnvNum;                      /**< number of current envilopment (0...15) */
     static int env_pos;                     /**< current position in envelop (0...127) */
     static int Cur_Seed;                    /**< random numbers counter */
-
-    static uint8_t regs[16];
-    static uint8_t selectedRegister;
 
 };
 

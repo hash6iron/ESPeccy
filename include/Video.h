@@ -129,9 +129,13 @@ public:
   static void Blank_Snow_Opcode(bool contended);
   // 48 / 128
   static void MainScreen_Blank(unsigned int statestoadd, bool contended);
+  static void MainScreen_Blank_2A3(unsigned int statestoadd, bool contended);
   static void MainScreen_Blank_Opcode(bool contended);
+  static void MainScreen_Blank_Opcode_2A3(bool contended);
   static void MainScreen(unsigned int statestoadd, bool contended);
+  static void MainScreen_2A3(unsigned int statestoadd, bool contended);
   static void MainScreen_OSD(unsigned int statestoadd, bool contended);
+  static void MainScreen_OSD_2A3(unsigned int statestoadd, bool contended);
   static void MainScreen_Opcode(bool contended);
   static void MainScreen_Blank_Snow(unsigned int statestoadd, bool contended);
   static void MainScreen_Blank_Snow_Opcode(bool contended);

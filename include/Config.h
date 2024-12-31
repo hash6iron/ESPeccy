@@ -56,6 +56,12 @@ using namespace std;
 #define JOYPS2_FULLER 4
 #define JOYPS2_CUSTOM 5
 #define JOYPS2_NONE 6
+
+#define CovoxNONE 0
+#define CovoxMONO 1
+#define CovoxSTEREO 2
+#define CovoxSOUNDDRIVE1 3
+#define CovoxSOUNDDRIVE2 4
 class Config
 {
 public:
@@ -76,11 +82,15 @@ public:
     static string   romSet;
     static string   romSet48;
     static string   romSet128;
+    static string   romSet2A;
+    static string   romSet3;
     static string   romSetTK90X;
     static string   romSetTK95;
     static string   pref_arch;
     static string   pref_romSet_48;
     static string   pref_romSet_128;
+    static string   pref_romSet_2A;
+    static string   pref_romSet_3;
     static string   pref_romSet_TK90X;
     static string   pref_romSet_TK95;
     static string   ram_file;
@@ -149,6 +159,11 @@ public:
     static bool     thumbsEnabled;
     static bool     instantPreview;
 
+    static uint8_t  Covox;
+
+    static uint8_t  mousesamplerate;
+    static uint8_t  mousedpi;
+    static uint8_t  mousescaling;
 };
 
 #endif // Config.h

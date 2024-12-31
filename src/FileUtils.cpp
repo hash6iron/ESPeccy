@@ -62,13 +62,13 @@ string FileUtils::MountPoint = MOUNT_POINT_SD; // Start with SD
 bool FileUtils::SDReady = false;
 sdmmc_card_t *FileUtils::card;
 
-string FileUtils::SNA_Path = "/"; // DISK_SNA_DIR; // Current path on the SD (for future folder support)
-string FileUtils::TAP_Path = "/"; // DISK_TAP_DIR; // Current path on the SD (for future folder support)
-string FileUtils::DSK_Path = "/"; // DISK_DSK_DIR; // Current path on the SD (for future folder support)
-string FileUtils::ROM_Path = "/"; // DISK_ROM_DIR; // Current path on the SD (for future folder support)
+string FileUtils::SNA_Path = "/"; // Current path on the SD
+string FileUtils::TAP_Path = "/"; // Current path on the SD
+string FileUtils::DSK_Path = "/"; // Current path on the SD
+string FileUtils::ROM_Path = "/"; // Current path on the SD
 string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
-string FileUtils::CHT_Path = "/"; // DISK_CHR_DIR; // Current path on the SD (for future folder support)
-string FileUtils::SCR_Path = "/"; // DISK_SCR_DIR; // Current path on the SD (for future folder support)
+string FileUtils::CHT_Path = "/"; // Current path on the SD
+string FileUtils::SCR_Path = "/"; // Current path on the SD
 
 DISK_FTYPE FileUtils::fileTypes[] = {
     {"sna,z80,sp,p",".s",2,2,0,""},

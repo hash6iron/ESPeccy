@@ -234,9 +234,23 @@ static const char *MENU_OTHER[NLANGS] = { MENU_OTHER_EN, MENU_OTHER_ES, MENU_OTH
 
 static const char *MENU_AY48[NLANGS] = { "AY on 48K \n" , "AY en 48K \n" , "AY em 48K \n" };
 
+static const char *SECOND_PS2_DEVICE[NLANGS][4] = {
+    { "2nd PS/2 device: ", "None" , "Kbd / DB9 adapter" , "Mouse"},
+    { "Segundo disp. PS/2: ", "Nada" , "Teclado / Adapt. DB9" , "Rat\xA2n"},
+    { "Segundo disp. PS/2: ", "Nada" , "Teclado / Adapt. DB9" , "Mouse"}
+};
+
+#define MENU_COVOXS "Covox Mono\t[M]\n"\
+    "Covox Stereo\t[S]\n"\
+    "SoundDrive 1.05 mode 1\t[1]\n"\
+    "SoundDrive 1.05 mode 2\t[2]\n"
+
+static const char *MENU_COVOX[NLANGS] = { "Covox\n" "None   \t[N]\n" MENU_COVOXS, "Covox\n" "Ninguno\t[N]\n" MENU_COVOXS, "Covox\n" "Nenhum \t[N]\n" MENU_COVOXS};
+
 #define MENU_ALUTK "Ferranti\t[F]\n"\
     "Microdigital 50hz\t[5]\n"\
-	"Microdigital 60hz\t[6]\n"
+    "Microdigital 60hz\t[6]\n"
+
 static const char *MENU_ALUTK_PREF[NLANGS] = { "TK ULA\n" MENU_ALUTK, "ULA TK\n" MENU_ALUTK, "ULA TK\n" MENU_ALUTK };
 
 static const char *MENU_KBD2NDPS2[NLANGS] = { MENU_KBD2NDPS2_EN, MENU_KBD2NDPS2_ES, MENU_KBD2NDPS2_PT };
@@ -247,9 +261,10 @@ static const char *MENU_ISSUE2[NLANGS] = { "48K Issue 2\n", "48K Issue 2\n", "48
 
 #define MENU_ARCHS "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\
-	"Pentagon 128K\n"\
-	"TK90X\t>\n"\
-	"TK95\t>\n"
+    "Spectrum +2A\n"\
+    "Pentagon 128K\n"\
+    "TK90X\t>\n"\
+    "TK95\t>\n"
 
 static const char *MENU_ARCH[NLANGS] = { MENU_ARCH_EN MENU_ARCHS, MENU_ARCH_ES MENU_ARCHS, MENU_ARCH_PT MENU_ARCHS };
 
@@ -263,46 +278,47 @@ static const char *MENU_ROMSTK95[NLANGS] = { MENU_ROMSTK95_EN, MENU_ROMSTK95_ES,
 
 #define MENU_ARCHS_PREF "Spectrum 48K\t[4]\n"\
     "Spectrum 128K\t[1]\n"\
-	"Pentagon 128K\t[P]\n"\
-	"TK90X\t[T]\n"\
-	"TK95\t[9]\n"
+    "Spectrum +2A\t[2]\n"\
+    "Pentagon 128K\t[P]\n"\
+    "TK90X\t[T]\n"\
+    "TK95\t[9]\n"
 
 static const char *MENU_ARCH_PREF[NLANGS] = {
-	"Preferred machine\n" MENU_ARCHS_PREF "Last used\t[L]\n",
-	"Modelo preferido\n" MENU_ARCHS_PREF "Ultimo utilizado\t[L]\n",
-	"Hardware favorito\n" MENU_ARCHS_PREF "Usado por \xA3ltimo\t[L]\n"
-	 };
+    "Preferred machine\n" MENU_ARCHS_PREF "Last used\t[L]\n",
+    "Modelo preferido\n" MENU_ARCHS_PREF "Ultimo utilizado\t[L]\n",
+    "Hardware favorito\n" MENU_ARCHS_PREF "Usado por \xA3ltimo\t[L]\n"
+};
 
 #define MENU_ROMS_PREF "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\
-	"TK90X\t>\n"\
-	"TK95\t>\n"
+    "TK90X\t>\n"\
+    "TK95\t>\n"
 
 static const char *MENU_ROM_PREF[NLANGS] = { "Preferred ROM\n" MENU_ROMS_PREF, "ROM preferida\n" MENU_ROMS_PREF, "ROM favorita\n" MENU_ROMS_PREF };
 
 static const char *MENU_ROM_PREF_48[NLANGS] = {
-	"Select ROM\n" MENU_ROMS48_PREF_EN "Last used\t[Last]\n",
-	"Elija ROM\n" MENU_ROMS48_PREF_ES "Ultima usada\t[Last]\n",
-	"Escolha ROM\n" MENU_ROMS48_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
-	 };
+    "Select ROM\n" MENU_ROMS48_PREF_EN "Last used\t[Last]\n",
+    "Elija ROM\n" MENU_ROMS48_PREF_ES "Ultima usada\t[Last]\n",
+    "Escolha ROM\n" MENU_ROMS48_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
+    };
 
 static const char *MENU_ROM_PREF_TK90X[NLANGS] = {
-	"Select ROM\n" MENU_ROMSTK90X_PREF_EN "Last used\t[Last ]\n",
-	"Elija ROM\n" MENU_ROMSTK90X_PREF_ES "Ultima usada\t[Last ]\n",
-	"Escolha ROM\n" MENU_ROMSTK90X_PREF_PT "Usada por \xA3ltimo\t[Last ]\n"
-	 };
+    "Select ROM\n" MENU_ROMSTK90X_PREF_EN "Last used\t[Last ]\n",
+    "Elija ROM\n" MENU_ROMSTK90X_PREF_ES "Ultima usada\t[Last ]\n",
+    "Escolha ROM\n" MENU_ROMSTK90X_PREF_PT "Usada por \xA3ltimo\t[Last ]\n"
+};
 
 static const char *MENU_ROM_PREF_128[NLANGS] = {
-	"Select ROM\n" MENU_ROMS128_PREF_EN "Last used\t[Last]\n",
-	"Elija ROM\n" MENU_ROMS128_PREF_ES "Ultima usada\t[Last]\n",
-	"Escolha ROM\n" MENU_ROMS128_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
-	 };
+    "Select ROM\n" MENU_ROMS128_PREF_EN "Last used\t[Last]\n",
+    "Elija ROM\n" MENU_ROMS128_PREF_ES "Ultima usada\t[Last]\n",
+    "Escolha ROM\n" MENU_ROMS128_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
+};
 
 static const char *MENU_ROM_PREF_TK95[NLANGS] = {
-	"Select ROM\n" MENU_ROMSTK95_PREF_EN"Last used\t[Last ]\n",
-	"Elija ROM\n" MENU_ROMSTK95_PREF_ES "Ultima usada\t[Last ]\n",
-	"Escolha ROM\n" MENU_ROMSTK95_PREF_PT "Usada por \xA3ltimo\t[Last ]\n"
-	 };
+    "Select ROM\n" MENU_ROMSTK95_PREF_EN"Last used\t[Last ]\n",
+    "Elija ROM\n" MENU_ROMSTK95_PREF_ES "Ultima usada\t[Last ]\n",
+    "Escolha ROM\n" MENU_ROMSTK95_PREF_PT "Usada por \xA3ltimo\t[Last ]\n"
+};
 
 static const char *MENU_INTERFACE_LANG[3] = { MENU_INTERFACE_LANG_EN, MENU_INTERFACE_LANG_ES, MENU_INTERFACE_LANG_PT };
 
@@ -313,11 +329,11 @@ static const char *MENU_JOY[NLANGS] = { MENU_JOY_EN MENU_JOYS, MENU_JOY_ES MENU_
 
 #define MENU_DEFJOY_TITLE "Joystick#\n"\
 
-#define MENU_DEFJOYS "Cursor\t[ ]\n"\
-    "Kempston\t[ ]\n"\
-    "Sinclair 1\t[ ]\n"\
-    "Sinclair 2\t[ ]\n"\
-    "Fuller\t[ ]\n"
+#define MENU_DEFJOYS "Cursor\t[0]\n"\
+    "Kempston\t[1]\n"\
+    "Sinclair 1\t[2]\n"\
+    "Sinclair 2\t[3]\n"\
+    "Fuller\t[4]\n"
 
 static const char *MENU_DEFJOY[NLANGS] = { MENU_DEFJOY_TITLE MENU_DEFJOYS MENU_DEFJOY_EN, MENU_DEFJOY_TITLE MENU_DEFJOYS MENU_DEFJOY_ES, MENU_DEFJOY_TITLE MENU_DEFJOYS MENU_DEFJOY_PT };
 
@@ -333,12 +349,38 @@ static const char *DLG_TITLE_INPUTPOK[NLANGS] = { DLG_TITLE_INPUTPOK_EN, DLG_TIT
 
 static const char *POKE_BANK_MENU[NLANGS] = { " Bank  \n" , " Banco \n" , " Banco \n" };
 
+static const char *MENU_MOUSE[NLANGS] = { MENU_MOUSE_EN, MENU_MOUSE_ES, MENU_MOUSE_PT};
+
+static const char *MENU_SOUND[NLANGS] = { MENU_SOUND_EN, MENU_SOUND_ES, MENU_SOUND_PT};
+
 static const char *MENU_UI[NLANGS] = { MENU_UI_EN, MENU_UI_ES, MENU_UI_PT };
 
 static const char *MENU_UI_OPT[NLANGS] = {"Option \n","Opci\xA2n \n","Opo \n" };
 
 #define MENU_UI_TEXT_SCROLL "Normal\t[N]\n"\
     "Ping-Pong\t[P]\n"
+
+#define MENU_MOUSE_SAMPLE_RATE_ITEMS "10\t[10]\n"\
+    "20\t[20]\n"\
+    "40\t[40]\n"\
+    "60\t[60]\n"\
+    "80\t[80]\n"\
+    "100\t[100]\n"\
+    "200\t[200]\n"
+
+#define MENU_MOUSE_DPI_ITEMS "25 dpi\t[0]\n"\
+    "50 dpi\t[1]\n"\
+    "100 dpi\t[2]\n"\
+    "200 dpi\t[3]\n"
+
+#define MENU_MOUSE_SCALING_ITEMS "1:1\t[1]\n"\
+    "1:2\t[2]\n"
+
+static const char *MENU_MOUSE_SAMPLE_RATE[NLANGS] = { "Sample Rate\n" MENU_MOUSE_SAMPLE_RATE_ITEMS, "Tasa de muestreo\n" MENU_MOUSE_SAMPLE_RATE_ITEMS, "Taxa de amostragem\n" MENU_MOUSE_SAMPLE_RATE_ITEMS };
+
+static const char *MENU_MOUSE_DPI[NLANGS] = { "Resolution\n" MENU_MOUSE_DPI_ITEMS, "Resoluci\xA2n\n" MENU_MOUSE_DPI_ITEMS, "Resolu\x87\x84o\n" MENU_MOUSE_DPI_ITEMS };
+
+static const char *MENU_MOUSE_SCALING[NLANGS] = { "Scaling\n" MENU_MOUSE_SCALING_ITEMS, "Escalado\n" MENU_MOUSE_SCALING_ITEMS, "Escala\n" MENU_MOUSE_SCALING_ITEMS };
 
 static const char *AboutMsg[NLANGS][5] = {
 	// English
