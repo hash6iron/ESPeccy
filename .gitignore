@@ -16,3 +16,4 @@ downloaded_fs*.bin
 dependencies.lock
 build/*
 tmp
+/update-*.sh
