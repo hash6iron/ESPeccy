@@ -194,6 +194,7 @@ ConfigEntry configEntries[] = {
     {"pref_arch", CONFIG_TYPE_STRING, &Config::pref_arch},
     {"pref_romSet_48", CONFIG_TYPE_STRING, &Config::pref_romSet_48},
     {"pref_romSet_128", CONFIG_TYPE_STRING, &Config::pref_romSet_128},
+    {"pref_romSet_2A", CONFIG_TYPE_STRING, &Config::pref_romSet_2A},
     {"pref_romSet_90X", CONFIG_TYPE_STRING, &Config::pref_romSet_TK90X},
     {"pref_romSet_95", CONFIG_TYPE_STRING, &Config::pref_romSet_TK95},
     {"ram", CONFIG_TYPE_STRING, &Config::ram_file},
@@ -562,6 +563,9 @@ void Config::requestMachine(string newArch, string newRomSet) {
         } else if (romSet128 == "+2es") {
             MemESP::rom[0] = (uint8_t *) gb_rom_0_plus2_es;
             MemESP::rom[1] = (uint8_t *) gb_rom_1_plus2_es;
+        } else if (romSet128 == "+2fr") {
+            MemESP::rom[0] = (uint8_t *) gb_rom_0_plus2_fr;
+            MemESP::rom[1] = (uint8_t *) gb_rom_1_plus2_fr;
         } else if (romSet128 == "ZX81+") {
             MemESP::rom[0] = (uint8_t *) gb_rom_0_s128_zx81;
             MemESP::rom[1] = (uint8_t *) gb_rom_1_sinclair_128k;
@@ -574,10 +578,35 @@ void Config::requestMachine(string newArch, string newRomSet) {
         if (newRomSet=="") romSet2A = "+2A"; else romSet2A = newRomSet;
 
         if (romSet2A == "+2A") {
+            MemESP::rom[0] = (uint8_t *) gb_rom_0_2A_3_v40;
+            MemESP::rom[1] = (uint8_t *) gb_rom_1_2A_3_v40;
+            MemESP::rom[2] = (uint8_t *) gb_rom_2_2A_3_v40;
+            MemESP::rom[3] = (uint8_t *) gb_rom_3_2A_3_v40;
+        } else
+        if (romSet2A == "+2Aes") {
+            MemESP::rom[0] = (uint8_t *) gb_rom_0_2A_3_v40es;
+            MemESP::rom[1] = (uint8_t *) gb_rom_1_2A_3_v40es;
+            MemESP::rom[2] = (uint8_t *) gb_rom_2_2A_3_v40es;
+            MemESP::rom[3] = (uint8_t *) gb_rom_3_2A_3_v40es;
+        } else
+        if (romSet2A == "+2A41") {
             MemESP::rom[0] = (uint8_t *) gb_rom_0_2A_3_v41;
             MemESP::rom[1] = (uint8_t *) gb_rom_1_2A_3_v41;
             MemESP::rom[2] = (uint8_t *) gb_rom_2_2A_3_v41;
             MemESP::rom[3] = (uint8_t *) gb_rom_3_2A_3_v41;
+        } else
+        if (romSet2A == "+2A41es") {
+            MemESP::rom[0] = (uint8_t *) gb_rom_0_2A_3_v41es;
+            MemESP::rom[1] = (uint8_t *) gb_rom_1_2A_3_v41es;
+            MemESP::rom[2] = (uint8_t *) gb_rom_2_2A_3_v41es;
+            MemESP::rom[3] = (uint8_t *) gb_rom_3_2A_3_v41es;
+        }
+        else
+        if (romSet2A == "+2Acs") {
+            MemESP::rom[0] = 8 + (uint8_t *) gb_rom_0_2A_3cs;
+            MemESP::rom[1] = MemESP::rom[0] + 16384;
+            MemESP::rom[2] = MemESP::rom[1] + 16384;
+            MemESP::rom[3] = MemESP::rom[2] + 16384;
         }
 
     } else if (arch == "Pentagon") {

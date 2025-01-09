@@ -261,7 +261,7 @@ static const char *MENU_ISSUE2[NLANGS] = { "48K Issue 2\n", "48K Issue 2\n", "48
 
 #define MENU_ARCHS "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\
-    "Spectrum +2A\n"\
+    "Spectrum +2A\t>\n"\
     "Pentagon 128K\n"\
     "TK90X\t>\n"\
     "TK95\t>\n"
@@ -271,6 +271,8 @@ static const char *MENU_ARCH[NLANGS] = { MENU_ARCH_EN MENU_ARCHS, MENU_ARCH_ES M
 static const char *MENU_ROMS48[NLANGS] = { MENU_ROMS48_EN, MENU_ROMS48_ES, MENU_ROMS48_PT };
 
 static const char *MENU_ROMS128[NLANGS] = { MENU_ROMS128_EN, MENU_ROMS128_ES, MENU_ROMS128_PT };
+
+static const char *MENU_ROMS2A_3[NLANGS] = { MENU_ROMS2A_3_EN, MENU_ROMS2A_3_ES, MENU_ROMS2A_3_PT };
 
 static const char *MENU_ROMSTK[NLANGS] = { MENU_ROMSTK_EN, MENU_ROMSTK_ES, MENU_ROMSTK_PT };
 
@@ -291,6 +293,7 @@ static const char *MENU_ARCH_PREF[NLANGS] = {
 
 #define MENU_ROMS_PREF "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\
+    "Spectrum +2A\t>\n"\
     "TK90X\t>\n"\
     "TK95\t>\n"
 
@@ -312,6 +315,12 @@ static const char *MENU_ROM_PREF_128[NLANGS] = {
     "Select ROM\n" MENU_ROMS128_PREF_EN "Last used\t[Last]\n",
     "Elija ROM\n" MENU_ROMS128_PREF_ES "Ultima usada\t[Last]\n",
     "Escolha ROM\n" MENU_ROMS128_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
+};
+
+static const char *MENU_ROMS2A_3_PREF[NLANGS] = {
+    "Select ROM\n" MENU_ROMS2A_3_PREF_EN "Last used\t[Last]\n",
+    "Elija ROM\n" MENU_ROMS2A_3_PREF_ES "Ultima usada\t[Last]\n",
+    "Escolha ROM\n" MENU_ROMS2A_3_PREF_PT "Usada por \xA3ltimo\t[Last]\n"
 };
 
 static const char *MENU_ROM_PREF_TK95[NLANGS] = {

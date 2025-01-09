@@ -195,6 +195,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Firmware\n"\
     "ROM Custom 48K\n"\
     "ROM Custom 128k\n"\
+    "ROM Custom +2A\n"\
     "ROM Custom TK\n"
 
 #define MENU_VIDEO_ES \
@@ -271,7 +272,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "128K Espa\xA4ol\n"\
     "+2\n"\
     "+2 Espa\xA4ol\n"\
+    "+2 Franc\x82s\n"\
     "ZX81+\n"\
+    "Custom\n"
+
+#define MENU_ROMS2A_3_ES "Elija ROM\n"\
+    "v4.0 +2a/+3\n"\
+    "v4.0 +2a/+3 Espa\xA4ol\n"\
+    "v4.1 +2a/+3\n"\
+    "v4.1 +2a/+3 Espa\xA4ol\n"\
     "Custom\n"
 
 #define MENU_ROMSTK_ES "Elija ROM\n"\
@@ -308,8 +317,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "128K Espa\xA4ol\t[128Kes]\n"\
     "+2\t[+2]\n"\
     "+2 Espa\xA4ol\t[+2es]\n"\
+    "+2 Franc\x82s\t[+2fr]\n"\
     "ZX81+\t[ZX81+]\n"\
     "Custom\t[128Kcs]\n"
+
+#define MENU_ROMS2A_3_PREF_ES "v4.0 +2a/+3\t[+2A]\n"\
+    "v4.0 +2a/+3 Espa\xA4ol\t[+2Aes]\n"\
+    "v4.1 +2a/+3\t[+2A41]\n"\
+    "v4.1 +2a/+3 Espa\xA4ol\t[+2A41es]\n"\
+    "Custom\t[+2Acs]\n"
 
 #define MENU_INTERFACE_LANG_ES "Idioma\n"\
     "Ingl\x82s\t[E]\n"\

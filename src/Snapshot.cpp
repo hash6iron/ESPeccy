@@ -747,12 +747,12 @@ bool FileZ80::load(string z80_fn) {
             } else
             if (z80_arch == "128K") {
                 if (mch == 12) { // +2
-                    if (Config::pref_romSet_128 == "+2" || Config::pref_romSet_128 == "+2es")
+                    if (Config::pref_romSet_128 == "+2es" || Config::pref_romSet_128 == "+2fr" || Config::pref_romSet_128 == "128Kcs")
                         z80_romset = Config::pref_romSet_128;
                     else
                         z80_romset = "+2";
                 } else {
-                    if (Config::pref_romSet_128 == "128K" || Config::pref_romSet_128 == "128Kes")
+                    if (Config::pref_romSet_128 == "128K" || Config::pref_romSet_128 == "128Kes" || Config::pref_romSet_128 == "128Kcs")
                         z80_romset = Config::pref_romSet_128;
                 }
             }
@@ -799,9 +799,9 @@ bool FileZ80::load(string z80_fn) {
 
             if (mch == 12) { // +2
 
-                if (Config::romSet != "+2" && Config::romSet != "+2es" && Config::romSet != "128Kcs") {
+                if (Config::romSet != "+2" && Config::romSet != "+2es" && Config::romSet != "+2fr" && Config::romSet != "128Kcs") {
 
-                    if (Config::pref_romSet_128 == "+2" || Config::pref_romSet_128 == "+2es")
+                    if (Config::pref_romSet_128 == "+2es" || Config::pref_romSet_128 == "+2fr" || Config::pref_romSet_128 == "128Kcs")
                         z80_romset = Config::pref_romSet_128;
                     else
                         z80_romset = "+2";
@@ -814,7 +814,7 @@ bool FileZ80::load(string z80_fn) {
 
                 if (Config::romSet != "128K" && Config::romSet != "128Kes" && Config::romSet != "128Kcs") {
 
-                    if (Config::pref_romSet_128 == "128K" || Config::pref_romSet_128 == "128Kes")
+                    if (Config::pref_romSet_128 == "128Kes" || Config::pref_romSet_128 == "128Kcs")
                         z80_romset = Config::pref_romSet_128;
                     else
                         z80_romset = "128K";
@@ -1375,6 +1375,10 @@ void FileZ80::loader128() {
             // z80_array = (unsigned char *) loadplus2;
             // dataLen = sizeof(loadplus2);
             DoKeyboardLoad_128K_Pentagon();
+        } else if (Config::romSet == "+2fr") {
+            // z80_array = (unsigned char *) loadplus2;
+            // dataLen = sizeof(loadplus2);
+            DoKeyboardLoad_128K_Pentagon();
         } else if (Config::romSet == "ZX81+") {
             // z80_array = (unsigned char *) loadzx81;
             // dataLen = sizeof(loadzx81);
@@ -1695,7 +1699,7 @@ bool FileZ80::save(string z80_fn, bool force_saverom) {
         mch = 0 ;
     } else
     if ( Z80Ops::is128 ) {
-        if (Config::romSet == "+2" && Config::romSet == "+2es") {
+        if (Config::romSet == "+2" || Config::romSet == "+2es" || Config::romSet == "+2fr") {
             mch = 12 ; // Spectrum +2
         } else {
             mch = 4 ;

@@ -200,6 +200,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	"Firmware\n"\
 	"ROM Custom 48K\n"\
 	"ROM Custom 128k\n"\
+    "ROM Custom +2A\n"\
 	"ROM Custom TK\n"
 
 #define MENU_VIDEO_PT \
@@ -276,7 +277,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "128K Espanhol\n"\
 	"+2\n"\
     "+2 Espanhol\n"\
+    "+2 Franc\x88s\n"\
     "ZX81+\n"\
+    "Custom\n"
+
+#define MENU_ROMS2A_3_PT "Escolha ROM\n"\
+    "v4.0 +2a/+3\n"\
+    "v4.0 +2a/+3 Espanhol\n"\
+    "v4.1 +2a/+3\n"\
+    "v4.1 +2a/+3 Espanhol\n"\
     "Custom\n"
 
 #define MENU_ROMSTK_PT "Escolha ROM\n"\
@@ -313,8 +322,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "128K Espanhol\t[128Kes]\n"\
 	"+2\t[+2]\n"\
     "+2 Espanhol\t[+2es]\n"\
+    "+2 Franc\x88s\t[+2fr]\n"\
     "ZX81+\t[ZX81+]\n"\
     "Custom\t[128Kcs]\n"
+
+#define MENU_ROMS2A_3_PREF_PT "v4.0 +2a/+3\t[+2A]\n"\
+    "v4.0 +2a/+3 Espanhol\t[+2Aes]\n"\
+    "v4.1 +2a/+3\t[+2A41]\n"\
+    "v4.1 +2a/+3 Espanhol\t[+2A41es]\n"\
+    "Custom\t[+2Acs]\n"
 
 #define MENU_INTERFACE_LANG_PT "Idioma\n"\
     "Ingl\x88s\t[E]\n"\

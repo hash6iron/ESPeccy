@@ -45,10 +45,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "roms/rom128Kspanish.h"
 #include "roms/romPlus2.h"
 #include "roms/romPlus2spanish.h"
+#include "roms/romPlus2french.h"
 #include "roms/rom128Kcustom.h"
 
 // +2A/+3 ROMS
+#include "roms/rom+2A+3_4.0.h"
+#include "roms/rom+2A+3_4.0es.h"
 #include "roms/rom+2A+3_4.1.h"
+#include "roms/rom+2A+3_4.1es.h"
+#include "roms/rom+2A+3custom.h"
 
 // Pentagon 128K ROMS
 #include "roms/rompentagon128k.h"
