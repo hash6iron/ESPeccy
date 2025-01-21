@@ -60,6 +60,7 @@ uint8_t Ports::speaker_values[8]={ 0, 19, 34, 53, 97, 101, 130, 134 };
 uint8_t Ports::port[128];
 uint8_t Ports::port254 = 0;
 uint8_t Ports::LastOutTo1FFD = 0;
+uint8_t Ports::LastOutTo7FFD = 0;
 
 uint8_t (*Ports::getFloatBusData)() = &Ports::getFloatBusData48;
 
@@ -678,123 +679,137 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         }
 
+        LastOutTo7FFD = data;
+
     // Spectrum +2A/+3: Check port 0x7FFD for memory paging.
     // The port is partially decoded: Bits 1, and 15 must be reset and bit 14 set.
-    } else if ((Z80Ops::is2a3) && ((address & 0xC002) == 0x4000) && (!MemESP::pagingLock)) {
+    } else if ((Z80Ops::is2a3) && ((address & 0xC002) == 0x4000)) {
+        if (!MemESP::pagingLock) {
 
-        // printf("+2A/+3 0x7FFD OUT\n");
-
-        if (MemESP::pagingmode2A3 == 0) {
+            // printf("+2A/+3 0x7FFD OUT\n");
 
             MemESP::pagingLock = bitRead(data, 5);
 
-            if (MemESP::bankLatch != (data & 0x7)) {
-                MemESP::bankLatch = data & 0x7;
-                #ifdef ESPECTRUM_PSRAM
-                #ifdef TIME_MACHINE
-                MemESP::tm_bank_chg[MemESP::bankLatch] = true; // Bank selected. Mark for time machine
-                #endif
-                #endif
-                MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
-                MemESP::ramContended[3] = MemESP::bankLatch > 3;
-            }
-
-            MemESP::romLatch = (MemESP::romInUse & 0x02) + bitRead(data, 4);
+            MemESP::romLatch = (bitRead(LastOutTo1FFD, 2) << 1) | bitRead(data, 4);
             MemESP::romInUse = MemESP::romLatch & 0x3;
-            MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
 
-        }
-
-        if (MemESP::videoLatch != bitRead(data, 3)) {
-            MemESP::videoLatch = bitRead(data, 3);
             #ifdef ESPECTRUM_PSRAM
             #ifdef TIME_MACHINE
-            MemESP::tm_bank_chg[MemESP::videoLatch ? 7 : 5] = true; // Bank selected. Mark for time machine
+            if (MemESP::bankLatch != (data & 0x7)) {
+                MemESP::tm_bank_chg[(data & 0x7)] = true; // Bank selected. Mark for time machine
+            }
             #endif
             #endif
+
+            MemESP::bankLatch = data & 0x7;
+
+            // If +2a/+3 paging mode is normal
+            // If is special (ram is rom) ignore paging, but preserve banklatch, rominuse and romlatch
+            if (MemESP::pagingmode2A3 == 0) {
+                MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
+                MemESP::ramContended[0] = false;
+
+                MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
+                MemESP::ramContended[3] = MemESP::bankLatch > 3;
+
+            }
+
+            #ifdef ESPECTRUM_PSRAM
+            #ifdef TIME_MACHINE
+            if (MemESP::videoLatch != bitRead(data, 3)) {
+                MemESP::tm_bank_chg[bitRead(data, 3) ? 7 : 5] = true; // Bank selected. Mark for time machine
+            }
+            #endif
+            #endif
+
+            MemESP::videoLatch = bitRead(data, 3);
             VIDEO::grmem = MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5];
+
         }
+
+        LastOutTo7FFD = data;
 
     // Spectrum +2A/+3: Check port 0x1FFD for extra memory paging commands and disk motor switch (motor switch is not implemented).
     // The port is partially decoded: Bits 1, 13, 14 and 15 must be reset and bit 12 set.
-    } else if ((Z80Ops::is2a3) && ((address & 0xF002) == 0x1000) && (!MemESP::pagingLock)) {
+    } else if ((Z80Ops::is2a3) && ((address & 0xF002) == 0x1000)) {
+        if (!MemESP::pagingLock) {
+            // printf("+2A/+3 0x1FFD OUT\n");
 
-        // printf("+2A/+3 0x1FFD OUT\n");
+            if (bitRead(data, 0) == 0) {
 
-        if (bitRead(data, 0) == 0) {
+                // printf("Paging mode normal\n");
 
-            // printf("Paging mode normal\n");
+                MemESP::pagingmode2A3 = 0;
 
-            MemESP::pagingmode2A3 = 0;
+                // Bit 2 is the high bit of the ROM bank selection
+                MemESP::romLatch = (bitRead(data, 2) << 1) | bitRead(LastOutTo7FFD, 4);
+                MemESP::romInUse = MemESP::romLatch & 0x3;
 
-            // Bit 2 is the high bit of the ROM bank selection
-            MemESP::romLatch = (bitRead(data, 2) << 1) + (MemESP::romInUse & 0x01) ;
-            MemESP::romInUse = MemESP::romLatch & 0x3;
+                MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
+                MemESP::ramCurrent[1] = MemESP::ram[5];
+                MemESP::ramCurrent[2] = MemESP::ram[2];
+                MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
 
-            MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-            MemESP::ramCurrent[1] = MemESP::ram[5];
-            MemESP::ramCurrent[2] = MemESP::ram[2];
-            MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
+                MemESP::ramContended[0] = MemESP::ramContended[2] = false;
+                MemESP::ramContended[1] = true;
+                MemESP::ramContended[3] = MemESP::bankLatch > 3;
 
-            MemESP::ramContended[0] = MemESP::ramContended[2] = false;
-            MemESP::ramContended[1] = true;
-            MemESP::ramContended[3] = MemESP::bankLatch > 3;
+            } else {
 
-        } else {
+                // printf("Paging mode allram\n");
 
-            // printf("Paging mode allram\n");
+                MemESP::pagingmode2A3 = 0xff;
 
-            MemESP::pagingmode2A3 = 0xff;
+                switch ((data & 6) >> 1) {
+                    case 0:
+                        MemESP::ramCurrent[0] = MemESP::ram[0];
+                        MemESP::ramCurrent[1] = MemESP::ram[1];
+                        MemESP::ramCurrent[2] = MemESP::ram[2];
+                        MemESP::ramCurrent[3] = MemESP::ram[3];
 
-            switch ((data & 6) >> 1) {
-                case 0:
-                    MemESP::ramCurrent[0] = MemESP::ram[0];
-                    MemESP::ramCurrent[1] = MemESP::ram[1];
-                    MemESP::ramCurrent[2] = MemESP::ram[2];
-                    MemESP::ramCurrent[3] = MemESP::ram[3];
+                        MemESP::ramContended[0] = false;
+                        MemESP::ramContended[1] = false;
+                        MemESP::ramContended[2] = false;
+                        MemESP::ramContended[3] = false;
 
-                    MemESP::ramContended[0] = false;
-                    MemESP::ramContended[1] = false;
-                    MemESP::ramContended[2] = false;
-                    MemESP::ramContended[3] = false;
+                        break;
+                    case 1:
+                        MemESP::ramCurrent[0] = MemESP::ram[4];
+                        MemESP::ramCurrent[1] = MemESP::ram[5];
+                        MemESP::ramCurrent[2] = MemESP::ram[6];
+                        MemESP::ramCurrent[3] = MemESP::ram[7];
 
-                    break;
-                case 1:
-                    MemESP::ramCurrent[0] = MemESP::ram[4];
-                    MemESP::ramCurrent[1] = MemESP::ram[5];
-                    MemESP::ramCurrent[2] = MemESP::ram[6];
-                    MemESP::ramCurrent[3] = MemESP::ram[7];
+                        MemESP::ramContended[0] = true;
+                        MemESP::ramContended[1] = true;
+                        MemESP::ramContended[2] = true;
+                        MemESP::ramContended[3] = true;
 
-                    MemESP::ramContended[0] = true;
-                    MemESP::ramContended[1] = true;
-                    MemESP::ramContended[2] = true;
-                    MemESP::ramContended[3] = true;
+                        break;
+                    case 2:
+                        MemESP::ramCurrent[0] = MemESP::ram[4];
+                        MemESP::ramCurrent[1] = MemESP::ram[5];
+                        MemESP::ramCurrent[2] = MemESP::ram[6];
+                        MemESP::ramCurrent[3] = MemESP::ram[3];
 
-                    break;
-                case 2:
-                    MemESP::ramCurrent[0] = MemESP::ram[4];
-                    MemESP::ramCurrent[1] = MemESP::ram[5];
-                    MemESP::ramCurrent[2] = MemESP::ram[6];
-                    MemESP::ramCurrent[3] = MemESP::ram[3];
+                        MemESP::ramContended[0] = true;
+                        MemESP::ramContended[1] = true;
+                        MemESP::ramContended[2] = true;
+                        MemESP::ramContended[3] = false;
 
-                    MemESP::ramContended[0] = true;
-                    MemESP::ramContended[1] = true;
-                    MemESP::ramContended[2] = true;
-                    MemESP::ramContended[3] = false;
+                        break;
+                    case 3:
+                        MemESP::ramCurrent[0] = MemESP::ram[4];
+                        MemESP::ramCurrent[1] = MemESP::ram[7];
+                        MemESP::ramCurrent[2] = MemESP::ram[6];
+                        MemESP::ramCurrent[3] = MemESP::ram[3];
 
-                    break;
-                case 3:
-                    MemESP::ramCurrent[0] = MemESP::ram[4];
-                    MemESP::ramCurrent[1] = MemESP::ram[7];
-                    MemESP::ramCurrent[2] = MemESP::ram[6];
-                    MemESP::ramCurrent[3] = MemESP::ram[3];
+                        MemESP::ramContended[0] = true;
+                        MemESP::ramContended[1] = true;
+                        MemESP::ramContended[2] = true;
+                        MemESP::ramContended[3] = false;
 
-                    MemESP::ramContended[0] = true;
-                    MemESP::ramContended[1] = true;
-                    MemESP::ramContended[2] = true;
-                    MemESP::ramContended[3] = false;
-
-                    break;
+                        break;
+                }
             }
         }
 

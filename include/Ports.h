@@ -48,12 +48,13 @@ public:
 
     static uint8_t (*getFloatBusData)();
     static uint8_t getFloatBusData48();
-    static uint8_t getFloatBusDataTK();    
-    static uint8_t getFloatBusData128();    
+    static uint8_t getFloatBusDataTK();
+    static uint8_t getFloatBusData128();
     static uint8_t getFloatBusDataPentagon();
     static uint8_t getFloatBusData2A3();
 
     static uint8_t LastOutTo1FFD;
+    static uint8_t LastOutTo7FFD;
 
 private:
 

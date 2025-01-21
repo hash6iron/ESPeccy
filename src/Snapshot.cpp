@@ -349,6 +349,8 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
         MemESP::pagingLock = bitRead(tmp_port, 5);
         MemESP::bankLatch = tmp_latch;
 
+        Ports::LastOutTo7FFD = tmp_port;
+
         if (tr_dos) {
             MemESP::romInUse = 4;
             ESPectrum::trdos = true;
@@ -1032,6 +1034,8 @@ bool FileZ80::load(string z80_fn) {
             MemESP::bankLatch = b35 & 0x07;
             MemESP::romInUse = MemESP::romLatch;
 
+            Ports::LastOutTo7FFD = b35;
+
             MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
             MemESP::ramCurrent[3] = MemESP::ram[MemESP::bankLatch];
 
@@ -1219,7 +1223,7 @@ void DoKeyboardLoad_48K() {
 
     ESPectrum::reset(); // Reset machine
 
-    for (int i=0; i<94; i++) CPU::loop(); // Run 100 frames (about 1 seconds)
+    for (int i=0; i<125; i++) CPU::loop(); // Run 125 frames (about 1 1/4 seconds)
 
     bitWrite(Ports::port[6], 3, false); // Set J pressed
     CPU::loop();
