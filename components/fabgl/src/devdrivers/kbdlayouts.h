@@ -77,6 +77,19 @@ struct DeadKeyVirtualKeyDef {
   VirtualKey   virtualKey;      /**< Virtual key result */
 };
 
+/**
+ * @brief Associates a scancode to a combination of virtual key and modifiers.
+ */
+struct ScancodeToVKCombo {
+  uint8_t      scancode;    /**< Raw scancode received from the Keyboard device */
+  VirtualKey   virtualKey;  /**< Virtual key generated */
+  struct {
+    uint8_t ctrl  : 1;  /**< CTRL needs to be applied. */
+    uint8_t lalt  : 1;  /**< LEFT-ALT needs to be applied. */
+    uint8_t ralt  : 1;  /**< RIGHT-ALT needs to be applied. */
+    uint8_t shift : 1;  /**< SHIFT needs to be applied (OR-ed with capslock). */
+  };
+};
 
 /** @brief All in one structure to fully represent a keyboard layout */
 struct KeyboardLayout {
@@ -90,6 +103,7 @@ struct KeyboardLayout {
   VirtualKey               deadKeysVK[8];       /**< Dead keys identifiers. */
   DeadKeyVirtualKeyDef     deadkeysToVK[60];    /**< Translation dead key + virtual key = replaced virtual key */
   VirtualKeyDef            exJoyScancodeToVK[24];  /**< Direct extended-joy-scancode->virtualkey associations. Extended joy scancodes begin with 0xE1. */
+  ScancodeToVKCombo        scancodeToVKCombo[20]; /**< Scancode to virtual key combination mapping. */
 };
 
 

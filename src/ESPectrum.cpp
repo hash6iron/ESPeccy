@@ -1822,7 +1822,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
 
                 }
 
-                jShift = !(Kbd->isVKDown(fabgl::VK_LSHIFT) || Kbd->isVKDown(fabgl::VK_RSHIFT));
+                jShift = !(Kbd->isVKDown(fabgl::VK_LSHIFT) || Kbd->isVKDown(fabgl::VK_RSHIFT) || NextKey.SHIFT);
 
                 if (Config::CursorAsJoy) {
 
@@ -2128,7 +2128,8 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                 bitWrite(PS2cols[7], 0, !Kbd->isVKDown(fabgl::VK_SPACE)
                                 &   (!Kbd->isVKDown(fabgl::VK_ESCAPE)) // Break
                 );
-                bitWrite(PS2cols[7], 1, (!Kbd->isVKDown(fabgl::VK_LCTRL)) // SYMBOL SHIFT
+                bitWrite(PS2cols[7], 1, (!NextKey.CTRL)
+                                    &   (!Kbd->isVKDown(fabgl::VK_LCTRL)) // SYMBOL SHIFT
                                     &   (!Kbd->isVKDown(fabgl::VK_RCTRL))
                                     &   (!Kbd->isVKDown(fabgl::VK_COMMA)) // Comma
                                     &   (!Kbd->isVKDown(fabgl::VK_PERIOD)) // Period

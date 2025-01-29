@@ -153,7 +153,7 @@ bool Keyboard::reset(bool sendCmdReset)
       send_cmdSetScancodeSet(2);
     else
       printf("PS/2 sendCmdReset. No response.\n");
-  } else 
+  } else
     m_keyboardAvailable = true;
 
   // if (m_keyboardAvailable) send_cmdSetScancodeSet(2);
@@ -440,7 +440,7 @@ bool Keyboard::blockingGetVirtualKey(VirtualKeyItem * item)
   uint8_t * scode = item->scancode;
 
   *scode = getNextScancode();
-  // printf("Scode: %x\n",*scode);      
+  // printf("Scode: %x\n",*scode);
   if (*scode == 0xE0) {
     // two bytes scancode
     // printf("  E0 Scode: %x\n",*scode);
@@ -485,6 +485,19 @@ bool Keyboard::blockingGetVirtualKey(VirtualKeyItem * item)
   } else {
     // one byte scancode, key down
     item->vk = scancodeToVK(*scode, false);
+  }
+
+  if (item->vk == VK_NONE) {
+    ScancodeToVKCombo const * conv = m_layout->scancodeToVKCombo;
+    for (; conv->scancode; ++conv)
+      if (conv->scancode == *scode) {
+        item->vk = conv->virtualKey;
+        item->CTRL = conv->ctrl;
+        item->LALT = conv->lalt;
+        item->RALT = conv->ralt;
+        item->SHIFT = conv->shift;
+        break;
+      }
   }
 
   if (item->vk != VK_NONE) {
