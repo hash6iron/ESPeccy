@@ -291,6 +291,9 @@ const KeyboardLayout USLayout {
     { 0x57, VK_JOY2Z },
   },
 
+  {
+  },
+
 };
 
 

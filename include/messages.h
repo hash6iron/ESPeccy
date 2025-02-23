@@ -192,6 +192,8 @@ static const char *MENU_TAPE[NLANGS] = { MENU_TAPE_EN,MENU_TAPE_ES,MENU_TAPE_PT 
 
 static const char *MENU_TAPEPLAYER[NLANGS] = { "Player mode\n", "Modo reproductor\n", "Modo reprodutor\n" };
 
+static const char *MENU_REALTAPE[NLANGS] = { MENU_REALTAPE_EN, MENU_REALTAPE_ES, MENU_REALTAPE_PT };
+
 static const char *MENU_BETADISK[NLANGS] = { MENU_BETADISK_EN,MENU_BETADISK_ES,MENU_BETADISK_PT };
 
 static const char *MENU_BETADRIVE[NLANGS] = { MENU_BETADRIVE_EN,MENU_BETADRIVE_ES,MENU_BETADRIVE_PT };
@@ -231,6 +233,27 @@ static const char *MENU_FLASHLOAD[NLANGS] = { "Flash load\n" , "Carga r\xA0pida\
 static const char *MENU_RGTIMINGS[NLANGS] = { "R.G. Timings\n" , "Timings R.G.\n", "Timings R.G.\n" };
 
 static const char *MENU_OTHER[NLANGS] = { MENU_OTHER_EN, MENU_OTHER_ES, MENU_OTHER_PT };
+
+static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_NO_PSRAM = "EAR config\n"\
+    "EAR\t[3]\n"\
+    "USB 1 (GPIO 32)\t[32]\n"\
+    "USB 1 (GPIO 33)\t[33]\n"\
+    /*"USB 2 (GPIO 16)\t[16]\n"\
+    "USB 2 (GPIO 17)\t[17]\n"\*/
+    "MOD (GPIO 39)\t[39]\n";
+
+static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_PSRAM = "EAR config\n"\
+    "EAR\t[3]\n"\
+    "USB 1 (GPIO 32)\t[32]\n"\
+    "USB 1 (GPIO 33)\t[33]\n"\
+    "MOD (GPIO 39)\t[39]\n";
+
+static const char *MENU_REALTAPE_OPTIONS_LILY = "EAR config\n"\
+    "BOARD (GPIO 39)\t[39]\n"\
+    "BOARD (GPIO 34)\t[34]\n"\
+    "BOARD (GPIO 36)\t[36]\n"\
+    "PS/2 MOUSE (GPIO 26)\t[26]\n"\
+    "PS/2 MOUSE (GPIO 27)\t[27]\n";
 
 static const char *MENU_AY48[NLANGS] = { "AY on 48K \n" , "AY en 48K \n" , "AY em 48K \n" };
 

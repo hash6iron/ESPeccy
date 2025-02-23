@@ -32,9 +32,50 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef COMMIT_INFO_H
-#define COMMIT_INFO_H
+#ifndef REALTAPE_H
+#define REALTAPE_H
 
-const char* COMMIT_DATE = "2502232029";  // Formato YYmmddHHMM
+#include <stdint.h>
+#include <stdbool.h>
+#include "driver/gpio.h"
 
-#endif // COMMIT_INFO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Estructura para inyectar parámetros externos
+
+typedef struct {
+    uint8_t *gpio_num;                  // Puntero a Config::realtape_gpio_num
+    uint64_t *global_tstates;           // Puntero a CPU::global_tstates
+    uint32_t *tstates;                  // Puntero a CPU::tstates
+    bool zxkeyb_exists;                 // ZXKeyb::Exists
+} RealTapeParams;
+
+extern bool RealTape_enabled;
+
+// Reserva y reasigna el buffer de captura.
+void RealTape_realloc_buffers(int audio_freq, int samples_per_frame, uint32_t states_in_frame);
+
+// Inicializa el módulo RealTape (configuración de GPIO y timer).
+void RealTape_init(RealTapeParams *params);
+
+// Inicia la captura de datos.
+void RealTape_start(void);
+
+// Pausa la captura de datos.
+#define RealTape_pause()    RealTape_enabled = false
+
+// Devuelve el nivel de la señal en función de los tstates actuales.
+int RealTape_getLevel(void);
+
+// Prepara el frame actual actualizando la posición base de tstates.
+void RealTape_prepare_frame(void);
+
+void IRAM_ATTR RealTape_isr_handle(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // REALTAPE_H

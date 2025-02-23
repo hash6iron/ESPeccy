@@ -64,7 +64,7 @@ using namespace std;
 #define ESP_AUDIO_OVERSAMPLES_DIV_48  16
 
 #define ESP_AUDIO_OVERSAMPLES_TK_50 3744
-#define ESP_AUDIO_FREQ_TK_50 31365 // ESP_AUDIO_SAMPLES_TK_50 * 50,2638854 frames per second = 31364,6645 Hz
+#define ESP_AUDIO_FREQ_TK_50 31365 // ESP_AUDIO_SAMPLES_TK_50 * 50,2638854 frames per second = 31364,6645 Hz (real: 50,264423 fps)
 #define ESP_AUDIO_FREQ_TK_50_125SPEED 39206 // 125% speed
 #define ESP_AUDIO_FREQ_TK_50_150SPEED 47048 // 150% speed
 #define ESP_AUDIO_SAMPLES_TK_50  624
@@ -73,7 +73,7 @@ using namespace std;
 #define ESP_AUDIO_OVERSAMPLES_DIV_TK_50 19
 
 #define ESP_AUDIO_OVERSAMPLES_TK_60 3144
-#define ESP_AUDIO_FREQ_TK_60 31364 // ESP_AUDIO_SAMPLES_TK_60 * 59,8551505 frames per second = 31364,0989 Hz
+#define ESP_AUDIO_FREQ_TK_60 31364 // ESP_AUDIO_SAMPLES_TK_60 * 59,8551505 frames per second = 31364,0989 Hz (real: 59,854961 fps)
 #define ESP_AUDIO_FREQ_TK_60_125SPEED 39204 // 125% speed
 #define ESP_AUDIO_FREQ_TK_60_150SPEED 47046 // 150% speed
 #define ESP_AUDIO_SAMPLES_TK_60  524
@@ -82,7 +82,7 @@ using namespace std;
 #define ESP_AUDIO_OVERSAMPLES_DIV_TK_60 19
 
 #define ESP_AUDIO_OVERSAMPLES_128 3732
-#define ESP_AUDIO_FREQ_128 31112 // ESP_AUDIO_SAMPLES_128 * 50,020008 fps = 31112,445 Hz.
+#define ESP_AUDIO_FREQ_128 31112 // ESP_AUDIO_SAMPLES_128 * 50,020008 fps = 31112,445 Hz. (real: 50,019292 fps)
 #define ESP_AUDIO_FREQ_128_125SPEED 38890 // 125% speed
 #define ESP_AUDIO_FREQ_128_150SPEED 46669 // 150% speed
 #define ESP_AUDIO_SAMPLES_128 622
@@ -193,10 +193,14 @@ public:
     static bool mouseButtonL;
     static bool mouseButtonR;
 
+    static bool sync_realtape;
+
     // static uint32_t sessid;
 
     static string getHardwareInfo();
     static void showMemInfo(const char* caption = "ESPectrum");
+
+    static uint8_t TurboModeSet(int8_t esp_delay = -1);
 
 private:
 

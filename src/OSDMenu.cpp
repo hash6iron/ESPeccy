@@ -470,6 +470,8 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
     int rmax = scrW == 320 ? 52 : 55;
     if ( x + cols * OSD_FONT_W > rmax * OSD_FONT_W ) x = ( rmax - cols ) * OSD_FONT_W;
 
+    if ( y + h > VIDEO::vga.yres - OSD_FONT_H * 2 ) y = VIDEO::vga.yres - h - OSD_FONT_H * 2;
+
     WindowDraw(); // Draw menu outline
 
     if (!use_current_menu_state) {

@@ -59,6 +59,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "ROMLoad.h"
 
+#include "RealTape.h"
+
 #include "ZXKeyb.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -71,8 +73,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "soc/efuse_reg.h"
 
 #include "CommitDate.h"
-
-
 
 //=======================================================================================
 // KEYBOARD
@@ -134,6 +134,13 @@ int ESPectrum::TapeNameScroller = 0;
 
 bool ESPectrum::trdos = false;
 WD1793 ESPectrum::Betadisk;
+
+//=======================================================================================
+// RealTape
+//=======================================================================================
+
+RealTapeParams ESPectrum_RT_PARMS;
+bool ESPectrum::sync_realtape = false;
 
 //=======================================================================================
 // ARDUINO FUNCTIONS
@@ -306,8 +313,8 @@ string ESPectrum::getHardwareInfo() {
     textout += " Chip revision : " + to_string(chip_info.revision) + "\n";
     textout += " Flash size    : " + to_string(spi_flash_get_chip_size() / (1024 * 1024)) + (chip_info.features & CHIP_FEATURE_EMB_FLASH ? "MB embedded" : "MB external") + "\n";
     multi_heap_info_t info; heap_caps_get_info(&info, MALLOC_CAP_SPIRAM);
-    uint32_t psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
-    textout += " PSRAM size    : " + ( psramsize == 0 ? "N/A or disabled" : to_string(psramsize) + " MB") + "\n";
+    Config::psramsize = (info.total_free_bytes + info.total_allocated_bytes) >> 10;
+    textout += " PSRAM size    : " + (Config::psramsize == 0 ? "N/A or disabled" : to_string(Config::psramsize) + " MB") + "\n";
     textout += " IDF Version   : " + (string)(esp_get_idf_version()) + "\n";
 
     return textout;
@@ -943,6 +950,9 @@ void ESPectrum::showBIOS() {
 void ESPectrum::setup()
 {
 
+    // force get psram size
+    ESPectrum::getHardwareInfo();
+
     if (Config::slog_on) {
         printf("------------------------------------\n");
         printf("| ESPectrum: booting               |\n");
@@ -1067,7 +1077,7 @@ void ESPectrum::setup()
                 break;
             case 2:
                 PS2Controller.begin(PS2Preset::MousePort0, KbdMode::CreateVirtualKeysQueue);
-                ps2mouse = PS2Controller.mouse()->isMouseAvailable();
+                ps2mouse = PS2Controller.mouse() && PS2Controller.mouse()->isMouseAvailable();
                 if (!ps2mouse) {
                     printf("2nd PS/2 device (Kbd/ESPjoy) not detected\n");
                     Config::ps2_dev2 = 4;
@@ -1105,7 +1115,7 @@ void ESPectrum::setup()
             case 2:
                 PS2Controller.begin(PS2Preset::KeyboardPort0_MousePort1, KbdMode::CreateVirtualKeysQueue);
                 ps2kbd = true;
-                ps2mouse = PS2Controller.mouse()->isMouseAvailable();
+                ps2mouse = PS2Controller.mouse() && PS2Controller.mouse()->isMouseAvailable();
                 if (!ps2mouse) {
                     printf("2nd PS/2 device (mouse) not detected\n");
                     Config::ps2_dev2 = 4;
@@ -1427,6 +1437,16 @@ void ESPectrum::setup()
         }
     }
 
+    // Configura carga de cinta real
+    RealTape_realloc_buffers(ESPectrum::Audio_freq[1], ESPectrum::samplesPerFrame, CPU::statesInFrame);
+
+    ESPectrum_RT_PARMS.gpio_num = &Config::realtape_gpio_num;
+    ESPectrum_RT_PARMS.global_tstates = &CPU::global_tstates;
+    ESPectrum_RT_PARMS.tstates = &CPU::tstates;
+    ESPectrum_RT_PARMS.zxkeyb_exists = ZXKeyb::Exists;
+
+    RealTape_init(&ESPectrum_RT_PARMS);
+
     if (Config::slog_on) showMemInfo("Setup finished.");
 
 }
@@ -1582,6 +1602,9 @@ void ESPectrum::reset()
 
     CPU::reset();
 
+    // Reconfigura carga de cinta real
+    RealTape_realloc_buffers(ESPectrum::Audio_freq[1], ESPectrum::samplesPerFrame, CPU::statesInFrame);
+
 }
 
 //=======================================================================================
@@ -1687,6 +1710,9 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
 
     // }
 
+
+    ESPectrum::sync_realtape = false;
+
     readKbdJoy();
 
     if (ps2kbd) {
@@ -1720,6 +1746,13 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                     int64_t osd_start = esp_timer_get_time();
 
                     OSD::do_OSD(KeytoESP, Kbd->isVKDown(fabgl::VK_LCTRL) || Kbd->isVKDown(fabgl::VK_RCTRL), Kbd->isVKDown(fabgl::VK_LSHIFT) || Kbd->isVKDown(fabgl::VK_RSHIFT));
+
+                    // sync real tape is needed
+                    if (ESPectrum::sync_realtape && RealTape_enabled) {
+                        ESPectrum::sync_realtape = false;
+                        RealTape_pause();
+                        RealTape_start();
+                    }
 
                     Kbd->emptyVirtualKeyQueue();
 
@@ -2159,9 +2192,27 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             // Process physical keyboard
             //ZXKeyb::process();
 
+        if (Config::realtape_gpio_num == KM_COL_0) {
+            if (!bitRead(ZXKeyb::ZXcols[7], 1)) { // SS
+                if (!bitRead(ZXKeyb::ZXcols[0], 0) ) { // CS
+                    if (!bitRead(ZXKeyb::ZXcols[6], 3)) { // j
+                        // enabled REAL TAPE LOAD mode
+                        OSD::osdCenteredMsg("REAL TAPE LOAD ENABLED", LEVEL_INFO, 1000);
+                        RealTape_start();
+                    }
+                } else {
+                    if (RealTape_enabled && !bitRead(ZXKeyb::ZXcols[1], 1)) { // s
+                        // disable REAL TAPE LOAD mode (STOP LOADING)
+                        OSD::osdCenteredMsg("REAL TAPE LOAD DISABLED", LEVEL_INFO, 1000);
+                        RealTape_pause();
+                    }
+                }
+            }
+        }
+
         // Detect and process physical kbd menu key combinations
         // CS+SS+<1..0> -> F1..F10 Keys, CS+SS+Q -> F11, CS+SS+W -> F12, CS+SS+S -> Capture screen
-        if ((!bitRead(ZXKeyb::ZXcols[0],0)) && (!bitRead(ZXKeyb::ZXcols[7],1))) {
+        if ((!RealTape_enabled || Config::realtape_gpio_num != KM_COL_0) && (!bitRead(ZXKeyb::ZXcols[0],0)) && (!bitRead(ZXKeyb::ZXcols[7],1))) {
 
             zxDelay = 15;
 
@@ -2274,6 +2325,14 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
             } else
                 zxDelay = 0;
 
+
+            // sync real tape is needed
+            if (ESPectrum::sync_realtape && RealTape_enabled) {
+                ESPectrum::sync_realtape = false;
+                RealTape_pause();
+                RealTape_start();
+            }
+
             if (zxDelay) {
 
                 // Set all keys as not pressed
@@ -2304,6 +2363,45 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
         }
 
     }
+
+}
+
+
+uint8_t ESPectrum::TurboModeSet(int8_t esp_delay) {
+
+    uint8_t current_esp_delay = ESPectrum::ESP_delay;
+
+    if (esp_delay != -1) ESPectrum::ESP_delay = (uint8_t) esp_delay;
+
+    if (ESPectrum::ESP_delay) {
+
+        // Empty audio buffers
+        for (int i=0;i<ESP_AUDIO_SAMPLES_PENTAGON;i++) {
+            ESPectrum::overSamplebuf[i]=0;
+            ESPectrum::audioBuffer[i]=0;
+            AySound::SamplebufAY[i]=0;
+        }
+        ESPectrum::lastaudioBit=0;
+
+        ESPectrum::ESPoffset = 0;
+
+        // printf("Resetting pwmaudio to freq: %d\n",Audio_freq);
+        esp_err_t res;
+        res = pwm_audio_set_sample_rate(ESPectrum::Audio_freq[ESPectrum::ESP_delay]);
+        if (res != ESP_OK) {
+            printf("Can't set sample rate\n");
+        }
+
+        // Reset AY emulation
+        //AySound::init();
+        AySound::set_sound_format(ESPectrum::Audio_freq[ESPectrum::ESP_delay],1,8);
+        //AySound::set_stereo(AYEMU_MONO,NULL);
+        //AySound::reset();
+        AySound::prepare_generation();
+
+    }
+
+    return current_esp_delay;
 
 }
 
@@ -2512,6 +2610,8 @@ IRAM_ATTR void ESPectrum::loop() {
         // Send audioBuffer to pwmaudio
 
         xQueueSend(audioTaskQueue, &param, portMAX_DELAY);
+
+        RealTape_prepare_frame();
 
         CPU::loop();
 

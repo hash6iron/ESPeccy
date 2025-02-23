@@ -56,6 +56,7 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - Spectrum +2A model support.
 - SCR file support and screen autodetection in tape/snapshot/ROM files.
 - Persistent snapshot screen preview in slots.
+- Real tape support (SAVE/LOAD)
 
 ## Work in progress
 
@@ -154,6 +155,11 @@ Press CAPS SHIFT + SYMBOL SHIFT and:
 - Z,X,C,V Screen centering in CRT 15K mode
 - B BMP screen capture (Folder /.c at SDCard)
 - N NMI
+- J Enable tape load
+
+Press SYMBOL SHIFT and:
+
+- S Stop tape load
 
 ## How to flash custom ROMs
 

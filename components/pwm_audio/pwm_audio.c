@@ -11,6 +11,8 @@
 #include "soc/ledc_struct.h"
 #include "pwm_audio.h"
 
+#include "../../../include/RealTape.h"
+
 static const char *TAG = "pwm_audio";
 
 #define PWM_AUDIO_CHECK(a, str, ret_val)                          \
@@ -258,6 +260,10 @@ static void IRAM_ATTR timer_group_isr(void *para)
     if (handle == NULL) {
         return ;
     }
+
+
+    // RealTape
+    RealTape_isr_handle();
 
     // pwmcount++;
 
@@ -849,7 +855,7 @@ esp_err_t pwm_audio_deinit(void)
 
 uint32_t pwm_audio_rbstats(void)
 {
- 
+
     pwm_audio_data_t *handle = g_pwm_audio_handle;
 
     return rb_get_count(handle->ringbuf);
@@ -858,7 +864,7 @@ uint32_t pwm_audio_rbstats(void)
 
 uint32_t pwm_audio_pwmcount(void)
 {
- 
+
     return pwmcount;
 
 }

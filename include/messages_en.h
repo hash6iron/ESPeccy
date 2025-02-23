@@ -148,7 +148,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Eject Tape\n"\
     "Tape browser\t>\n"\
-    "Player mode\t>\n"
+    "Player mode\t>\n"\
+    "Real tape\t>\n"
+
+#define MENU_REALTAPE_EN "Real tape load\n"\
+    "Auto\t[N]\n"\
+    "Force\t[Y]\n"
 
 #define MENU_BETADISK_EN \
     "Drives\n"\
@@ -191,7 +196,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Sound\t>\n"\
     "Other\t>\n"\
     "Language\t>\n"\
-    "User Interface\t>\n"
+    "User Interface\t>\n"\
+    "EAR config\t>\n"
 
 #define MENU_UPDATE_EN \
     "Update\n"\

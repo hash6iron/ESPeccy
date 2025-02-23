@@ -43,6 +43,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cpuESP.h"
 #include "wd1793.h"
 
+#include "RealTape.h"
+
 // #pragma GCC optimize("O3")
 
 // Values calculated for BEEPER, EAR, MIC bit mask (values 0-7)
@@ -210,16 +212,20 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
                 data &= port[row];
         }
 
-        // ** ESPectrum **
+        if (RealTape_enabled && (Config::realtape_mode || Tape::tapeFileType == TAPE_FTYPE_EMPTY)) {
+            Tape::tapeEarBit = RealTape_getLevel();
+        }
+        else
         if (Tape::tapeStatus==TAPE_LOADING) {
             Tape::Read();
-            bitWrite(data,6,Tape::tapeEarBit);
-        } else {
-    		if ((Z80Ops::is48) && (Config::Issue2)) // Issue 2 behaviour only on Spectrum 48K
-				if (port254 & 0x18) data |= 0x40;
-			else
-				if (port254 & 0x10) data |= 0x40;
-		}
+        }
+
+        if (Z80Ops::is48 && Config::Issue2) {// Issue 2 behaviour only on Spectrum 48K
+            if (port254 & 0x18) bitWrite(data, 6, 1);
+        } else if (!Z80Ops::is2a3) {
+            if (port254 & 0x10) bitWrite(data, 6, 1);
+        }
+        if (Tape::tapeEarBit) data ^= 0x40;
 
     } else {
 

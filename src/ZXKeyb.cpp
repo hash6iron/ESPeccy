@@ -34,6 +34,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "ZXKeyb.h"
 #include "ESPectrum.h"
+#include "RealTape.h"
+#include "Config.h"
 
 uint8_t ZXKeyb::ZXcols[8] = { 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf };
 uint8_t ZXKeyb::Exists = 0;
@@ -118,8 +120,10 @@ uint8_t ZXKeyb::getCols() {
     cols |= gpio_get_level((gpio_num_t)KM_COL_3); cols <<= 1;
     cols |= gpio_get_level((gpio_num_t)KM_COL_2); cols <<= 1;
     cols |= gpio_get_level((gpio_num_t)KM_COL_1); cols <<= 1;
-    cols |= gpio_get_level((gpio_num_t)KM_COL_0);
-
+    if (RealTape_enabled && Config::realtape_gpio_num == KM_COL_0)
+        cols |= 1;
+    else
+        cols |= gpio_get_level((gpio_num_t)KM_COL_0);
     cols |= 0xa0;   // Keep bits 5,7 up
 
     return cols;

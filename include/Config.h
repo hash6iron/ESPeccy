@@ -164,6 +164,12 @@ public:
     static uint8_t  mousesamplerate;
     static uint8_t  mousedpi;
     static uint8_t  mousescaling;
+
+    static bool     realtape_mode;
+    static uint8_t  realtape_gpio_num;
+
+    static uint32_t psramsize;
+
 };
 
 #endif // Config.h

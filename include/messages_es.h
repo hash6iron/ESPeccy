@@ -145,7 +145,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Expulsar cinta\n"\
     "Navegador cinta\t>\n"\
-	"Modo reproductor\t>\n"
+	"Modo reproductor\t>\n"\
+    "Cinta real\t>\n"
+
+#define MENU_REALTAPE_ES "Carga de cinta real\n"\
+    "Auto\t[N]\n"\
+    "Forzar\t[Y]\n"
 
 #define MENU_BETADISK_ES \
     "Unidades\n"\
@@ -188,7 +193,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Sonido\t>\n"\
     "Otros\t>\n"\
     "Idioma\t>\n"\
-    "Interfaz de Usuario\t>\n"
+    "Interfaz de Usuario\t>\n"\
+    "EAR config\t>\n"
 
 #define MENU_UPDATE_ES \
     "Actualizar\n"\

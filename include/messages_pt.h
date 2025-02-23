@@ -150,7 +150,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Ejetar fita\n"\
     "Navegador fita\t>\n"\
-    "Modo reprodutor\t>\n"
+    "Modo reprodutor\t>\n"\
+    "Fita real\t>\n"
+
+#define MENU_REALTAPE_PT "Carga de fita real\n"\
+    "Auto\t[N]\n"\
+    "For\x87ar\t[Y]\n"
 
 #define MENU_BETADISK_PT \
     "Drives\n"\
@@ -193,7 +198,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Som\t>\n"\
     "Outros\t>\n"\
     "Idioma\t>\n"\
-    "Interface do Usu\xA0rio\t>\n"
+    "Interface do Usu\xA0rio\t>\n"\
+    "EAR config\t>\n"
 
 #define MENU_UPDATE_PT \
     "Atualizar\n"\

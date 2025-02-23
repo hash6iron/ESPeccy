@@ -46,6 +46,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "roms.h"
 #include "OSDMain.h"
 
+#include "RealTape.h"
+
 string   Config::arch = "48K";
 string   Config::romSet = "48K";
 string   Config::romSet48 = "48K";
@@ -160,6 +162,11 @@ bool Config::instantPreview = true;
 uint8_t Config::mousesamplerate = 60; // Valid values: 10, 20, 40, 60, 80, 100, and 200
 uint8_t Config::mousedpi = 2; // 0 -> 25dpi, 1 -> 50dpi, 2 -> 100dpi, 3 -> 200dpi
 uint8_t Config::mousescaling = 1; // 1 -> 1:1, 2 -> 1:2
+
+bool Config::realtape_mode = false; // FALSE = Auto / TRUE = Load from EAR
+uint8_t Config::realtape_gpio_num = 0;
+
+uint32_t Config::psramsize = 0;
 
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
@@ -279,7 +286,10 @@ ConfigEntry configEntries[] = {
 
     {"MouseSampleRate", CONFIG_TYPE_UINT8, &Config::mousesamplerate},
     {"MouseDPI", CONFIG_TYPE_UINT8, &Config::mousedpi},
-    {"MouseScaling", CONFIG_TYPE_UINT8, &Config::mousescaling}
+    {"MouseScaling", CONFIG_TYPE_UINT8, &Config::mousescaling},
+
+    {"RealTapeMode", CONFIG_TYPE_BOOL, &Config::realtape_mode},
+    {"RealTapeGPIO", CONFIG_TYPE_UINT8, &Config::realtape_gpio_num },
 
 };
 
@@ -380,6 +390,10 @@ void Config::save() {
 // Function to save the configuration
 void Config::save(string value) {
 
+    int realtape_state = RealTape_enabled;
+
+    if (realtape_state) RealTape_pause();
+
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -393,6 +407,7 @@ void Config::save(string value) {
     err = nvs_open("storage", NVS_READWRITE, &handle);
     if (err != ESP_OK) {
         printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+        if (realtape_state) RealTape_start();
         return;
     }
 
@@ -427,6 +442,9 @@ void Config::save(string value) {
 
     // Close NVS
     nvs_close(handle);
+
+    if (realtape_state) RealTape_start();
+
 }
 
 // Function to check if a file exists in SD using stat

@@ -2423,11 +2423,14 @@ IRAM_ATTR void Z80::decodeOpcodebf()
 
     cp(regA);
 
-    if (REG_PC == 0x56b) { // LOAD trap
+    if (REG_PC == 0x56b && !Config::realtape_mode) { // LOAD trap
 
         // printf("Trap Load!\n");
 
-        if ((Config::flashload) && (Tape::tapeFileType == TAPE_FTYPE_TAP) && (Tape::tapeFileName != "none") && (Tape::tapeStatus != TAPE_LOADING)) {
+        if (Config::flashload &&
+            Tape::tapeFileType == TAPE_FTYPE_TAP &&
+            Tape::tapeFileName != "none" &&
+            Tape::tapeStatus != TAPE_LOADING ) {
             // printf("Loading tape %s\n",Tape::tapeFileName.c_str());
             if (Tape::FlashLoad()) REG_PC = 0x5e2;
         }

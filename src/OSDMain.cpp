@@ -50,6 +50,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "CommitDate.h"
 #include "ROMLoad.h"
 
+#include "RealTape.h"
+
 #include "Cheat.h"
 
 #include "esp_system.h"
@@ -1884,9 +1886,35 @@ std::string markSelectedOption(const std::string& menu, const std::string& selec
     return updatedMenu;
 }
 
+std::vector<std::string> extractValues(const std::string& input) {
+    std::vector<std::string> result;
+    size_t pos = 0;
+
+    // Iterate over the string searching for '[' and then ']'
+    while (true) {
+        size_t start = input.find('[', pos);
+        if (start == std::string::npos)
+            break;  // No '[' found
+
+        size_t end = input.find(']', start);
+        if (end == std::string::npos)
+            break;  // No ']' found after '['
+
+        // Extract the content between the brackets
+        std::string value = input.substr(start + 1, end - start - 1);
+        result.push_back(value);
+
+        pos = end + 1;  // Continue searching after ']'
+    }
+
+    return result;
+}
+
 // OSD Main Loop
 void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
     fabgl::VirtualKeyItem Nextkey;
+
+    ESPectrum::sync_realtape = true;
 
     if (SHIFT && !CTRL) {
         if (KeytoESP == fabgl::VK_F1) { // Show H/W info
@@ -1997,6 +2025,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             click();
             showCheatDialog();
         }
+        else
+            ESPectrum::sync_realtape = false;
 
     } else if (CTRL && !SHIFT) {
 
@@ -2030,33 +2060,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             ++ESPectrum::ESP_delay &= 0x03;
 
-            if (ESPectrum::ESP_delay) {
-
-                // Empty audio buffers
-                for (int i=0;i<ESP_AUDIO_SAMPLES_PENTAGON;i++) {
-                    ESPectrum::overSamplebuf[i]=0;
-                    ESPectrum::audioBuffer[i]=0;
-                    AySound::SamplebufAY[i]=0;
-                }
-                ESPectrum::lastaudioBit=0;
-
-                ESPectrum::ESPoffset = 0;
-
-                // printf("Resetting pwmaudio to freq: %d\n",Audio_freq);
-                esp_err_t res;
-                res = pwm_audio_set_sample_rate(ESPectrum::Audio_freq[ESPectrum::ESP_delay]);
-                if (res != ESP_OK) {
-                    printf("Can't set sample rate\n");
-                }
-
-                // Reset AY emulation
-                //AySound::init();
-                AySound::set_sound_format(ESPectrum::Audio_freq[ESPectrum::ESP_delay],1,8);
-                //AySound::set_stereo(AYEMU_MONO,NULL);
-                //AySound::reset();
-                AySound::prepare_generation();
-
-            }
+            ESPectrum::TurboModeSet();
 
         } else
         if (KeytoESP == fabgl::VK_F9) { // Input Poke
@@ -2813,6 +2817,40 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_saverect = false;
                                     } else {
                                         menu_curopt = 5;
+                                        menu_level = 1;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (tap_num == 6) {
+                                menu_level = 2;
+                                menu_curopt = 1;
+                                menu_saverect = true;
+                                while (1) {
+                                    bool prev_opt = Config::realtape_mode;
+
+                                    string Mnustr = markSelectedOption(MENU_REALTAPE[Config::lang], prev_opt ? "Y" : "N");
+
+                                    if (prev_opt) {
+                                        menu_curopt = 2;
+                                    } else {
+                                        menu_curopt = 1;
+                                    }
+
+                                    uint8_t opt2 = menuRun(Mnustr);
+                                    if (opt2) {
+                                        if (opt2 == 2)
+                                            Config::realtape_mode = true;
+                                        else
+                                            Config::realtape_mode = false;
+
+                                        if (Config::realtape_mode != prev_opt) {
+                                            Config::save("RealTapeMode");
+                                        }
+                                        menu_curopt = opt2;
+                                        menu_saverect = false;
+                                    } else {
+                                        menu_curopt = 6;
                                         menu_level = 1;
                                         break;
                                     }
@@ -4408,6 +4446,55 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             }
 
                         }
+                        else if (options_num == 12) {
+                            menu_level = 2;
+                            menu_curopt = 1;
+                            menu_saverect = true;
+                            while (1) {
+                                string realtape_gpio_menu;
+                                uint8_t prev_realtape_gpio_num = Config::realtape_gpio_num;
+
+                                if (ZXKeyb::Exists) {
+                                    if (Config::psramsize > 0) {
+                                        realtape_gpio_menu = MENU_REALTAPE_OPTIONS_VILLENA_BOARD_PSRAM;
+                                    } else {
+                                        realtape_gpio_menu = MENU_REALTAPE_OPTIONS_VILLENA_BOARD_NO_PSRAM;
+                                    }
+                                } else {
+                                    realtape_gpio_menu = MENU_REALTAPE_OPTIONS_LILY;
+                                }
+
+                                std::vector<std::string> values = extractValues(realtape_gpio_menu);
+                                uint8_t val = Config::realtape_gpio_num;
+
+                                auto it = std::find(values.begin(), values.end(), to_string(val));
+                                if (it != values.end()) {
+                                    menu_curopt = std::distance(values.begin(), it) + 1;
+                                } else {
+                                    val = std::stoi(values[0]);
+                                    menu_curopt = 1;
+                                }
+
+                                realtape_gpio_menu = markSelectedOption(realtape_gpio_menu, to_string(val));
+
+                                uint8_t opt2 = menuRun(realtape_gpio_menu);
+                                if (opt2) {
+
+                                    if (std::stoi(values[opt2-1]) != prev_realtape_gpio_num) {
+                                        Config::realtape_gpio_num = std::stoi(values[opt2-1]);
+                                        Config::save("RealTapeGPIO");
+                                        RealTape_init(NULL);
+                                    }
+
+                                    menu_curopt = opt2;
+                                    menu_saverect = false;
+
+                                } else {
+                                    menu_curopt = 12;
+                                    break;
+                                }
+                            }
+                        }
                         else {
                             menu_curopt = opt;
                             break;
@@ -4722,6 +4809,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             }
         }
+        else
+            ESPectrum::sync_realtape = false;
     }
 }
 
@@ -5620,11 +5709,16 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
 esp_err_t OSD::updateFirmware(FILE *firmware) {
 
+    bool realtape_was_enabled = RealTape_enabled;
+
+    if (realtape_was_enabled) RealTape_pause();
+
     char ota_write_data[FWBUFFSIZE + 1] = { 0 };
 
     // get the currently running partition
     const esp_partition_t *partition = esp_ota_get_running_partition();
     if (partition == NULL) {
+        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5634,6 +5728,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
     const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
     if (target == NULL) {
+        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5655,6 +5750,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     esp_err_t result = esp_ota_begin(target, OTA_SIZE_UNKNOWN, &ota_handle);
     if (result != ESP_OK) {
         progressDialog("","",0,2);
+        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5674,6 +5770,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
         result = esp_ota_write(ota_handle,(const void *) ota_write_data, bytesread);
         if (result != ESP_OK) {
             progressDialog("","",0,2);
+            if (realtape_was_enabled) RealTape_start();
             return result;
         }
         byteswritten += bytesread;
@@ -5687,6 +5784,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     {
         // printf("esp_ota_end failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
+        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5694,6 +5792,7 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (result != ESP_OK) {
         // printf("esp_ota_set_boot_partition failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
+        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
