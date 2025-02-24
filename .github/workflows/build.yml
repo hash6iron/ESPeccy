@@ -31,7 +31,7 @@ jobs:
       run: platformio run -e ${{ matrix.env }}
 
     - name: Upload ESPectrum firmware artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ESPectrum-firmware-${{ matrix.env }}
         path: |
@@ -49,13 +49,13 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Download Build Artifacts (psram)
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ESPectrum-firmware-psram
         path: ./firmwares/psram
 
     - name: Download Build Artifacts (nopsram)
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ESPectrum-firmware-nopsram
         path: ./firmwares/nopsram
