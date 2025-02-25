@@ -190,7 +190,7 @@ static const char *MENU_SNA[NLANGS] = { MENU_SNA_EN,MENU_SNA_ES,MENU_SNA_PT };
 
 static const char *MENU_TAPE[NLANGS] = { MENU_TAPE_EN,MENU_TAPE_ES,MENU_TAPE_PT };
 
-static const char *MENU_TAPEPLAYER[NLANGS] = { "Player mode\n", "Modo reproductor\n", "Modo reprodutor\n" };
+static const char *MENU_TAPEMONITOR[NLANGS] = { "LOAD monitor\n", "Monitor LOAD\n", "Monitor LOAD\n" };
 
 static const char *MENU_REALTAPE[NLANGS] = { MENU_REALTAPE_EN, MENU_REALTAPE_ES, MENU_REALTAPE_PT };
 
@@ -238,8 +238,8 @@ static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_NO_PSRAM = "EAR config\n"
     "EAR\t[3]\n"\
     "USB 1 (GPIO 32)\t[32]\n"\
     "USB 1 (GPIO 33)\t[33]\n"\
-    /*"USB 2 (GPIO 16)\t[16]\n"\
-    "USB 2 (GPIO 17)\t[17]\n"\*/
+    "USB 2 (GPIO 16)\t[16]\n"\
+    "USB 2 (GPIO 17)\t[17]\n"\
     "MOD (GPIO 39)\t[39]\n";
 
 static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_PSRAM = "EAR config\n"\

@@ -78,7 +78,7 @@ uint8_t  Config::osd_AltRot = 0;
 bool     Config::AY48 = true;
 bool     Config::Issue2 = true;
 bool     Config::flashload = true;
-bool     Config::tape_player = false; // Tape player mode
+bool     Config::load_monitor = false; // Tape load monitor mode
 bool     Config::tape_timing_rg = false; // Rodolfo Guerra ROMs tape timings
 
 uint8_t  Config::joystick1 = JOY_SINCLAIR1;
@@ -163,7 +163,7 @@ uint8_t Config::mousesamplerate = 60; // Valid values: 10, 20, 40, 60, 80, 100, 
 uint8_t Config::mousedpi = 2; // 0 -> 25dpi, 1 -> 50dpi, 2 -> 100dpi, 3 -> 200dpi
 uint8_t Config::mousescaling = 1; // 1 -> 1:1, 2 -> 1:2
 
-bool Config::realtape_mode = false; // FALSE = Auto / TRUE = Load from EAR
+uint8_t Config::realtape_mode = 0; // 0 = Auto / 1 = Force Load from EAR / 2 = Force Save to MIC
 uint8_t Config::realtape_gpio_num = 0;
 
 uint32_t Config::psramsize = 0;
@@ -214,7 +214,7 @@ ConfigEntry configEntries[] = {
     {"AY48", CONFIG_TYPE_BOOL, &Config::AY48},
     {"Issue2", CONFIG_TYPE_BOOL, &Config::Issue2},
     {"flashload", CONFIG_TYPE_BOOL, &Config::flashload},
-    {"tape_player", CONFIG_TYPE_BOOL, &Config::tape_player},
+    {"load_monitor", CONFIG_TYPE_BOOL, &Config::load_monitor},
     {"tape_timing_rg", CONFIG_TYPE_BOOL, &Config::tape_timing_rg},
     {"joystick1", CONFIG_TYPE_UINT8, &Config::joystick1},
     {"joystick2", CONFIG_TYPE_UINT8, &Config::joystick2},
@@ -288,7 +288,7 @@ ConfigEntry configEntries[] = {
     {"MouseDPI", CONFIG_TYPE_UINT8, &Config::mousedpi},
     {"MouseScaling", CONFIG_TYPE_UINT8, &Config::mousescaling},
 
-    {"RealTapeMode", CONFIG_TYPE_BOOL, &Config::realtape_mode},
+    {"RealTapeMode", CONFIG_TYPE_UINT8, &Config::realtape_mode},
     {"RealTapeGPIO", CONFIG_TYPE_UINT8, &Config::realtape_gpio_num },
 
 };

@@ -145,12 +145,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Expulsar cinta\n"\
     "Navegador cinta\t>\n"\
-	"Modo reproductor\t>\n"\
+	"Monitor LOAD\t>\n"\
     "Cinta real\t>\n"
 
 #define MENU_REALTAPE_ES "Carga de cinta real\n"\
-    "Auto\t[N]\n"\
-    "Forzar\t[Y]\n"
+    "Auto\t[0]\n"\
+    "Forzar LOAD\t[1]\n"\
+    "Forzar SAVE\t[2]\n"
 
 #define MENU_BETADISK_ES \
     "Unidades\n"\

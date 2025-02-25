@@ -66,7 +66,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "OSDMain.h"
 #include "messages.h"
 
-// #include "Snapshot.h"
+#include "RealTape.h"
 
 // #pragma GCC optimize("O3")
 
@@ -2423,7 +2423,7 @@ IRAM_ATTR void Z80::decodeOpcodebf()
 
     cp(regA);
 
-    if (REG_PC == 0x56b && !Config::realtape_mode) { // LOAD trap
+    if (REG_PC == 0x56b && Config::realtape_mode != REALTAPE_FORCE_LOAD) { // LOAD trap
 
         // printf("Trap Load!\n");
 
@@ -4669,13 +4669,6 @@ void (*Z80::dcCB[256])() = {
 
 };
 
-// // Trim from end (in place) (for SAVE trap, clean this up later)
-// static inline void rtrim(std::string &s) {
-//     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-//         return !std::isspace(ch);
-//     }).base(), s.end());
-// }
-
 //Subconjunto de instrucciones 0xDD / 0xFD
 /*
  * Hay que tener en cuenta el manejo de secuencias códigos DD/FD que no
@@ -4757,7 +4750,7 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
             Z80Ops::addressOnBus(getPairIR().word, 2);
             regIXY.word--;
 
-            if (REG_PC == 0x04d4) { // Save trap
+            if (REG_PC == 0x04d4 && Config::realtape_mode != REALTAPE_FORCE_SAVE) { // Save trap
 
                 static bool SaveFileExists;
 
@@ -4767,8 +4760,7 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
                                      Tape::tapeFileType == TAPE_FTYPE_TAP && // check if file is tap
                                      !stat(Tape::tapeSaveName.c_str(), &stat_buf); // this check for SD fail
 
-                    if (!SaveFileExists)
-                        OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+                    // if (!SaveFileExists) OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
 
                     if (SaveFileExists && Tape::tapeIsReadOnly) {
                         OSD::osdCenteredMsg(OSD_READONLY_FILE_WARN[Config::lang], LEVEL_WARN);

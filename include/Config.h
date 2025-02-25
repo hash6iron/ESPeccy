@@ -106,7 +106,7 @@ public:
     static bool     AY48;
     static bool     Issue2;
     static bool     flashload;
-    static bool     tape_player;
+    static bool     load_monitor;
     static bool     tape_timing_rg;
     static uint8_t  joystick1;
     static uint8_t  joystick2;
@@ -165,7 +165,7 @@ public:
     static uint8_t  mousedpi;
     static uint8_t  mousescaling;
 
-    static bool     realtape_mode;
+    static uint8_t  realtape_mode;
     static uint8_t  realtape_gpio_num;
 
     static uint32_t psramsize;

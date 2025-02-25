@@ -148,7 +148,7 @@ static const uint8_t click128[116] = {   0,8,32,32,32,32,32,32,32,32,32,32,32,32
                                     };
 
 /* IRAM_ATTR */ void OSD::click() {
-    if (Config::tape_player) return; // Disable interface click on tape player mode
+    if (Config::load_monitor) return; // Disable interface click on tape load monitor mode
     pwm_audio_set_volume(ESP_VOLUME_MAX);
     size_t written;
     if (Z80Ops::is48)   pwm_audio_write((uint8_t *) click48, sizeof(click48), &written,  5 / portTICK_PERIOD_MS);
@@ -2493,7 +2493,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
             VIDEO::vga.setFont(Font6x8);
             VIDEO::vga.setCursor(x + OSD_FONT_W, y + 1);
-            VIDEO::vga.print(Config::tape_player ? "TAP" : "VOL");
+            VIDEO::vga.print(Config::load_monitor ? "TAP" : "VOL");
             for (int i = 0; i < ESPectrum::aud_volume + 16; i++)
                 VIDEO::vga.fillRect(x + (i + 7) * OSD_FONT_W, y + 1, OSD_FONT_W - 1, 7, zxColor( 7, 0));
 
@@ -2787,8 +2787,8 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 menu_curopt = 1;
                                 menu_saverect = true;
                                 while (1) {
-                                    string Mnustr = MENU_TAPEPLAYER[Config::lang];
-                                    bool prev_opt = Config::tape_player;
+                                    string Mnustr = MENU_TAPEMONITOR[Config::lang];
+                                    bool prev_opt = Config::load_monitor;
                                     if (prev_opt) {
                                         menu_curopt = 1;
                                         Mnustr += markSelectedOption(MENU_YESNO[Config::lang], "Y");
@@ -2800,18 +2800,18 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     uint8_t opt2 = menuRun(Mnustr);
                                     if (opt2) {
                                         if (opt2 == 1)
-                                            Config::tape_player = true;
+                                            Config::load_monitor = true;
                                         else
-                                            Config::tape_player = false;
+                                            Config::load_monitor = false;
 
-                                        if (Config::tape_player != prev_opt) {
-                                            if (Config::tape_player) {
+                                        if (Config::load_monitor != prev_opt) {
+                                            if (Config::load_monitor) {
                                                 ESPectrum::aud_volume = ESP_VOLUME_MAX;
                                             } else {
                                                 ESPectrum::aud_volume = Config::volume;
                                             }
                                             pwm_audio_set_volume(ESPectrum::aud_volume);
-                                            Config::save("tape_player");
+                                            Config::save("load_monitor");
                                         }
                                         menu_curopt = opt2;
                                         menu_saverect = false;
@@ -2827,24 +2827,16 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 menu_curopt = 1;
                                 menu_saverect = true;
                                 while (1) {
-                                    bool prev_opt = Config::realtape_mode;
+                                    uint8_t prev_opt = Config::realtape_mode;
 
-                                    string Mnustr = markSelectedOption(MENU_REALTAPE[Config::lang], prev_opt ? "Y" : "N");
+                                    string Mnustr = markSelectedOption(MENU_REALTAPE[Config::lang], to_string(prev_opt));
 
-                                    if (prev_opt) {
-                                        menu_curopt = 2;
-                                    } else {
-                                        menu_curopt = 1;
-                                    }
+                                    menu_curopt = Config::realtape_mode + 1;
 
                                     uint8_t opt2 = menuRun(Mnustr);
                                     if (opt2) {
-                                        if (opt2 == 2)
-                                            Config::realtape_mode = true;
-                                        else
-                                            Config::realtape_mode = false;
-
-                                        if (Config::realtape_mode != prev_opt) {
+                                        if (opt2 - 1 != prev_opt) {
+                                            Config::realtape_mode = opt2 - 1;
                                             Config::save("RealTapeMode");
                                         }
                                         menu_curopt = opt2;
@@ -4010,7 +4002,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 }
                                                     ESPectrum::aud_active_sources = (Config::Covox & 0x01) | (ESPectrum::AY_emu << 1);
                                                 }
-                                                // if (Config::tape_player) ESPectrum::AY_emu = false; // Disable AY emulation if tape player mode is set
+
                                                 Config::save("AY48");
                                             }
                                                 menu_curopt = opt2;

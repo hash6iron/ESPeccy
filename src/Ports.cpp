@@ -58,7 +58,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //   6: ula <= 8'hF8;
 //   7: ula <= 8'hFF;
 // and adjusted for BEEPER_MAX_VOLUME = 97
-uint8_t Ports::speaker_values[8]={ 0, 19, 34, 53, 97, 101, 130, 134 };
+//uint8_t Ports::speaker_values[8]={ 0, 19, 34, 53, 97, 101, 130, 134 };
 uint8_t Ports::port[128];
 uint8_t Ports::port254 = 0;
 uint8_t Ports::LastOutTo1FFD = 0;
@@ -212,7 +212,7 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
                 data &= port[row];
         }
 
-        if (RealTape_enabled && (Config::realtape_mode || Tape::tapeFileType == TAPE_FTYPE_EMPTY)) {
+        if (RealTape_enabled && (Config::realtape_mode == REALTAPE_FORCE_LOAD || Tape::tapeFileType == TAPE_FTYPE_EMPTY)) {
             Tape::tapeEarBit = RealTape_getLevel();
         }
         else
@@ -443,11 +443,12 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         if (ESPectrum::ESP_delay) { // Disable beeper on turbo mode
 
-            if (Config::tape_player)
-                Audiobit = Tape::tapeEarBit ? 255 : 0; // For tape player mode
+            if (Config::load_monitor)
+                Audiobit = Tape::tapeEarBit ? 255 : 0; // For load tape monitor
             else
                 // Beeper Audio
-                Audiobit = speaker_values[((data >> 2) & 0x04 ) | (Tape::tapeEarBit << 1) | ((data >> 3) & 0x01)];
+                //Audiobit = speaker_values[((data >> 2) & 0x04 ) | (Tape::tapeEarBit << 1) | ((data >> 3) & 0x01)];
+                Audiobit = ((data & 0x10) << 1) | ((data & 0x08) << 3) | ((Tape::tapeEarBit & 1) << 4);
 
             if (Audiobit != ESPectrum::lastaudioBit) {
                 ESPectrum::BeeperGetSample();
