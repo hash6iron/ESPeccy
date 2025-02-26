@@ -35,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string>
 #include <functional>
+#include <dirent.h>
 
 #include "nvs_flash.h"
 #include "nvs.h"
@@ -73,6 +74,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "soc/efuse_reg.h"
 
 #include "CommitDate.h"
+#include "Keymap.h"
 
 //=======================================================================================
 // KEYBOARD
@@ -404,7 +406,7 @@ void ESPectrum::showBIOS() {
     #define SET_CURSOR(col,row) VIDEO::vga.setCursor(base_col + (col) * OSD_FONT_W, base_row + (row) * OSD_FONT_H)
 
     // Opciones del menú
-    const char* menuOptions[] = {"Main", "Advanced", "Config", "Exit"};
+    const char* menuOptions[] = {"Main", "Advanced", "Config", "Key mapping", "Exit"};
     const int menuCount = sizeof(menuOptions)/sizeof(menuOptions[0]);
 
     const char* menuAdvanced[] = {"Resolution", "Frequency", "Scanlines"};
@@ -412,6 +414,9 @@ void ESPectrum::showBIOS() {
 
     const char* menuConfig[] = {"Backup Settings", "Restore Settings", "Reset Settings"};
     const int menuConfigCount = sizeof(menuConfig) / sizeof(menuConfig[0]);
+
+    const char* menuKeyMap[] = {"Enable custom layout", "Select custom layout"};
+    const int menuKeyMapCount = sizeof(menuKeyMap) / sizeof(menuKeyMap[0]);
 
     const char* menuExit[] = {"Save Changes & Exit", "Discard Changes & Exit"};
     const int menuExitCount = sizeof(menuExit) / sizeof(menuExit[0]);
@@ -425,10 +430,76 @@ void ESPectrum::showBIOS() {
     const char* menuOptionsScanlines[] = {"No", "Yes"};
     //const int menuOptionsScanlinesCount = sizeof(menuOptionsScanlines) / sizeof(menuOptionsScanlines[0]);
 
+    // Keymap menu variables
+    const char* menuOptionsEnableKeyMap[] = {"No", "Yes"};
+    string menuOptionsSelectKeyMap[5];
+    uint8_t maxKeyMapFilesFound = 0;
+    uint8_t itemskeymap = 0;
+
+    //
     int selectedOption = 0;
     int selectedAdvancedOption = 0;
     int selectedConfigOption = 0;
     int selectedExitOption = 0;
+    int selectedKeyMapOption = 0;
+
+    // Load key.map files found
+    auto getKeyMapFile = [&menuOptionsSelectKeyMap](uint8_t &maxKeyMapFilesFound)
+    {
+        
+        printf("\n");
+        printf("\n");
+        printf("Open directory\n");
+        printf("\n");
+        printf("\n");
+
+        char dpath[50];
+        strcpy(dpath,MOUNT_POINT_SD);
+        strcat(dpath,"/");
+    
+        struct dirent *entry;
+        DIR *dir = opendir(dpath);
+        if (dir == NULL) {
+            return;
+        }
+
+        int items = 0;
+
+        while ((entry = readdir(dir)) != NULL) 
+        {
+            string filename = entry->d_name;
+            printf("file name: %s\n",entry->d_name);
+            int pos = filename.find(".");
+
+            if (pos == string::npos)
+            {continue;}
+
+            string ext;
+            ext = (filename.substr(pos+1));
+            
+            printf("file ext: %s\n",ext.c_str());
+
+            if (ext=="map")
+            {   
+                menuOptionsSelectKeyMap[items] = filename;
+                printf("[%02u]Keymap found: %s\n",items,filename.c_str());
+                maxKeyMapFilesFound = items;
+                items++;
+            }
+
+            // Only first five items are loaded
+            if (items > 4)
+            {break;}
+
+        }
+
+        closedir(dir);
+        // if (FileUtils::isSDReady())
+        // {
+        //     std::string fkeymapd_path_str = Keymap::keymapfile_path + Keymap::keymapfilename;
+        //     //fkeymapd = fopen(fkeymapd_path_str.c_str(),"w+");            
+        // }        
+    };    
 
     // Renderizar el menú inicial
     auto renderMenu = [&](int highlight) {
@@ -640,6 +711,14 @@ void ESPectrum::showBIOS() {
 
         VIDEO::vga.print(ESPectrum::getHardwareInfo().c_str());
     };
+
+    // Iniciar el menú
+    getKeyMapFile(maxKeyMapFilesFound);
+
+    for(int i = 0;i<5;i++)
+    {
+        printf("Item %01u : %s\n",i,menuOptionsSelectKeyMap[i].c_str());
+    }
 
     // Iniciar el menú
     renderMenu(selectedOption);
@@ -879,7 +958,81 @@ void ESPectrum::showBIOS() {
                     renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
                     break;
                 }
-                case 3:
+
+                case 3: // Accion para KEY MAPPING
+                {
+                    selectedKeyMapOption = 0;
+
+                    auto renderKeyMapOptions = [&]() 
+                    {
+                        // Cut name for no more than 10 chars (textbox limitation)
+                        string shrtname = (menuOptionsSelectKeyMap[Config::pathforkeymapfile_pos]);
+                        shrtname = shrtname.length() < 10 ? shrtname : shrtname.substr(0,9);
+                        
+                        const char *valuesKeyMap[2] = 
+                        { 
+                            menuOptionsEnableKeyMap[Config::keymap_enable],
+                            shrtname.c_str(),
+                        };
+                        renderOptions(menuKeyMap, valuesKeyMap, menuKeyMapCount, selectedKeyMapOption);
+                    };
+
+                    // Renderizar menú avanzado
+                    screen_clear();
+                    renderKeyMapOptions();
+
+                    // Lógica para el menú avanzado
+                    bool exitAdvancedMenu = false;
+                    while (!exitAdvancedMenu) {
+                        ZXKeyb::ZXKbdRead();
+                        while (Kbd->virtualKeyAvailable()) {
+                            bool r = Kbd->getNextVirtualKey(&NextKey);
+                            if (r && NextKey.down) {
+
+                                mainMenuNav([&renderKeyMapOptions](){renderKeyMapOptions();}, [&renderKeyMapOptions](){renderKeyMapOptions();});
+                                optionsNav(selectedKeyMapOption, menuKeyMapCount, [&renderKeyMapOptions](){renderKeyMapOptions();});
+
+                                switch (NextKey.vk) {
+                                    case fabgl::VK_RETURN:
+                                    case fabgl::VK_SPACE:
+                                        switch (selectedKeyMapOption) 
+                                        {
+                                            case 0: // Acción para Enable key.map
+                                                Config::keymap_enable = (Config::keymap_enable + 1) %2;
+                                                printf("BIOS: enable keymap:[%s] \n", Config::keymap_enable ? "yes" : "no");
+                                                break;
+                                            case 1: // Acción para Select key.map
+                                                // Get next .map file found.
+                                                Config::pathforkeymapfile = "/" + menuOptionsSelectKeyMap[itemskeymap];
+                                                Config::pathforkeymapfile_pos = itemskeymap;
+                                                itemskeymap++;                        
+                                                itemskeymap = itemskeymap > maxKeyMapFilesFound ? 0 : itemskeymap;
+
+                                                printf("BIOS: path for keymap:[%s] \n", Config::pathforkeymapfile.c_str());
+                                                break;                                                
+                                        }
+
+                                        screen_clear();
+                                        renderKeyMapOptions();
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (exit_to_main) break;
+
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+
+                    }
+
+                    if (exit_to_main) break;
+
+                    screen_clear();
+                    renderKeyMapOptions();
+                    break;
+                }
+
+                case 4:
                 {
                     selectedExitOption = 0;
                     // Renderizar menú de visualización
@@ -1247,6 +1400,49 @@ void ESPectrum::setup()
             }
         }
     }
+
+    //
+    //
+    //
+    
+    Keymap::keymap_enable = Config::keymap_enable;
+    strcpy(Keymap::keymapfilename,Config::pathforkeymapfile.c_str());
+    
+    if (Config::keymap_enable)
+    {
+
+        printf("------------------------------------\n");
+        printf("- KEYMAP setting                   -\n");
+        printf("------------------------------------\n");
+        printf("\n");        
+        
+        if (!Keymap::keymapFileExists())
+        {
+            // Back to come into BIOS to define path for key.map or disable custom keymap
+            VIDEO::vga.setTextColor(zxColor(7,1),zxColor(2,0));
+            VIDEO::vga.print(" ");
+            VIDEO::vga.print("Layout file not found. Disable or select other.");
+            delay(750);
+            VIDEO::vga.setTextColor(zxColor(7,1),zxColor(0,0));
+            VIDEO::vga.print(" ");
+            VIDEO::vga.print("Back to BIOS menu.");
+            delay(1000);
+
+            showBIOS();
+        }
+        else
+        {
+            // Keymap::regexTest();
+            Keymap::getKeymapFromFile(Keymap::kbdcustom);
+            Keymap::activeKeyboardLayout(Keymap::kbdcustom);
+            printf("> [%s] Keyboard layout applied.\n",Keymap::keymapfile_path.c_str());                
+        } 
+
+        printf("\n");
+        printf("------------------------------------\n");
+
+    }
+
 
     //=======================================================================================
     // BIOS

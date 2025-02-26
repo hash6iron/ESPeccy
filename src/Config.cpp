@@ -163,6 +163,10 @@ uint8_t Config::mousesamplerate = 60; // Valid values: 10, 20, 40, 60, 80, 100, 
 uint8_t Config::mousedpi = 2; // 0 -> 25dpi, 1 -> 50dpi, 2 -> 100dpi, 3 -> 200dpi
 uint8_t Config::mousescaling = 1; // 1 -> 1:1, 2 -> 1:2
 
+bool Config::keymap_enable = false; // true -> Enable key mapping, false -> Disable key mapping (use ESPectrum distribution keyboard)
+uint8_t Config::pathforkeymapfile_pos = 0;
+string Config::pathforkeymapfile = "/key.map"; // by default /key.map -> regenerate key map file.
+
 bool Config::realtape_mode = false; // FALSE = Auto / TRUE = Load from EAR
 uint8_t Config::realtape_gpio_num = 0;
 
@@ -287,10 +291,11 @@ ConfigEntry configEntries[] = {
     {"MouseSampleRate", CONFIG_TYPE_UINT8, &Config::mousesamplerate},
     {"MouseDPI", CONFIG_TYPE_UINT8, &Config::mousedpi},
     {"MouseScaling", CONFIG_TYPE_UINT8, &Config::mousescaling},
-
+    {"Keymap_enable", CONFIG_TYPE_BOOL, &Config::keymap_enable},
+    {"Keymap_select", CONFIG_TYPE_STRING, &Config::pathforkeymapfile},
+    {"Keymap_selpos", CONFIG_TYPE_UINT8, &Config::pathforkeymapfile_pos},
     {"RealTapeMode", CONFIG_TYPE_BOOL, &Config::realtape_mode},
     {"RealTapeGPIO", CONFIG_TYPE_UINT8, &Config::realtape_gpio_num },
-
 };
 
 // Function to load the configuration
