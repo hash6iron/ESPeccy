@@ -133,7 +133,7 @@ IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
     static int64_t elapsedmicros = 0;
     static int cntvsync = 0;
 
-    if (Config::tape_player) {
+    if (Config::load_monitor) {
         ESPectrum::vsync = true;
         return;
     }

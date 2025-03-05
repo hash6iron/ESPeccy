@@ -150,12 +150,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Ejetar fita\n"\
     "Navegador fita\t>\n"\
-    "Modo reprodutor\t>\n"\
+    "Monitor LOAD\t>\n"\
     "Fita real\t>\n"
 
 #define MENU_REALTAPE_PT "Carga de fita real\n"\
-    "Auto\t[N]\n"\
-    "For\x87ar\t[Y]\n"
+    "Auto\t[0]\n"\
+    "For\x87ar LOAD\t[1]\n"\
+    "For\x87ar SAVE\t[2]\n"
 
 #define MENU_BETADISK_PT \
     "Drives\n"\

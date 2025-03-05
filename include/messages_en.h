@@ -148,12 +148,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Play/Stop\n"\
     "Eject Tape\n"\
     "Tape browser\t>\n"\
-    "Player mode\t>\n"\
+    "LOAD monitor\t>\n"\
     "Real tape\t>\n"
 
 #define MENU_REALTAPE_EN "Real tape load\n"\
-    "Auto\t[N]\n"\
-    "Force\t[Y]\n"
+    "Auto\t[0]\n"\
+    "Force LOAD\t[1]\n"\
+    "Force SAVE\t[2]\n"
 
 #define MENU_BETADISK_EN \
     "Drives\n"\

@@ -43,6 +43,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+enum {
+    REALTAPE_AUTO = 0,
+    REALTAPE_FORCE_LOAD,
+    REALTAPE_FORCE_SAVE
+};
+
 // Estructura para inyectar parámetros externos
 
 typedef struct {

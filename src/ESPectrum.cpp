@@ -1543,8 +1543,8 @@ void ESPectrum::setup()
     audioCOVOXDivider = audioAYDivider;
     covoxData[0] = covoxData[1] = covoxData[2] = covoxData[3] = 0;
 
-    if (Config::tape_player) {
-        AY_emu = false; // Disable AY emulation if tape player mode is set
+    if (Config::load_monitor) {
+        AY_emu = false; // Disable AY emulation if tape load monitor mode is set
         ESPectrum::aud_volume = ESP_VOLUME_MAX;
     } else
         ESPectrum::aud_volume = Config::volume;
@@ -1774,7 +1774,7 @@ void ESPectrum::reset()
     audioCOVOXDivider = audioAYDivider;
     covoxData[0] = covoxData[1] = covoxData[2] = covoxData[3] = 0;
 
-    if (Config::tape_player) AY_emu = false; // Disable AY emulation if tape player mode is set
+    if (Config::load_monitor) AY_emu = false; // Disable AY emulation if tape load monitor mode is set
 
     ESPoffset = 0;
 
@@ -2833,8 +2833,8 @@ IRAM_ATTR void ESPectrum::loop() {
 
                 if (VIDEO::framecnt >= 100) {
 
-                    // Save selected volume if not in tape player mode
-                    if (!Config::tape_player) {
+                    // Save selected volume if not in tape load monitor mode
+                    if (!Config::load_monitor) {
                         Config::volume = aud_volume;
                         Config::save("volume");
                     }
@@ -2909,7 +2909,7 @@ IRAM_ATTR void ESPectrum::loop() {
             continue;
         }
 
-        if(Config::videomode && !Config::tape_player && ESP_delay == 1) {
+        if(Config::videomode && !Config::load_monitor && ESP_delay == 1) {
 
             if (sync_cnt++ == 0) {
 
