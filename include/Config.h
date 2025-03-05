@@ -169,10 +169,6 @@ public:
     static uint8_t  pathforkeymapfile_pos;
     static string   pathforkeymapfile;
 
-    static bool     keymap_enable;
-    static uint8_t  pathforkeymapfile_pos;
-    static string   pathforkeymapfile;
-
     static uint8_t  realtape_mode;
     static uint8_t  realtape_gpio_num;
 
