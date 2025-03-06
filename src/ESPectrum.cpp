@@ -357,6 +357,7 @@ void ESPectrum::bootKeyboard() {
                     // Check keyboard status
                     switch (NextKey.vk) {
                         case fabgl::VK_F2:
+                        case fabgl::VK_DELETE:  // For Special BIOS key in Spectrum+ 3D model.
                         case fabgl::VK_2:
                             runBios = 1;
                             break;
@@ -405,7 +406,7 @@ void ESPectrum::showBIOS() {
     #define SET_CURSOR(col,row) VIDEO::vga.setCursor(base_col + (col) * OSD_FONT_W, base_row + (row) * OSD_FONT_H)
 
     // Opciones del menú
-    const char* menuOptions[] = {"Main", "Advanced", "Config", "Key mapping", "Exit"};
+    const char* menuOptions[] = {"Main", "Advanced", "Keyboard", "Config", "Key mapping", "Exit"};
     const int menuCount = sizeof(menuOptions)/sizeof(menuOptions[0]);
 
     const char* menuVideo[] = {"Resolution", "Frequency", "Scanlines"};
@@ -1010,7 +1011,7 @@ void ESPectrum::showBIOS() {
                     break;
                 }
 
-                case 3: // Accion para KEY MAPPING
+                case 4: // Accion para KEY MAPPING
                 {
                     selectedKeyMapOption = 0;
 
@@ -1083,7 +1084,7 @@ void ESPectrum::showBIOS() {
                     break;
                 }
 
-                case 4:
+                case 5: // Exit
                 {
                     int selectedExitOption = 0;
                     // Renderizar menú de visualización
