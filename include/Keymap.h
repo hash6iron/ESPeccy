@@ -39,12 +39,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
-// #include <iostream>
-// #include <regex>
-// #include <fstream>
-// #include <algorithm>
-// #include <cctype> // Para isspace
-
 #include "FileUtils.h"
 #include "fabgl.h"
 #include "ESPectrum.h"
