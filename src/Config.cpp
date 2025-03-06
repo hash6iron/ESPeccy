@@ -172,6 +172,8 @@ uint8_t Config::realtape_gpio_num = 0;
 
 uint32_t Config::psramsize = 0;
 
+bool Config::zxunops2 = false;
+
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
     s.erase(std::remove_if(s.begin(), s.end(),
@@ -296,6 +298,8 @@ ConfigEntry configEntries[] = {
     {"Keymap_selpos", CONFIG_TYPE_UINT8, &Config::pathforkeymapfile_pos},
     {"RealTapeMode", CONFIG_TYPE_BOOL, &Config::realtape_mode},
     {"RealTapeGPIO", CONFIG_TYPE_UINT8, &Config::realtape_gpio_num },
+
+    {"ZXUnoPS2", CONFIG_TYPE_BOOL, &Config::zxunops2 },
 };
 
 // Function to load the configuration
