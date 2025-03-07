@@ -251,7 +251,6 @@ static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_PSRAM = "EAR config\n"\
 static const char *MENU_REALTAPE_OPTIONS_LILY = "EAR config\n"\
     "BOARD (GPIO 39)\t[39]\n"\
     "BOARD (GPIO 34)\t[34]\n"\
-    "BOARD (GPIO 36)\t[36]\n"\
     "PS/2 MOUSE (GPIO 26)\t[26]\n"\
     "PS/2 MOUSE (GPIO 27)\t[27]\n";
 

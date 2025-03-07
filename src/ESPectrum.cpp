@@ -124,6 +124,8 @@ int runBios = 0;
 
 uint8_t ESPectrum::aud_active_sources = 0;
 
+bool booting = false;
+
 //=======================================================================================
 // TAPE OSD
 //=======================================================================================
@@ -327,6 +329,8 @@ void ESPectrum::bootKeyboard() {
 
     // printf("Boot kbd!\n");
 
+    bool biosButton = false;
+
     for (int i = 0; i < 200; i++) {
 
         if (ZXKeyb::Exists) {
@@ -343,8 +347,13 @@ void ESPectrum::bootKeyboard() {
             }
 
         }
+        else
+        if (!gpio_get_level((gpio_num_t)GPIO_NUM_36)) {
+            biosButton = true;
+            break;
+        }
 
-	   if (ps2kbd) {
+	    if (ps2kbd) {
             auto Kbd = PS2Controller.keyboard();
             fabgl::VirtualKeyItem NextKey;
 
@@ -378,6 +387,19 @@ void ESPectrum::bootKeyboard() {
 
     }
 
+    if (biosButton) {
+        runBios = 1;
+        /* continue reading for 11 seconds max */
+        for (int i = 0; i < 11000 && !gpio_get_level((gpio_num_t)GPIO_NUM_36); i++) {
+            if (i >= 10000) { /* 10 seconds, then CRT BIOS */
+                runBios = 3;
+                break;
+            }
+            delayMicroseconds(1000);
+        }
+    }
+
+
     if (runBios) {
         Config::videomode = runBios - 1;
         Config::aspect_16_9 = false;
@@ -409,11 +431,17 @@ void ESPectrum::showBIOS() {
     const char* menuOptions[] = {"Main", "Advanced", "Keyboard", "Config", "Key mapping", "Exit"};
     const int menuCount = sizeof(menuOptions)/sizeof(menuOptions[0]);
 
+    const char* menuOptionsLily[] = {"Main", "Video", "Keyboard", "Others", "Config", "Exit"};
+    const int menuCountLily = sizeof(menuOptionsLily)/sizeof(menuOptionsLily[0]);
+
     const char* menuVideo[] = {"Resolution", "Frequency", "Scanlines"};
     const int menuVideoCount = sizeof(menuVideo) / sizeof(menuVideo[0]);
 
     const char* menuKeyboard[] = {"ZXUnoPS2 (.ZXPure)"};
     const int menuKeyboardCount = sizeof(menuKeyboard) / sizeof(menuKeyboard[0]);
+
+    const char* menuOthers[] = {"IO36 Button"};
+    const int menuOthersCount = sizeof(menuOthers) / sizeof(menuOthers[0]);
 
     const char* menuConfig[] = {"Backup Settings", "Restore Settings", "Reset Settings"};
     const int menuConfigCount = sizeof(menuConfig) / sizeof(menuConfig[0]);
@@ -425,13 +453,13 @@ void ESPectrum::showBIOS() {
     const int menuExitCount = sizeof(menuExit) / sizeof(menuExit[0]);
 
     const char* menuOptionsResolution[] = {"320x240 (4:3)", "360x200 (16:9)"};
-    //const int menuOptionsResolutionCount = sizeof(menuOptionsResolution) / sizeof(menuOptionsResolution[0]);
 
     const char* menuOptionsFrequency[] = {"60Hz (VGA)", "50Hz (VGA)", "15kHz (CRT)"};
-    //const int menuOptionsFrequencyCount = sizeof(menuOptionsFrequency) / sizeof(menuOptionsFrequency[0]);
 
     const char* menuYesNo[] = {"No", "Yes"};
     //const int menuYesNoCount = sizeof(menuYesNo) / sizeof(menuYesNo[0]);
+    
+    const char* menuOthersIO36Button[] = {"RESET", "NMI", "CHEATS", "POKE", "STATS", "MENU"};
 
     // Keymap menu variables
     const char* menuOptionsEnableKeyMap[] = {"No", "Yes"};
@@ -508,12 +536,13 @@ void ESPectrum::showBIOS() {
     auto renderMenu = [&](int highlight) {
         SET_CURSOR(0, 1);
         int len = 0;
-        for (int i = 0; i < menuCount; ++i) {
+        int limit = ZXKeyb::Exists ? menuCount : menuCountLily;
+        for (int i = 0; i < limit; ++i) {
             VIDEO::vga.setTextColor(i == highlight ? zxColor(1, 1) : zxColor(7, 1), i == highlight ? zxColor(7, 1) : zxColor(1, 0));
             VIDEO::vga.print(" ");
-            VIDEO::vga.print(menuOptions[i]);
+            VIDEO::vga.print(ZXKeyb::Exists ? menuOptions[i] : menuOptionsLily[i]);
             VIDEO::vga.print(" ");
-            len += strlen(menuOptions[i]) + 2;
+            len += strlen(ZXKeyb::Exists ? menuOptions[i] : menuOptionsLily[i]) + 2;
         }
         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
         VIDEO::vga.print(string(total_cols - len, ' ').c_str());
@@ -680,7 +709,7 @@ void ESPectrum::showBIOS() {
 
         // Esperar la selección del usuario
         while (true) {
-            ZXKeyb::ZXKbdRead();
+            if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
             while (Kbd->virtualKeyAvailable()) {
                 fabgl::VirtualKeyItem NextKey;
                 if (readKbd(&NextKey, KBDREAD_MODEBIOS) && NextKey.down) {
@@ -752,13 +781,13 @@ void ESPectrum::showBIOS() {
     auto mainMenuNav = [&](const std::function<void()>& escCancel, const std::function<void()>& f10Cancel) {
         switch (NextKey.vk) {
             case fabgl::VK_RIGHT:
-                selectedOption = (selectedOption + 1) % menuCount;
+                selectedOption = (selectedOption + 1) % (ZXKeyb::Exists ? menuCount : menuCountLily);
                 renderMenu(selectedOption);
                 exit_to_main = true;
                 break;
 
             case fabgl::VK_LEFT:
-                selectedOption = (selectedOption - 1 + menuCount) % menuCount;
+                selectedOption = (selectedOption - 1 + (ZXKeyb::Exists ? menuCount : menuCountLily)) % (ZXKeyb::Exists ? menuCount : menuCountLily);
                 renderMenu(selectedOption);
                 exit_to_main = true;
                 break;
@@ -808,7 +837,7 @@ void ESPectrum::showBIOS() {
     while (!exitMenu) {
         int oldSelectedOptions = selectedOption;
 
-        ZXKeyb::ZXKbdRead();
+        if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
         while (Kbd->virtualKeyAvailable()) {
             bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
             if (r && NextKey.down) mainMenuNav([&showHardwareInfo](){showHardwareInfo();}, [&showHardwareInfo](){showHardwareInfo();});
@@ -817,329 +846,296 @@ void ESPectrum::showBIOS() {
         if (selectedOption != oldSelectedOptions || exit_to_main ) {
             exit_to_main = false;
             // Acción según la opción seleccionada
-            switch (selectedOption) {
-                case 0: // Acción para MAIN
-                    screen_clear();
-                    showHardwareInfo();
-                    break;
-                case 1: // Acción para Video
-                {
-                    int selectedVideoOption = 0;
+            if (selectedOption == 0 ) { // Acción para MAIN
+                screen_clear();
+                showHardwareInfo();
+            }
+            else if (selectedOption == 1) { // Acción para Video
+                int selectedVideoOption = 0;
 
-                    auto renderVideoOptions = [&]() {
-                        const char *valuesAvanced[] = { menuOptionsResolution[Config::aspect_16_9], menuOptionsFrequency[Config::videomode], menuYesNo[Config::scanlines] };
-                        renderOptions(menuVideo, valuesAvanced, menuVideoCount, selectedVideoOption);
-                    };
+                auto renderVideoOptions = [&]() {
+                    const char *valuesVideo[] = { menuOptionsResolution[Config::aspect_16_9], menuOptionsFrequency[Config::videomode], menuYesNo[Config::scanlines] };
+                    renderOptions(menuVideo, valuesVideo, menuVideoCount, selectedVideoOption);
+                };
 
-                    // Renderizar menú video
+                // Renderizar menú video
+                screen_clear();
+                renderVideoOptions();
+
+                // Lógica para el menú video
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderVideoOptions](){renderVideoOptions();}, [&renderVideoOptions](){renderVideoOptions();});
+                            optionsNav(selectedVideoOption, menuVideoCount, [&renderVideoOptions](){renderVideoOptions();});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedVideoOption) {
+                                        case 0: // Acción para RESOLUTION
+                                            Config::aspect_16_9 = (Config::aspect_16_9 + 1) % 2;
+                                            break;
+                                        case 1: // Acción para FREQUENCY
+                                            Config::videomode = (Config::videomode + 1) % 3;
+                                            break;
+                                        case 2: // Acción para SCANLINES
+                                            Config::scanlines = (Config::scanlines + 1) % 2;
+                                            break;
+                                    }
+
+                                    screen_clear();
+                                    renderVideoOptions();
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+                }
+
+                if (!exit_to_main) {
                     screen_clear();
                     renderVideoOptions();
-
-                    // Lógica para el menú video
-                    while (true) {
-                        ZXKeyb::ZXKbdRead();
-                        while (Kbd->virtualKeyAvailable()) {
-                            bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
-                            if (r && NextKey.down) {
-
-                                mainMenuNav([&renderVideoOptions](){renderVideoOptions();}, [&renderVideoOptions](){renderVideoOptions();});
-                                optionsNav(selectedVideoOption, menuVideoCount, [&renderVideoOptions](){renderVideoOptions();});
-
-                                switch (NextKey.vk) {
-                                    case fabgl::VK_RETURN:
-                                    case fabgl::VK_SPACE:
-                                        switch (selectedVideoOption) {
-                                            case 0: // Acción para RESOLUTION
-                                                Config::aspect_16_9 = (Config::aspect_16_9 + 1) % 2;
-                                                break;
-                                            case 1: // Acción para FREQUENCY
-                                                Config::videomode = (Config::videomode + 1) % 3;
-                                                break;
-                                            case 2: // Acción para SCANLINES
-                                                Config::scanlines = (Config::scanlines + 1) % 2;
-                                                break;
-                                        }
-
-                                        screen_clear();
-                                        renderVideoOptions();
-                                        break;
-                                }
-                            }
-                        }
-
-                        if (exit_to_main) break;
-
-                        vTaskDelay(100 / portTICK_PERIOD_MS);
-
-                    }
-
-                    if (exit_to_main) break;
-
-                    screen_clear();
-                    renderVideoOptions();
-                    break;
-                }
-                case 2: // Acción para Keyboard
-                {
-                    int selectedKeyboardOption = 0;
-
-                    auto renderKeyboardOptions = [&]() {
-                        const char *valuesKeyboard[] = { menuYesNo[Config::zxunops2] };
-                        renderOptions(menuKeyboard, valuesKeyboard, menuKeyboardCount, selectedKeyboardOption);
-                    };
-
-                    // Renderizar menú keyboard
-                    screen_clear();
-                    renderKeyboardOptions();
-
-                    // Lógica para el menú keyboard
-                    while (true) {
-                        ZXKeyb::ZXKbdRead();
-                        while (Kbd->virtualKeyAvailable()) {
-                            bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
-                            if (r && NextKey.down) {
-
-                                mainMenuNav([&renderKeyboardOptions](){renderKeyboardOptions();}, [&renderKeyboardOptions](){renderKeyboardOptions();});
-                                optionsNav(selectedKeyboardOption, menuKeyboardCount, [&renderKeyboardOptions](){renderKeyboardOptions();});
-
-                                switch (NextKey.vk) {
-                                    case fabgl::VK_RETURN:
-                                    case fabgl::VK_SPACE:
-                                        switch (selectedKeyboardOption) {
-                                            case 0: // Acción para ZXUnoPS2
-                                                Config::zxunops2 = !Config::zxunops2;
-                                                break;
-                                        }
-
-                                        screen_clear();
-                                        renderKeyboardOptions();
-                                        break;
-                                }
-                            }
-                        }
-
-                        if (exit_to_main) break;
-
-                        vTaskDelay(100 / portTICK_PERIOD_MS);
-
-                    }
-
-                    if (exit_to_main) break;
-
-                    screen_clear();
-                    renderKeyboardOptions();
-                    break;
-                }
-                case 3: // Acción para CONFIG
-                {
-                    int selectedConfigOption = 0;
-                    // Renderizar menú de visualización
-                    screen_clear();
-                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-
-                    auto remountSD = [&]() {
-                        if ( FileUtils::SDReady && !FileUtils::isMountedSDCard() ) FileUtils::unmountSDCard();
-                        if ( !FileUtils::SDReady ) FileUtils::initFileSystem();
-                    };
-
-                    while (true) {
-                        ZXKeyb::ZXKbdRead();
-                        while (Kbd->virtualKeyAvailable()) {
-                            bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
-                            if (r && NextKey.down) {
-
-                                mainMenuNav([&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);},
-                                            [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
-                                optionsNav(selectedConfigOption, menuConfigCount, [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
-
-                                switch (NextKey.vk) {
-                                    case fabgl::VK_RETURN:
-                                    case fabgl::VK_SPACE:
-                                        switch (selectedConfigOption) {
-                                            case 0: // Acción para BACKUP
-                                            {
-                                                if (msg_dialog("Confirm Backup", "Insert a valid SD card.\nPress OK to save BIOS settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
-                                                    screen_clear(true);
-                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                                                    remountSD();
-                                                    bool status = !FileUtils::SDReady || Config::saveToSD();
-                                                    if (status) msg_dialog("Backup Error", "Failed to write backup.\nPlease check SD card and try again.");
-                                                    else msg_dialog("Backup Completed", "BIOS settings successfully saved to SD card.");
-                                                }
-                                                screen_clear(true);
-                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                                                break;
-                                            }
-                                            case 1: // Acción para RESTORE
-                                            {
-                                                if (msg_dialog("Confirm Restore", "Insert the SD card with the backup.\nPress OK to restore settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
-                                                    screen_clear(true);
-                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                                                    remountSD();
-                                                    bool status = !FileUtils::SDReady || Config::loadFromSD();
-                                                    if (status) msg_dialog("Restore Error", "Failed to restore settings.\nPlease verify SD card and try again.");
-                                                    else msg_dialog("Restore Completed", "BIOS settings successfully restored from SD card.");
-                                                }
-                                                screen_clear(true);
-                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                                                break;
-                                            }
-                                            case 2: // Acción para RESET
-                                                if (msg_dialog("Reset Configuration & Reboot", "Do you really want to reset all settings?", BIOS_DLG_CONFIRM)) {
-                                                    nvs_flash_erase();
-                                                    OSD::esp_hard_reset();
-                                                } else {
-                                                    screen_clear(true);
-                                                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                                                }
-                                                break;
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-
-                        if (exit_to_main) break;
-
-                        vTaskDelay(100 / portTICK_PERIOD_MS);
-                    }
-
-                    if (exit_to_main) break;
-
-                    screen_clear();
-                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-                    break;
-                }
-
-                case 4: // Accion para KEY MAPPING
-                {
-                    selectedKeyMapOption = 0;
-
-                    auto renderKeyMapOptions = [&]() 
-                    {
-                        // Cut name for no more than 10 chars (textbox limitation)
-                        string shrtname = (menuOptionsSelectKeyMap[Config::pathforkeymapfile_pos]);
-                        shrtname = shrtname.length() < 10 ? shrtname : shrtname.substr(0,9);
-                        
-                        const char *valuesKeyMap[2] = 
-                        { 
-                            menuOptionsEnableKeyMap[Config::keymap_enable],
-                            shrtname.c_str(),
-                        };
-                        renderOptions(menuKeyMap, valuesKeyMap, menuKeyMapCount, selectedKeyMapOption);
-                    };
-
-                    // Renderizar menú avanzado
-                    screen_clear();
-                    renderKeyMapOptions();
-
-                    // Lógica para el menú avanzado
-                    bool exitAdvancedMenu = false;
-                    while (!exitAdvancedMenu) {
-                        ZXKeyb::ZXKbdRead();
-                        while (Kbd->virtualKeyAvailable()) {
-                            bool r = Kbd->getNextVirtualKey(&NextKey);
-                            if (r && NextKey.down) {
-
-                                mainMenuNav([&renderKeyMapOptions](){renderKeyMapOptions();}, [&renderKeyMapOptions](){renderKeyMapOptions();});
-                                optionsNav(selectedKeyMapOption, menuKeyMapCount, [&renderKeyMapOptions](){renderKeyMapOptions();});
-
-                                switch (NextKey.vk) {
-                                    case fabgl::VK_RETURN:
-                                    case fabgl::VK_SPACE:
-                                        switch (selectedKeyMapOption) 
-                                        {
-                                            case 0: // Acción para Enable key.map
-                                                Config::keymap_enable = (Config::keymap_enable + 1) %2;
-                                                printf("BIOS: enable keymap:[%s] \n", Config::keymap_enable ? "yes" : "no");
-                                                break;
-                                            case 1: // Acción para Select key.map
-                                                // Get next .map file found.
-                                                Config::pathforkeymapfile = "/" + menuOptionsSelectKeyMap[itemskeymap];
-                                                Config::pathforkeymapfile_pos = itemskeymap;
-                                                itemskeymap++;                        
-                                                itemskeymap = itemskeymap > maxKeyMapFilesFound ? 0 : itemskeymap;
-
-                                                printf("BIOS: path for keymap:[%s] \n", Config::pathforkeymapfile.c_str());
-                                                break;                                                
-                                        }
-
-                                        screen_clear();
-                                        renderKeyMapOptions();
-                                        break;
-                                }
-                            }
-                        }
-
-                        if (exit_to_main) break;
-
-                        vTaskDelay(100 / portTICK_PERIOD_MS);
-
-                    }
-
-                    if (exit_to_main) break;
-
-                    screen_clear();
-                    renderKeyMapOptions();
-                    break;
-                }
-
-                case 5: // Exit
-                {
-                    int selectedExitOption = 0;
-                    // Renderizar menú de visualización
-                    screen_clear();
-                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
-
-                    while (true) {
-                        ZXKeyb::ZXKbdRead();
-                        while (Kbd->virtualKeyAvailable()) {
-                            bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
-                            if (r && NextKey.down) {
-
-                                mainMenuNav([&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);},
-                                            [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
-                                optionsNav(selectedExitOption, menuExitCount, [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
-
-                                switch (NextKey.vk) {
-                                    case fabgl::VK_RETURN:
-                                    case fabgl::VK_SPACE:
-                                        switch (selectedExitOption) {
-                                            case 0: // Acción para Save Changes & Exit
-                                                if ( msg_dialog("Confim Save & Exit", "Are you sure you want to save\nchanges and exit?", BIOS_DLG_CONFIRM) ) {
-                                                    Config::save();
-                                                    OSD::esp_hard_reset();
-                                                } else {
-                                                    screen_clear(true);
-                                                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
-                                                }
-                                                break;
-                                            case 1: // Acción para Discard Changes & Exit
-                                                if ( msg_dialog("Exit BIOS Setup", "Are you sure you want to exit?\nUnsaved changes will be lost.", BIOS_DLG_CONFIRM) ) {
-                                                    OSD::esp_hard_reset();
-                                                } else {
-                                                    screen_clear(true);
-                                                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
-                                                }
-                                                break;
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-
-                        if (exit_to_main) break;
-
-                        vTaskDelay(100 / portTICK_PERIOD_MS);
-                    }
-
-                    if (exit_to_main) break;
-
-                    screen_clear();
-                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
-                    break;
                 }
             }
+            else if (selectedOption == 2) { // Acción para Keyboard
+                int selectedKeyboardOption = 0;
+
+                auto renderKeyboardOptions = [&]() {
+                    const char *valuesKeyboard[] = { menuYesNo[Config::zxunops2] };
+                    renderOptions(menuKeyboard, valuesKeyboard, menuKeyboardCount, selectedKeyboardOption);
+                };
+
+                // Renderizar menú keyboard
+                screen_clear();
+                renderKeyboardOptions();
+
+                // Lógica para el menú keyboard
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderKeyboardOptions](){renderKeyboardOptions();}, [&renderKeyboardOptions](){renderKeyboardOptions();});
+                            optionsNav(selectedKeyboardOption, menuKeyboardCount, [&renderKeyboardOptions](){renderKeyboardOptions();});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedKeyboardOption) {
+                                        case 0: // Acción para ZXUnoPS2
+                                            Config::zxunops2 = !Config::zxunops2;
+                                            break;
+                                    }
+
+                                    screen_clear();
+                                    renderKeyboardOptions();
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+                }
+
+                if (!exit_to_main) {
+                    screen_clear();
+                    renderKeyboardOptions();
+                }
+            }
+            else if (!ZXKeyb::Exists && selectedOption == 3) { // Acción para Others
+                int selectedOthersOption = 0;
+
+                auto renderOthersOptions = [&]() {
+                    const char *valuesOthes[] = { menuOthersIO36Button[Config::io36button] };
+                    renderOptions(menuOthers, valuesOthes, menuOthersCount, selectedOthersOption);
+                };
+
+                // Renderizar menú otros
+                screen_clear();
+                renderOthersOptions();
+
+                // Lógica para el menú otros
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderOthersOptions](){renderOthersOptions();}, [&renderOthersOptions](){renderOthersOptions();});
+                            optionsNav(selectedOthersOption, menuOthersCount, [&renderOthersOptions](){renderOthersOptions();});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedOthersOption) {
+                                        case 0: // Acción para IO36 Button
+                                            Config::io36button = (Config::io36button + 1) % (sizeof(menuOthersIO36Button)/sizeof(menuOthersIO36Button[0]));
+                                            break;
+                                    }
+
+                                    screen_clear();
+                                    renderOthersOptions();
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+                }
+
+                if (!exit_to_main) {
+                    screen_clear();
+                    renderOthersOptions();
+                }
+            }
+            else if (selectedOption == (ZXKeyb::Exists ? 3 : 4)) { // Acción para CONFIG
+                int selectedConfigOption = 0;
+                // Renderizar menú de visualización
+                screen_clear();
+                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+
+                auto remountSD = [&]() {
+                    if ( FileUtils::SDReady && !FileUtils::isMountedSDCard() ) FileUtils::unmountSDCard();
+                    if ( !FileUtils::SDReady ) FileUtils::initFileSystem();
+                };
+
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);},
+                                        [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
+                            optionsNav(selectedConfigOption, menuConfigCount, [&renderOptions, &menuConfig, &menuConfigCount, &selectedConfigOption](){renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedConfigOption) {
+                                        case 0: // Acción para BACKUP
+                                        {
+                                            if (msg_dialog("Confirm Backup", "Insert a valid SD card.\nPress OK to save BIOS settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
+                                                screen_clear(true);
+                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                remountSD();
+                                                bool status = !FileUtils::SDReady || Config::saveToSD();
+                                                if (status) msg_dialog("Backup Error", "Failed to write backup.\nPlease check SD card and try again.");
+                                                else msg_dialog("Backup Completed", "BIOS settings successfully saved to SD card.");
+                                            }
+                                            screen_clear(true);
+                                            renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                            break;
+                                        }
+                                        case 1: // Acción para RESTORE
+                                        {
+                                            if (msg_dialog("Confirm Restore", "Insert the SD card with the backup.\nPress OK to restore settings,\nor Cancel to abort.", BIOS_DLG_CONFIRM)) {
+                                                screen_clear(true);
+                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                                remountSD();
+                                                bool status = !FileUtils::SDReady || Config::loadFromSD();
+                                                if (status) msg_dialog("Restore Error", "Failed to restore settings.\nPlease verify SD card and try again.");
+                                                else msg_dialog("Restore Completed", "BIOS settings successfully restored from SD card.");
+                                            }
+                                            screen_clear(true);
+                                            renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                            break;
+                                        }
+                                        case 2: // Acción para RESET
+                                            if (msg_dialog("Reset Configuration & Reboot", "Do you really want to reset all settings?", BIOS_DLG_CONFIRM)) {
+                                                nvs_flash_erase();
+                                                OSD::esp_hard_reset();
+                                            } else {
+                                                screen_clear(true);
+                                                renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+
+                if (!exit_to_main) {
+                    screen_clear();
+                    renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
+                }
+            }
+            else if (selectedOption == (ZXKeyb::Exists ? 4 : 5)) { // Acción para EXIT
+                int selectedExitOption = 0;
+                // Renderizar menú de visualización
+                screen_clear();
+                renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);},
+                                        [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
+                            optionsNav(selectedExitOption, menuExitCount, [&renderOptions, &menuExit, &menuExitCount, &selectedExitOption](){renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedExitOption) {
+                                        case 0: // Acción para Save Changes & Exit
+                                            if ( msg_dialog("Confim Save & Exit", "Are you sure you want to save\nchanges and exit?", BIOS_DLG_CONFIRM) ) {
+                                                Config::save();
+                                                OSD::esp_hard_reset();
+                                            } else {
+                                                screen_clear(true);
+                                                renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                                            }
+                                            break;
+                                        case 1: // Acción para Discard Changes & Exit
+                                            if ( msg_dialog("Exit BIOS Setup", "Are you sure you want to exit?\nUnsaved changes will be lost.", BIOS_DLG_CONFIRM) ) {
+                                                OSD::esp_hard_reset();
+                                            } else {
+                                                screen_clear(true);
+                                                renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+
+                if (!exit_to_main) {
+                    screen_clear();
+                    renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
+                }
+
+            }
+
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
@@ -1153,6 +1149,8 @@ void ESPectrum::showBIOS() {
 
 void ESPectrum::setup()
 {
+
+    booting = true;
 
     // force get psram size
     ESPectrum::getHardwareInfo();
@@ -1689,6 +1687,8 @@ void ESPectrum::setup()
 
     if (Config::slog_on) showMemInfo("Setup finished.");
 
+    booting = false;
+
 }
 
 //=======================================================================================
@@ -1854,13 +1854,14 @@ void ESPectrum::reset()
 IRAM_ATTR bool ESPectrum::readKbd(fabgl::VirtualKeyItem *NextKey, uint8_t mode) {
 
     bool r = PS2Controller.keyboard()->getNextVirtualKey(NextKey);
+
     // Global keys
     if (NextKey->down) {
 
         if (ps2kbd) {
 
             // Start ZXUNOPS2
-            if (Config::zxunops2) {
+            if (Config::zxunops2 && !ZXKeyb::Exists) {
                 fabgl::VirtualKeyItem akey;
                 akey.vk = fabgl::VK_NONE;
                 akey.CTRL = false;
@@ -1891,7 +1892,7 @@ IRAM_ATTR bool ESPectrum::readKbd(fabgl::VirtualKeyItem *NextKey, uint8_t mode) 
                             else if (NextKey->vk == fabgl::VK_B || NextKey->vk == fabgl::VK_b) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_PRINTSCREEN; }   // B -> BMP capture
                             else if (NextKey->vk == fabgl::VK_O || NextKey->vk == fabgl::VK_o) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F9; }            // O -> Poke
                             else if (NextKey->vk == fabgl::VK_Y || NextKey->vk == fabgl::VK_y) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F3; }            // Y -> Cartridge
-                            else if (NextKey->vk == fabgl::VK_U || NextKey->vk == fabgl::VK_u) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F9; }            // O -> Poke
+                            else if (NextKey->vk == fabgl::VK_U || NextKey->vk == fabgl::VK_u) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F9; }            // U -> Cheats
                             else if (NextKey->vk == fabgl::VK_N || NextKey->vk == fabgl::VK_n) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F10; }           // N -> NMI
                             else if (NextKey->vk == fabgl::VK_K || NextKey->vk == fabgl::VK_k) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F1; }            // K -> Help / Kbd layout
                             else if (NextKey->vk == fabgl::VK_S || NextKey->vk == fabgl::VK_s) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F2; }            // S -> Save snapshot
@@ -2111,12 +2112,66 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
 
     readKbdJoy();
 
+    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
+    else
+    if (!booting && !gpio_get_level((gpio_num_t)GPIO_NUM_36)) { // Se deshabilita durante el booteo por cualquier posible futuro conflicto
+
+        bool shift_down = false, ctrl_down = false;
+
+        fabgl::VirtualKey injectKey = fabgl::VK_NONE;
+
+        switch(Config::io36button) {
+            case BTN_ASSIGN_RESET:
+                injectKey = fabgl::VK_F11;
+                break;
+
+            case BTN_ASSIGN_NMI:
+                ctrl_down = true;
+                injectKey = fabgl::VK_F10;
+                break;
+
+            case BTN_ASSIGN_CHEATS:
+                shift_down = true;
+                injectKey = fabgl::VK_F9;
+                break;
+
+            case BTN_ASSIGN_POKE:
+                ctrl_down = true;
+                injectKey = fabgl::VK_F9;
+                break;
+
+            case BTN_ASSIGN_STATS:
+                injectKey = fabgl::VK_F8;
+                break;
+
+            case BTN_ASSIGN_MENU:
+                injectKey = fabgl::VK_F1;
+                break;
+
+        }
+
+        if (injectKey != fabgl::VK_NONE) {
+            if (shift_down||ctrl_down) {
+                VirtualKeyItem vki;
+                vki.vk = injectKey;
+                vki.down = true;
+                vki.SHIFT = shift_down;
+                vki.CTRL = ctrl_down;
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(vki, false);
+                vki.down = false;
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(vki, false);
+            } else {
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(injectKey, true, false);
+                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(injectKey, false, false);
+            }
+        }
+    }
+
     if (ps2kbd) {
 
         auto Kbd = PS2Controller.keyboard();
         fabgl::VirtualKeyItem NextKey;
         fabgl::VirtualKey KeytoESP;
-        bool Kdown;
         bool j[10] = { true, true, true, true, true, true, true, true, true, true };
         bool jShift = true;
 
@@ -2136,15 +2191,14 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                 }
 
                 KeytoESP = NextKey.vk;
-                Kdown = NextKey.down;
 
                 if (KeytoESP >= fabgl::VK_JOY1LEFT && KeytoESP <= fabgl::VK_JOY2Z) {
                     // printf("KeytoESP: %d\n",KeytoESP);
-                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(JoyVKTranslation[KeytoESP - 248], Kdown, false);
+                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(JoyVKTranslation[KeytoESP - 248], NextKey.down, false);
                     continue;
                 }
 
-                if ((Kdown) && ((KeytoESP >= fabgl::VK_F1 && KeytoESP <= fabgl::VK_F12) || KeytoESP == fabgl::VK_PAUSE || KeytoESP == fabgl::VK_VOLUMEUP || KeytoESP == fabgl::VK_VOLUMEDOWN || KeytoESP == fabgl::VK_VOLUMEMUTE)) {
+                if (NextKey.down && ((KeytoESP >= fabgl::VK_F1 && KeytoESP <= fabgl::VK_F12) || KeytoESP == fabgl::VK_PAUSE || KeytoESP == fabgl::VK_VOLUMEUP || KeytoESP == fabgl::VK_VOLUMEDOWN || KeytoESP == fabgl::VK_VOLUMEMUTE)) {
 
                     int64_t osd_start = esp_timer_get_time();
 
@@ -2177,7 +2231,7 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                 }
 
                 // Reset keys
-                if (Kdown && NextKey.LALT) {
+                if (NextKey.down && NextKey.LALT) {
                     if (NextKey.CTRL) {
                         if (KeytoESP == fabgl::VK_DELETE) {
                             // printf("Ctrl + Alt + Supr!\n");
@@ -2586,13 +2640,6 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
     }
 
     if (ZXKeyb::Exists) { // START - ZXKeyb Exists
-
-        //if (zxDelay > 0)
-        //    zxDelay--;
-        //else
-            // Process physical keyboard
-            //ZXKeyb::process();
-
         if (Config::realtape_gpio_num == KM_COL_0) {
             if (ZXKBD_SS) { // SS
                 if (ZXKBD_CS) { // CS
@@ -2610,161 +2657,13 @@ IRAM_ATTR void ESPectrum::processKeyboard() {
                 }
             }
         }
-
-        // Detect and process physical kbd menu key combinations
-        // CS+SS+<1..0> -> F1..F10 Keys, CS+SS+Q -> F11, CS+SS+W -> F12, CS+SS+S -> Capture screen
-        if ((!RealTape_enabled || Config::realtape_gpio_num != KM_COL_0) && ZXKBD_CS && ZXKBD_SS) {
-
-            zxDelay = 15;
-
-            int64_t osd_start = esp_timer_get_time();
-
-            if (ZXKBD_1) {
-                OSD::do_OSD(fabgl::VK_F1,0,0);
-            } else
-            if (ZXKBD_2) {
-                OSD::do_OSD(fabgl::VK_F2,0,0);
-            } else
-            if (ZXKBD_3) {
-                OSD::do_OSD(fabgl::VK_F3,0,0);
-            } else
-            if (ZXKBD_4) {
-                OSD::do_OSD(fabgl::VK_F4,0,0);
-            } else
-            if (ZXKBD_5) {
-                OSD::do_OSD(fabgl::VK_F5,0,0);
-            } else
-            if (ZXKBD_6) {
-                OSD::do_OSD(fabgl::VK_F6,0,0);
-            } else
-            if (ZXKBD_7) {
-                OSD::do_OSD(fabgl::VK_F7,0,0);
-            } else
-            if (ZXKBD_8) {
-                OSD::do_OSD(fabgl::VK_F8,0,0);
-            } else
-            if (ZXKBD_9) {
-                OSD::do_OSD(fabgl::VK_F9,0,0);
-            } else
-            if (ZXKBD_0) {
-                OSD::do_OSD(fabgl::VK_F10,0,0);
-            } else
-            if (ZXKBD_Q) {
-                OSD::do_OSD(fabgl::VK_F11,0,0);
-            } else
-            if (ZXKBD_W) {
-                OSD::do_OSD(fabgl::VK_F12,0,0);
-            } else
-            if (ZXKBD_P) { // P -> Pause
-                OSD::do_OSD(fabgl::VK_PAUSE,0,0);
-            } else
-            if (ZXKBD_I) { // I -> Info
-                OSD::do_OSD(fabgl::VK_F1,0,true);
-            } else
-            if (ZXKBD_E) { // E -> Eject tape
-                OSD::do_OSD(fabgl::VK_F6,0,true);
-            } else
-            // if (ZXKBD_U) { // U -> Uart test
-            //     OSD::do_OSD(fabgl::VK_F5,0,true);
-            // } else
-            if (ZXKBD_R) { // R -> Reset to TR-DOS
-                OSD::do_OSD(fabgl::VK_F11,true,0);
-            } else
-            if (ZXKBD_T) { // T -> Turbo
-                OSD::do_OSD(fabgl::VK_F2,true,0);
-            } else
-            if (ZXKBD_B) { // B -> BMP capture
-                CaptureToBmp();
-            } else
-            if (ZXKBD_O) { // O -> Poke
-                OSD::pokeDialog();
-            } else
-            if (ZXKBD_Y) { // Y -> Cartridge
-                OSD::do_OSD(fabgl::VK_F3,0,true);
-            } else
-            if (ZXKBD_U) { // U -> Cheats
-                OSD::do_OSD(fabgl::VK_F9,0,true);
-            } else
-            if (ZXKBD_N) { // N -> NMI
-                Z80::triggerNMI();
-            } else
-            if (ZXKBD_K) { // K -> Help / Kbd layout
-                OSD::do_OSD(fabgl::VK_F1,true,0);
-            } else
-            if (ZXKBD_S) { // S -> Save snapshot
-                OSD::do_OSD(fabgl::VK_F2,0,true);
-            } else
-            if (ZXKBD_D) { // D -> Load .SCR
-                OSD::do_OSD(fabgl::VK_F5,0,true);
-            } else
-            if (ZXKBD_G) { // G -> Capture SCR
-                if (Tape::tapeSaveName=="none") {
-                    OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                } else {
-                    OSD::saveSCR(Tape::tapeSaveName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
-                }
-            } else
-            if (ZXKBD_Z) { // Z -> CenterH
-                if (Config::CenterH > -16) Config::CenterH--;
-                Config::save("CenterH");
-                OSD::osdCenteredMsg("Horiz. center: " + to_string(Config::CenterH), LEVEL_INFO, 375);
-            } else
-            if (ZXKBD_X) { // X -> CenterH
-                if (Config::CenterH < 16) Config::CenterH++;
-                Config::save("CenterH");
-                OSD::osdCenteredMsg("Horiz. center: " + to_string(Config::CenterH), LEVEL_INFO, 375);
-            } else
-            if (ZXKBD_C) { // C -> CenterV
-                if (Config::CenterV > -16) Config::CenterV--;
-                Config::save("CenterV");
-                OSD::osdCenteredMsg("Vert. center: " + to_string(Config::CenterV), LEVEL_INFO, 375);
-            } else
-            if (ZXKBD_V) { // V -> CenterV
-                if (Config::CenterV < 16) Config::CenterV++;
-                Config::save("CenterV");
-                OSD::osdCenteredMsg("Vert. center: " + to_string(Config::CenterV), LEVEL_INFO, 375);
-            } else
-                zxDelay = 0;
-
-
-            // sync real tape is needed
-            if (ESPectrum::sync_realtape && RealTape_enabled) {
-                ESPectrum::sync_realtape = false;
-                RealTape_pause();
-                RealTape_start();
-            }
-
-            if (zxDelay) {
-
-                // Set all keys as not pressed
-                for (uint8_t i = 0; i < 8; i++) ZXKeyb::ZXcols[i] = 0xbf;
-
-                // Refresh border
-                VIDEO::brdnextframe = true;
-
-                ESPectrum::ts_start += esp_timer_get_time() - osd_start;
-
-                return;
-            }
-
-        }
-
-        // Combine both keyboards
-        //for (uint8_t rowidx = 0; rowidx < 8; rowidx++) {
-        //    Ports::port[rowidx] = PS2cols[rowidx] & ZXKeyb::ZXcols[rowidx];
-        // }
-
-    } else {
-
-        if (r) {
-            for (uint8_t rowidx = 0; rowidx < 8; rowidx++) {
-                Ports::port[rowidx] = PS2cols[rowidx];
-            }
-
-        }
-
     }
 
+    if (r) {
+        for (uint8_t rowidx = 0; rowidx < 8; rowidx++) {
+            Ports::port[rowidx] = PS2cols[rowidx];
+        }
+    }
 }
 
 

@@ -484,7 +484,7 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
 
     ResetRowScrollContext(statusBarScrollCTX);
 
-    if ( statusbar != "" ) statusbarDraw(statusbar);
+    if (statusbar != "") statusbarDraw(statusbar);
 
     while (1) {
 
@@ -590,7 +590,7 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
             }
         }
 
-        if ( statusbar != "" ) statusbarDraw(statusbar);
+        if (statusbar != "") statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 
@@ -793,7 +793,7 @@ short OSD::menuSlotsWithPreview(const string new_menu, const string& statusbar, 
 
     ResetRowScrollContext(statusBarScrollCTX);
 
-    if ( statusbar != "" ) statusbarDraw(statusbar);
+    if (statusbar != "") statusbarDraw(statusbar);
 
     int idle = 0;
     string lastFile = "";
@@ -957,7 +957,7 @@ short OSD::menuSlotsWithPreview(const string new_menu, const string& statusbar, 
 
         }
 
-        if ( statusbar != "" ) statusbarDraw(statusbar);
+        if (statusbar != "") statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 
@@ -1668,7 +1668,7 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
     ResetRowScrollContext(statusBarScrollCTX);
 
-    if ( statusbar != "" ) statusbarDraw(statusbar);
+    if (statusbar != "") statusbarDraw(statusbar);
 
     while (1) {
 
@@ -1791,7 +1791,7 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
         }
 
-        if ( statusbar != "" ) statusbarDraw(statusbar);
+        if (statusbar != "") statusbarDraw(statusbar);
 
         vTaskDelay(5 / portTICK_PERIOD_MS);
 
