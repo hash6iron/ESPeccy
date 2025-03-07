@@ -275,139 +275,70 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
 
     }
 
-/*
-    if (mode == ZXKBDREAD_MODEINTERACTIVE && !ZXKBD_SS) { // Not Symbol Shift pressed ?
 
-        if (ZXKBD_CS) { // CS
-                 if (ZXKBD_ENTER) injectKey = fabgl::VK_JOY1C; // CS + ENTER -> SPACE / SELECT
-            else if (ZXKBD_0) injectKey = fabgl::VK_BACKSPACE; // CS + 0 -> BACKSPACE
-            else if (ZXKBD_7) injectKey = fabgl::VK_PAGEUP; // 7 -> PAGEUP
-            else if (ZXKBD_6) injectKey = fabgl::VK_PAGEDOWN; // 6 -> PAGEDOWN
-            else if (ZXKBD_5) { shift_down = true; injectKey = fabgl::VK_LEFT; } // 5 -> VK_LEFT
-            else if (ZXKBD_8) { shift_down = true; injectKey = fabgl::VK_RIGHT; } // 8 -> VK_RIGHT
-            else if (ZXKBD_N) { shift_down = true; injectKey = fabgl::VK_F2; } // N -> NUEVO Con ROM
+    if (injectKey == fabgl::VK_NONE) {
+        ctrl_down = ZXKBD_SS;
+        shift_down = ZXKBD_CS;
+
+        bool curSSstatus = ZXKBD_SS; // SS
+        if (lastSSstatus != curSSstatus) {
+            ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, curSSstatus, false);
+            lastSSstatus = curSSstatus;
         }
 
-        if (injectKey == fabgl::VK_NONE) {
-                 if (ZXKBD_7) injectKey = fabgl::VK_UP; // 7 -> UP
-            else if (ZXKBD_6) injectKey = fabgl::VK_DOWN; // 6 -> DOWN
-            else if (ZXKBD_ENTER) injectKey = fabgl::VK_RETURN; // ENTER
-            else if (ZXKBD_0) injectKey = fabgl::VK_RETURN; // 0 -> ENTER
-            else if (ZXKBD_SPACE || ZXKBD_9) injectKey = fabgl::VK_ESCAPE; // BREAK -> ESCAPE
-            else if (ZXKBD_5) injectKey = fabgl::VK_LEFT; // 5 -> PGUP
-            else if (ZXKBD_8) injectKey = fabgl::VK_RIGHT; // 8 -> PGDOWN
-            else if (ZXKBD_G) injectKey = fabgl::VK_PRINTSCREEN; // G -> USE THIS SCR
-            else if (ZXKBD_P) injectKey = fabgl::VK_PAUSE; // P -> PAUSE
-            else if (ZXKBD_N) injectKey = fabgl::VK_F2; // N -> NUEVO / RENOMBRAR
-            else if (ZXKBD_M) injectKey = fabgl::VK_F6; // M -> MOVE / MOVER
-            else if (ZXKBD_D) injectKey = fabgl::VK_F8; // D -> DELETE / BORRAR
-            else if (ZXKBD_F) injectKey = fabgl::VK_F3; // F -> FIND / BUSQUEDA
-            else if (ZXKBD_Z) { ctrl_down = true; injectKey = fabgl::VK_LEFT; } // Z -> CTRL + LEFT
-            else if (ZXKBD_X) { ctrl_down = true; injectKey = fabgl::VK_RIGHT; } // X -> CTRL + RIGHT
-            else if (ZXKBD_C) { ctrl_down = true; injectKey = fabgl::VK_UP; } // C -> CTRL + UP
-            else if (ZXKBD_V) { ctrl_down = true; injectKey = fabgl::VK_DOWN; } // V -> CTRL + DOWN
+        bool curCSstatus = ZXKBD_CS; // CS
+        if (lastCSstatus != curCSstatus) {
+            ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, curCSstatus, false);
+            lastCSstatus = curCSstatus;
         }
 
-    } else {
+             if (ZXKBD_Z) injectKey = ZXKBD_CS ? fabgl::VK_Z : fabgl::VK_z;
+        else if (ZXKBD_X) injectKey = ZXKBD_CS ? fabgl::VK_X : fabgl::VK_x;
+        else if (ZXKBD_C) injectKey = ZXKBD_CS ? fabgl::VK_C : fabgl::VK_c;
+        else if (ZXKBD_V) injectKey = ZXKBD_CS ? fabgl::VK_V : fabgl::VK_v;
 
-        if (mode == ZXKBDREAD_MODEINPUT) {
+        else if (ZXKBD_A) injectKey = ZXKBD_CS ? fabgl::VK_A : fabgl::VK_a;
+        else if (ZXKBD_S) injectKey = ZXKBD_CS ? fabgl::VK_S : fabgl::VK_s;
+        else if (ZXKBD_D) injectKey = ZXKBD_CS ? fabgl::VK_D : fabgl::VK_d;
+        else if (ZXKBD_F) injectKey = ZXKBD_CS ? fabgl::VK_F : fabgl::VK_f;
+        else if (ZXKBD_G) injectKey = ZXKBD_CS ? fabgl::VK_G : fabgl::VK_g;
 
-            bool curSSstatus = ZXKBD_SS; // SS
-            if (lastSSstatus != curSSstatus) {
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, curSSstatus, false);
-                lastSSstatus = curSSstatus;
-            }
+        else if (ZXKBD_Q) injectKey = ZXKBD_CS ? fabgl::VK_Q : fabgl::VK_q;
+        else if (ZXKBD_W) injectKey = ZXKBD_CS ? fabgl::VK_W : fabgl::VK_w;
+        else if (ZXKBD_E) injectKey = ZXKBD_CS ? fabgl::VK_E : fabgl::VK_e;
+        else if (ZXKBD_R) injectKey = ZXKBD_CS ? fabgl::VK_R : fabgl::VK_r;
+        else if (ZXKBD_T) injectKey = ZXKBD_CS ? fabgl::VK_T : fabgl::VK_t;
 
-            bool curCSstatus = ZXKBD_CS; // CS
-            if (lastCSstatus != curCSstatus) {
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, curCSstatus, false);
-                lastCSstatus = curCSstatus;
-            }
+        else if (ZXKBD_P) injectKey = ZXKBD_CS ? fabgl::VK_P : fabgl::VK_p;
+        else if (ZXKBD_O) injectKey = ZXKBD_CS ? fabgl::VK_O : fabgl::VK_o;
+        else if (ZXKBD_I) injectKey = ZXKBD_CS ? fabgl::VK_I : fabgl::VK_i;
+        else if (ZXKBD_U) injectKey = ZXKBD_CS ? fabgl::VK_U : fabgl::VK_u;
+        else if (ZXKBD_Y) injectKey = ZXKBD_CS ? fabgl::VK_Y : fabgl::VK_y;
 
-                 if (ZXKBD_ENTER && !ZXKBD_SS) injectKey = fabgl::VK_RETURN; // ENTER + !SS
-            else if (ZXKBD_CS) { // CS
-                     if (ZXKBD_7) injectKey = fabgl::VK_END; // 7 -> END
-                else if (ZXKBD_6) injectKey = fabgl::VK_HOME; // 6 -> HOME
-                else if (ZXKBD_5) injectKey = fabgl::VK_LEFT; // 5 -> LEFT
-                else if (ZXKBD_8) injectKey = fabgl::VK_RIGHT; // 8 -> RIGHT
-                else if (ZXKBD_0) injectKey = fabgl::VK_BACKSPACE; // CS + 0 -> BACKSPACE
-                else if (ZXKBD_SPACE && !ZXKBD_SS) injectKey = fabgl::VK_ESCAPE; // CS + SPACE && !SS -> ESCAPE
-            }
-        }
-        else if (mode == ZXKBDREAD_MODEKBDLAYOUT) {
-                 if (ZXKBD_ENTER) injectKey = fabgl::VK_RETURN; // ENTER
-            else if (ZXKBD_CS && ZXKBD_SPACE && !ZXKBD_SS) injectKey = fabgl::VK_ESCAPE; // CS + SPACE && !SS -> ESCAPE
-        } else {
-            if (ZXKBD_CS && ZXKBD_SS && ZXKBD_B) { shift_down = true; injectKey = fabgl::VK_PRINTSCREEN; } // CS + SS + B -> BMP CAPTURE
-        }
-*/
+        else if (ZXKBD_ENTER) injectKey = fabgl::VK_RETURN;
+        else if (ZXKBD_L) injectKey = ZXKBD_CS ? fabgl::VK_L : fabgl::VK_l;
+        else if (ZXKBD_K) injectKey = ZXKBD_CS ? fabgl::VK_K : fabgl::VK_k;
+        else if (ZXKBD_J) injectKey = ZXKBD_CS ? fabgl::VK_J : fabgl::VK_j;
+        else if (ZXKBD_H) injectKey = ZXKBD_CS ? fabgl::VK_H : fabgl::VK_h;
 
-        if (injectKey == fabgl::VK_NONE) {
-            ctrl_down = ZXKBD_SS;
-            shift_down = ZXKBD_CS;
+        else if (ZXKBD_SPACE) injectKey = fabgl::VK_SPACE;
+        else if (ZXKBD_M) injectKey = ZXKBD_CS ? fabgl::VK_M : fabgl::VK_m;
+        else if (ZXKBD_N) injectKey = ZXKBD_CS ? fabgl::VK_N : fabgl::VK_n;
+        else if (ZXKBD_B) injectKey = ZXKBD_CS ? fabgl::VK_B : fabgl::VK_b;
 
-            bool curSSstatus = ZXKBD_SS; // SS
-            if (lastSSstatus != curSSstatus) {
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, curSSstatus, false);
-                lastSSstatus = curSSstatus;
-            }
+        else if (ZXKBD_1) injectKey = fabgl::VK_1;
+        else if (ZXKBD_2) injectKey = fabgl::VK_2;
+        else if (ZXKBD_3) injectKey = fabgl::VK_3;
+        else if (ZXKBD_4) injectKey = fabgl::VK_4;
+        else if (ZXKBD_5) injectKey = fabgl::VK_5;
 
-            bool curCSstatus = ZXKBD_CS; // CS
-            if (lastCSstatus != curCSstatus) {
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, curCSstatus, false);
-                lastCSstatus = curCSstatus;
-            }
+        else if (ZXKBD_0) injectKey = fabgl::VK_0;
+        else if (ZXKBD_9) injectKey = fabgl::VK_9;
+        else if (ZXKBD_8) injectKey = fabgl::VK_8;
+        else if (ZXKBD_7) injectKey = fabgl::VK_7;
+        else if (ZXKBD_6) injectKey = fabgl::VK_6;
 
-                 if (ZXKBD_Z) injectKey = ZXKBD_CS ? fabgl::VK_Z : fabgl::VK_z;
-            else if (ZXKBD_X) injectKey = ZXKBD_CS ? fabgl::VK_X : fabgl::VK_x;
-            else if (ZXKBD_C) injectKey = ZXKBD_CS ? fabgl::VK_C : fabgl::VK_c;
-            else if (ZXKBD_V) injectKey = ZXKBD_CS ? fabgl::VK_V : fabgl::VK_v;
-
-            else if (ZXKBD_A) injectKey = ZXKBD_CS ? fabgl::VK_A : fabgl::VK_a;
-            else if (ZXKBD_S) injectKey = ZXKBD_CS ? fabgl::VK_S : fabgl::VK_s;
-            else if (ZXKBD_D) injectKey = ZXKBD_CS ? fabgl::VK_D : fabgl::VK_d;
-            else if (ZXKBD_F) injectKey = ZXKBD_CS ? fabgl::VK_F : fabgl::VK_f;
-            else if (ZXKBD_G) injectKey = ZXKBD_CS ? fabgl::VK_G : fabgl::VK_g;
-
-            else if (ZXKBD_Q) injectKey = ZXKBD_CS ? fabgl::VK_Q : fabgl::VK_q;
-            else if (ZXKBD_W) injectKey = ZXKBD_CS ? fabgl::VK_W : fabgl::VK_w;
-            else if (ZXKBD_E) injectKey = ZXKBD_CS ? fabgl::VK_E : fabgl::VK_e;
-            else if (ZXKBD_R) injectKey = ZXKBD_CS ? fabgl::VK_R : fabgl::VK_r;
-            else if (ZXKBD_T) injectKey = ZXKBD_CS ? fabgl::VK_T : fabgl::VK_t;
-
-            else if (ZXKBD_P) injectKey = ZXKBD_CS ? fabgl::VK_P : fabgl::VK_p;
-            else if (ZXKBD_O) injectKey = ZXKBD_CS ? fabgl::VK_O : fabgl::VK_o;
-            else if (ZXKBD_I) injectKey = ZXKBD_CS ? fabgl::VK_I : fabgl::VK_i;
-            else if (ZXKBD_U) injectKey = ZXKBD_CS ? fabgl::VK_U : fabgl::VK_u;
-            else if (ZXKBD_Y) injectKey = ZXKBD_CS ? fabgl::VK_Y : fabgl::VK_y;
-
-            else if (ZXKBD_ENTER) injectKey = fabgl::VK_RETURN;
-            else if (ZXKBD_L) injectKey = ZXKBD_CS ? fabgl::VK_L : fabgl::VK_l;
-            else if (ZXKBD_K) injectKey = ZXKBD_CS ? fabgl::VK_K : fabgl::VK_k;
-            else if (ZXKBD_J) injectKey = ZXKBD_CS ? fabgl::VK_J : fabgl::VK_j;
-            else if (ZXKBD_H) injectKey = ZXKBD_CS ? fabgl::VK_H : fabgl::VK_h;
-
-            else if (ZXKBD_SPACE) injectKey = fabgl::VK_SPACE;
-            else if (ZXKBD_M) injectKey = ZXKBD_CS ? fabgl::VK_M : fabgl::VK_m;
-            else if (ZXKBD_N) injectKey = ZXKBD_CS ? fabgl::VK_N : fabgl::VK_n;
-            else if (ZXKBD_B) injectKey = ZXKBD_CS ? fabgl::VK_B : fabgl::VK_b;
-
-            else if (ZXKBD_1) injectKey = fabgl::VK_1;
-            else if (ZXKBD_2) injectKey = fabgl::VK_2;
-            else if (ZXKBD_3) injectKey = fabgl::VK_3;
-            else if (ZXKBD_4) injectKey = fabgl::VK_4;
-            else if (ZXKBD_5) injectKey = fabgl::VK_5;
-
-            else if (ZXKBD_0) injectKey = fabgl::VK_0;
-            else if (ZXKBD_9) injectKey = fabgl::VK_9;
-            else if (ZXKBD_8) injectKey = fabgl::VK_8;
-            else if (ZXKBD_7) injectKey = fabgl::VK_7;
-            else if (ZXKBD_6) injectKey = fabgl::VK_6;
-
-        }
-/*
     }
-*/
 
     if (injectKey != fabgl::VK_NONE) {
         if (zxDel == 0) {

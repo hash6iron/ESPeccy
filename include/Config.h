@@ -41,27 +41,53 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace std;
 
-#define JOY_CURSOR 0
-#define JOY_KEMPSTON 1
-#define JOY_SINCLAIR1 2
-#define JOY_SINCLAIR2 3
-#define JOY_FULLER 4
-#define JOY_CUSTOM 5
-#define JOY_NONE 6
+enum {
+    JOY_CURSOR = 0,
+    JOY_KEMPSTON,
+    JOY_SINCLAIR1,
+    JOY_SINCLAIR2,
+    JOY_FULLER,
+    JOY_CUSTOM,
+    JOY_NONE
+};
 
-#define JOYPS2_CURSOR 0
-#define JOYPS2_KEMPSTON 1
-#define JOYPS2_SINCLAIR1 2
-#define JOYPS2_SINCLAIR2 3
-#define JOYPS2_FULLER 4
-#define JOYPS2_CUSTOM 5
-#define JOYPS2_NONE 6
+enum {
+    JOYPS2_CURSOR = 0,
+    JOYPS2_KEMPSTON,
+    JOYPS2_SINCLAIR1,
+    JOYPS2_SINCLAIR2,
+    JOYPS2_FULLER,
+    JOYPS2_CUSTOM,
+    JOYPS2_NONE
+};
 
-#define CovoxNONE 0
-#define CovoxMONO 1
-#define CovoxSTEREO 2
-#define CovoxSOUNDDRIVE1 3
-#define CovoxSOUNDDRIVE2 4
+enum {
+    CovoxNONE = 0,
+    CovoxMONO,
+    CovoxSTEREO,
+    CovoxSOUNDDRIVE1,
+    CovoxSOUNDDRIVE2
+};
+
+enum {
+    KBDREAD_MODENORMAL = 0,
+    KBDREAD_MODEFILEBROWSER,
+    KBDREAD_MODEINPUT,
+    KBDREAD_MODEINPUTMULTI,
+    KBDREAD_MODEKBDLAYOUT,
+    KBDREAD_MODEDIALOG,
+    KBDREAD_MODEBIOS
+};
+
+enum {
+    BTN_ASSIGN_RESET = 0,
+    BTN_ASSIGN_NMI,
+    BTN_ASSIGN_CHEATS,
+    BTN_ASSIGN_POKE,
+    BTN_ASSIGN_STATS,
+    BTN_ASSIGN_MENU
+};
+
 class Config
 {
 public:
@@ -171,6 +197,8 @@ public:
     static uint32_t psramsize;
 
     static bool     zxunops2;
+
+    static uint8_t  io36button;
 
 };
 

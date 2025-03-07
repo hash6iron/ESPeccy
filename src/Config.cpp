@@ -170,6 +170,8 @@ uint32_t Config::psramsize = 0;
 
 bool Config::zxunops2 = false;
 
+uint8_t Config::io36button = BTN_ASSIGN_RESET;
+
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
     s.erase(std::remove_if(s.begin(), s.end(),
@@ -294,6 +296,9 @@ ConfigEntry configEntries[] = {
     {"RealTapeGPIO", CONFIG_TYPE_UINT8, &Config::realtape_gpio_num },
 
     {"ZXUnoPS2", CONFIG_TYPE_BOOL, &Config::zxunops2 },
+
+    {"IO36Button", CONFIG_TYPE_UINT8, &Config::io36button},
+
 };
 
 // Function to load the configuration

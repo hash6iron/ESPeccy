@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string>
 #include "hardpins.h"
 #include "CaptureBMP.h"
+#include "Config.h"
 #include "fabgl.h"
 #include "wd1793.h"
 
@@ -102,17 +103,6 @@ using namespace std;
 #define ESP_VOLUME_DEFAULT -8
 #define ESP_VOLUME_MAX 0
 #define ESP_VOLUME_MIN -16
-
-
-enum {
-    KBDREAD_MODENORMAL = 0,
-    KBDREAD_MODEFILEBROWSER,
-    KBDREAD_MODEINPUT,
-    KBDREAD_MODEINPUTMULTI,
-    KBDREAD_MODEKBDLAYOUT,
-    KBDREAD_MODEDIALOG,
-    KBDREAD_MODEBIOS
-};
 
 class ESPectrum
 {

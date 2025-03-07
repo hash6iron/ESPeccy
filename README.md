@@ -48,8 +48,10 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - Fullerbox sound in ZX-Spectrum.
 - Zon-X sound emulation in ZX81.
 - BIOS support with boot-time activation:
-    - PS2 keyboard: F2 for VGA mode, F3 for CRT mode.
-    - ZX Keyboard: 2 for VGA mode, 3 for CRT mode.
+    - PS2 keyboard: Repeatedly press and release the F2 key (or 2 key) for VGA mode, or the F3 key (or 3 key) for CRT mode.
+    - ZX Keyboard: Press and hold the 2 key for VGA mode, or press and hold the 3 key for CRT mode.
+    - ZXUnoPS2 (.ZXPURE): Repeatedly press and release the 2 key for VGA mode, or the 3 key for CRT mode.
+    - LilyGO (button labeled GPIO36): Press and hold the button for less than 10 seconds for VGA mode, or press and hold it for more than 10 seconds for CRT mode.
 - Configuration backup/restore feature to SD card.
 - Covox sound support.
 - Kempston mouse support with configurable sample rate, DPI, and scaling.
@@ -57,6 +59,8 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - SCR file support and screen autodetection in tape/snapshot/ROM files.
 - Persistent snapshot screen preview in slots.
 - Real tape support (SAVE/LOAD)
+- ZXUnoPS2 (.ZXPURE) support (selectable from BIOS)
+- Configurable IO36 Button functionality on LilyGo (from BIOS) (RESET, NMI, CHEATS, POKE, STATS, MENU)
 
 ## Work in progress
 
