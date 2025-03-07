@@ -437,7 +437,7 @@ void ESPectrum::showBIOS() {
     const char* menuVideo[] = {"Resolution", "Frequency", "Scanlines"};
     const int menuVideoCount = sizeof(menuVideo) / sizeof(menuVideo[0]);
 
-    const char* menuKeyboard[] = {"ZXUnoPS2 (.ZXPure)"};
+    const char* menuKeyboard[] = {"ZXUnoPS2 (.ZXPure)","Enable custom layout", "Select custom layout"};
     const int menuKeyboardCount = sizeof(menuKeyboard) / sizeof(menuKeyboard[0]);
 
     const char* menuOthers[] = {"IO36 Button"};
@@ -446,8 +446,8 @@ void ESPectrum::showBIOS() {
     const char* menuConfig[] = {"Backup Settings", "Restore Settings", "Reset Settings"};
     const int menuConfigCount = sizeof(menuConfig) / sizeof(menuConfig[0]);
 
-    const char* menuKeyMap[] = {"Enable custom layout", "Select custom layout"};
-    const int menuKeyMapCount = sizeof(menuKeyMap) / sizeof(menuKeyMap[0]);
+    // const char* menuKeyMap[] = {"Enable custom layout", "Select custom layout"};
+    // const int menuKeyMapCount = sizeof(menuKeyMap) / sizeof(menuKeyMap[0]);
 
     const char* menuExit[] = {"Save Changes & Exit", "Discard Changes & Exit"};
     const int menuExitCount = sizeof(menuExit) / sizeof(menuExit[0]);
@@ -909,7 +909,10 @@ void ESPectrum::showBIOS() {
                 int selectedKeyboardOption = 0;
 
                 auto renderKeyboardOptions = [&]() {
-                    const char *valuesKeyboard[] = { menuYesNo[Config::zxunops2] };
+                    // Cut name for no more than 10 chars (textbox limitation)
+                    string shrtname = (menuOptionsSelectKeyMap[Config::pathforkeymapfile_pos]);
+                    shrtname = shrtname.length() < 10 ? shrtname : shrtname.substr(0,9);
+                    const char *valuesKeyboard[] = { menuYesNo[Config::zxunops2], menuYesNo[Config::keymap_enable], shrtname.c_str()};
                     renderOptions(menuKeyboard, valuesKeyboard, menuKeyboardCount, selectedKeyboardOption);
                 };
 
@@ -934,6 +937,19 @@ void ESPectrum::showBIOS() {
                                         case 0: // Acción para ZXUnoPS2
                                             Config::zxunops2 = !Config::zxunops2;
                                             break;
+                                        case 1: // Acción para Enable key.map
+                                            Config::keymap_enable = (Config::keymap_enable + 1) %2;
+                                            printf("BIOS: enable keymap:[%s] \n", Config::keymap_enable ? "yes" : "no");
+                                            break;
+                                        case 2: // Acción para Select key.map
+                                            // Get next .map file found.
+                                            Config::pathforkeymapfile = "/" + menuOptionsSelectKeyMap[itemskeymap];
+                                            Config::pathforkeymapfile_pos = itemskeymap;
+                                            itemskeymap++;                        
+                                            itemskeymap = itemskeymap > maxKeyMapFilesFound ? 0 : itemskeymap;
+
+                                            printf("BIOS: path for keymap:[%s] \n", Config::pathforkeymapfile.c_str());
+                                            break;                                             
                                     }
 
                                     screen_clear();
