@@ -269,7 +269,7 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
             }
             else
             if (!ZXKBD_CS && ZXKBD_SS) { // SS
-                if (ZXKBD_S)            { injectKey = fabgl::VK_F10; }
+                if (ZXKBD_S || ZXKBD_0) { injectKey = fabgl::VK_F10; }
             }
             break;
 

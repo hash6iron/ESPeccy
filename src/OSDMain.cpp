@@ -4954,8 +4954,6 @@ string OSD::rowReplace(string& menu, unsigned short row, const string& newRowCon
 
 void OSD::HWInfo() {
 
-    fabgl::VirtualKeyItem Nextkey;
-
     click();
 
     // Draw Hardware and memory info
@@ -5015,12 +5013,12 @@ void OSD::HWInfo() {
 
     // Wait for key
     while (1) {
-
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEDIALOG);
 
         ESPectrum::readKbdJoy();
 
         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            fabgl::VirtualKeyItem Nextkey;
             ESPectrum::readKbd(&Nextkey, KBDREAD_MODEDIALOG);
             if(!Nextkey.down) continue;
             if (Nextkey.vk == fabgl::VK_F1 || Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_RETURN || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY1B || Nextkey.vk == fabgl::VK_JOY2A || Nextkey.vk == fabgl::VK_JOY2B) {
