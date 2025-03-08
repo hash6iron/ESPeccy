@@ -71,6 +71,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "esp_spi_flash.h"
 #include "esp_efuse.h"
 #include "soc/efuse_reg.h"
+#include "esp_ota_ops.h"
 
 #include "CommitDate.h"
 
@@ -422,6 +423,11 @@ void ESPectrum::bootKeyboard() {
 
 }
 
+#ifndef FWBUFFSIZE
+#define FWBUFFSIZE 512 /* 4096 */
+#endif
+
+
 void ESPectrum::showBIOS() {
 
     Config::load(); // Restore original config values
@@ -442,10 +448,10 @@ void ESPectrum::showBIOS() {
     #define SET_CURSOR(col,row) VIDEO::vga.setCursor(base_col + (col) * OSD_FONT_W, base_row + (row) * OSD_FONT_H)
 
     // Opciones del menú
-    const char* menuOptions[] = {"Main", "Video", "Keyboard", "Config", "Exit"};
+    const char* menuOptions[] = {"Main", "Video", "Keyboard", "Config", "Update", "Exit"};
     const int menuCount = sizeof(menuOptions)/sizeof(menuOptions[0]);
 
-    const char* menuOptionsLily[] = {"Main", "Video", "Keyboard", "Others", "Config", "Exit"};
+    const char* menuOptionsLily[] = {"Main", "Video", "Keyboard", "Others", "Config", "Update", "Exit"};
     const int menuCountLily = sizeof(menuOptionsLily)/sizeof(menuOptionsLily[0]);
 
     const char* menuVideo[] = {"Resolution", "Frequency", "Scanlines"};
@@ -471,7 +477,16 @@ void ESPectrum::showBIOS() {
 
     const char* menuOthersIO36Button[] = {"RESET", "NMI", "CHEATS", "POKE", "STATS", "MENU"};
 
+    const char* menuUpdate[] = {"Firmware Update"};
+    const int menuUpdateCount = sizeof(menuUpdate) / sizeof(menuUpdate[0]);
+
     int selectedOption = 0;
+
+    auto remountSD = [&]() {
+        if ( FileUtils::SDReady && !FileUtils::isMountedSDCard() ) FileUtils::unmountSDCard();
+        if ( !FileUtils::SDReady ) FileUtils::initFileSystem();
+    };
+
 
     // Renderizar el menú inicial
     auto renderMenu = [&](int highlight) {
@@ -550,8 +565,9 @@ void ESPectrum::showBIOS() {
 
     };
 
-    #define BIOS_DLG_ALERT   0
-    #define BIOS_DLG_CONFIRM 1
+    #define BIOS_DLG_ALERT      0
+    #define BIOS_DLG_CONFIRM    1
+    #define BIOS_DLG_MSG        2
 
     auto msg_dialog = [&](const char *title, const char *message, int type = BIOS_DLG_ALERT) {
         // Calcular el ancho del título
@@ -572,12 +588,12 @@ void ESPectrum::showBIOS() {
             ++p;
         }
 
-        if (pi < p && p - pi > dialog_width) dialog_width = p - pi;
+        if (pi < p && p - pi + 1 > dialog_width) dialog_width = p - pi + 1;
 
         dialog_width += 4; // 2 caracteres de margen a cada lado
 
         // Ajustar el alto total del diálogo
-        int dialog_height = message_height + 5; // Incluye el título, márgenes y botones
+        int dialog_height = message_height + 3 + ((type != BIOS_DLG_MSG) ? 2 : 0); // Incluye el título, márgenes y botones
 
         int left = (total_cols - dialog_width) / 2;
         int right = left + dialog_width;
@@ -619,17 +635,19 @@ void ESPectrum::showBIOS() {
                 if (*p == '\n') {
                     SET_CURSOR(left + dialog_width / 2 - (p - pi) / 2, top + 2 + current_line); // +2 por la línea del título y el margen superior
                     VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
-                    for(; pi < p - 1; ++pi ) VIDEO::vga.print(*pi);
+                    for(; pi < p - 1; ++pi) VIDEO::vga.print(*pi);
                     ++current_line;
                 }
                 ++p;
             }
+
             if (pi < p) {
                 SET_CURSOR(left + dialog_width / 2 - (p - pi) / 2, top + 2 + current_line); // +2 por la línea del título y el margen superior
                 VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
-                for(; pi < p - 1; ++pi ) VIDEO::vga.print(*pi);
+                for(; pi < p; ++pi) VIDEO::vga.print(*pi);
             }
         }
+
 
         // Mostrar los botones "OK" y "Cancel" en la quinta línea
         int selectedButton = 0; // 0 = OK, 1 = CancelDLG_ALERT
@@ -646,31 +664,37 @@ void ESPectrum::showBIOS() {
                 VIDEO::vga.print("[ CANCEL ]");
             }
         };
-        renderButtons(type);
 
-        // Esperar la selección del usuario
-        while (true) {
-            if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
-            while (Kbd->virtualKeyAvailable()) {
-                fabgl::VirtualKeyItem NextKey;
-                if (readKbd(&NextKey, KBDREAD_MODEBIOS) && NextKey.down) {
-                    switch (NextKey.vk) {
-                        case fabgl::VK_LEFT:
-                        case fabgl::VK_RIGHT:
-                            if (type == BIOS_DLG_CONFIRM) {
-                                selectedButton = 1 - selectedButton; // Cambiar entre 0 y 1
-                                renderButtons(BIOS_DLG_CONFIRM);
-                            }
-                            break;
-                        case fabgl::VK_RETURN:
-                        case fabgl::VK_SPACE:
-                            return selectedButton == 0; // Retorna true si seleccionó OK, false si seleccionó Cancel
-                        case fabgl::VK_ESCAPE:
-                            return false;
+        if (type != BIOS_DLG_MSG) {
+            renderButtons(type);
+        }
+
+        // No unir este if con el de arriba, si se une, desconozco el motivo, pero el BIOS_DLG_MSG espera por las key...
+        if (type != BIOS_DLG_MSG) {
+            // Esperar la selección del usuario
+            while (true) {
+                if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                while (Kbd->virtualKeyAvailable()) {
+                    fabgl::VirtualKeyItem NextKey;
+                    if (readKbd(&NextKey, KBDREAD_MODEBIOS) && NextKey.down) {
+                        switch (NextKey.vk) {
+                            case fabgl::VK_LEFT:
+                            case fabgl::VK_RIGHT:
+                                if (type == BIOS_DLG_CONFIRM) {
+                                    selectedButton = 1 - selectedButton; // Cambiar entre 0 y 1
+                                    renderButtons(BIOS_DLG_CONFIRM);
+                                }
+                                break;
+                            case fabgl::VK_RETURN:
+                            case fabgl::VK_SPACE:
+                                return selectedButton == 0; // Retorna true si seleccionó OK, false si seleccionó Cancel
+                            case fabgl::VK_ESCAPE:
+                                return false;
+                        }
                     }
                 }
+                vTaskDelay(100 / portTICK_PERIOD_MS);
             }
-            vTaskDelay(100 / portTICK_PERIOD_MS);
         }
     };
 
@@ -938,14 +962,9 @@ void ESPectrum::showBIOS() {
             }
             else if (selectedOption == (ZXKeyb::Exists ? 3 : 4)) { // Acción para CONFIG
                 int selectedConfigOption = 0;
-                // Renderizar menú de visualización
+                // Renderizar menú de configuración
                 screen_clear();
                 renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
-
-                auto remountSD = [&]() {
-                    if ( FileUtils::SDReady && !FileUtils::isMountedSDCard() ) FileUtils::unmountSDCard();
-                    if ( !FileUtils::SDReady ) FileUtils::initFileSystem();
-                };
 
                 while (true) {
                     if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
@@ -1014,9 +1033,136 @@ void ESPectrum::showBIOS() {
                     renderOptions(menuConfig, NULL, menuConfigCount, selectedConfigOption);
                 }
             }
-            else if (selectedOption == (ZXKeyb::Exists ? 4 : 5)) { // Acción para EXIT
+            else if (selectedOption == (ZXKeyb::Exists ? 4 : 5)) { // Acción para Update
+                int selectedUpdateOption = 0;
+                // Renderizar menú de actualización
+                screen_clear();
+                renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+
+                while (true) {
+                    if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEBIOS);
+                    while (Kbd->virtualKeyAvailable()) {
+                        bool r = readKbd(&NextKey, KBDREAD_MODEBIOS);
+                        if (r && NextKey.down) {
+
+                            mainMenuNav([&renderOptions, &menuUpdate, &menuUpdateCount, &selectedUpdateOption](){renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);},
+                                        [&renderOptions, &menuUpdate, &menuUpdateCount, &selectedUpdateOption](){renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);});
+                            optionsNav(selectedUpdateOption, menuUpdateCount, [&renderOptions, &menuUpdate, &menuUpdateCount, &selectedUpdateOption](){renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);});
+
+                            switch (NextKey.vk) {
+                                case fabgl::VK_RETURN:
+                                case fabgl::VK_SPACE:
+                                    switch (selectedUpdateOption) {
+                                        case 0: // Acción para Save Changes & Update
+                                            if ( msg_dialog("Confim update firmware", "Are you sure you want to perform\na firmware update?", BIOS_DLG_CONFIRM) ) {
+
+                                                remountSD();
+
+                                                FILE *firmware = fopen("/sd/firmware.upg", "rb");
+                                                if (firmware) {
+
+                                                    screen_clear(true);
+                                                    renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+                                                    msg_dialog("Firmware Update", "Update... 0% completed", BIOS_DLG_MSG);
+
+                                                    char ota_write_data[FWBUFFSIZE + 1] = { 0 };
+
+                                                    // get the currently running partition
+                                                    const esp_partition_t *partition = esp_ota_get_running_partition();
+                                                    if (partition) {
+                                                        // Grab next update target
+                                                        // const esp_partition_t *target = esp_ota_get_next_update_partition(NULL);
+                                                        string splabel;
+                                                        if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
+
+                                                        const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
+                                                        if (target) {
+
+                                                            esp_ota_handle_t ota_handle;
+                                                            esp_err_t result = esp_ota_begin(target, OTA_SIZE_UNKNOWN, &ota_handle);
+                                                            if (result == ESP_OK) {
+
+                                                                size_t bytesread;
+                                                                uint32_t byteswritten = 0;
+
+                                                                // Get firmware size
+                                                                fseek(firmware, 0, SEEK_END);
+                                                                long bytesfirmware = ftell(firmware);
+                                                                rewind(firmware);
+
+                                                                while (1) {
+                                                                    bytesread = fread(ota_write_data, 1, FWBUFFSIZE, firmware);
+                                                                    result = esp_ota_write(ota_handle,(const void *) ota_write_data, bytesread);
+                                                                    if (result != ESP_OK) break;
+
+                                                                    byteswritten += bytesread;
+
+                                                                    int percent = (float) 100 / ((float) bytesfirmware / (float) byteswritten);
+                                                                    if (percent%10 == 0) {
+                                                                        char percent_str[32];
+                                                                        sprintf(percent_str, "Update... %d%% completed", percent);
+                                                                        msg_dialog("Firmware Update", percent_str, BIOS_DLG_MSG);
+                                                                    }
+
+                                                                    // printf("Bytes written: %d\n",byteswritten);
+                                                                    if (feof(firmware)) break;
+                                                                }
+
+                                                                if (result == ESP_OK) {
+                                                                    result = esp_ota_end(ota_handle);
+                                                                    if (result == ESP_OK) {
+                                                                        result = esp_ota_set_boot_partition(target);
+                                                                        if (result == ESP_OK) {
+
+                                                                            screen_clear(true);
+                                                                            renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+                                                                            msg_dialog("Firmware Update", "Update 100% ""completed\nRestarting...", BIOS_DLG_MSG);
+
+                                                                            // Enable StartMsg
+                                                                            Config::StartMsg = true;
+                                                                            Config::save("StartMsg");
+
+                                                                            delay(2000);
+
+                                                                            // Firmware written: reboot
+                                                                            OSD::esp_hard_reset();
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                screen_clear(true);
+                                                renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+                                                msg_dialog("Firmware Update", "Firmware Update Failed!");
+
+                                            }
+
+                                            screen_clear(true);
+                                            renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (exit_to_main) break;
+
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+
+                if (!exit_to_main) {
+                    screen_clear();
+                    renderOptions(menuUpdate, NULL, menuUpdateCount, selectedUpdateOption);
+                }
+
+            }
+            else if (selectedOption == (ZXKeyb::Exists ? 5 : 6)) { // Acción para EXIT
                 int selectedExitOption = 0;
-                // Renderizar menú de visualización
+                // Renderizar menú de salida
                 screen_clear();
                 renderOptions(menuExit, NULL, menuExitCount, selectedExitOption);
 
