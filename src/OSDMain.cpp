@@ -3404,72 +3404,6 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = 1;
                                         menu_saverect = true;
                                         while (1) {
-                                            string TapeAutoload_menu = MENU_AUTOLOAD[Config::lang];
-                                            bool prev_TapeAutoload = Config::TapeAutoload;
-                                            if (prev_TapeAutoload) {
-                                                menu_curopt = 1;
-                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
-                                            } else {
-                                                menu_curopt = 2;
-                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
-                                            }
-                                            uint8_t opt2 = menuRun(TapeAutoload_menu);
-                                            if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::TapeAutoload = true;
-                                                else
-                                                    Config::TapeAutoload = false;
-
-                                                if (Config::TapeAutoload != prev_TapeAutoload) {
-                                                    Config::save("TapeAutoload");
-                                                }
-                                                menu_curopt = opt2;
-                                                menu_saverect = false;
-                                            } else {
-                                                menu_curopt = 1;
-                                                menu_level = 2;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else if (opt2 == 3) {
-                                        menu_level = 3;
-                                        menu_curopt = 1;
-                                        menu_saverect = true;
-                                        while (1) {
-                                            string flash_menu = MENU_FLASHLOAD[Config::lang];
-                                            bool prev_flashload = Config::flashload;
-                                            if (prev_flashload) {
-                                                menu_curopt = 1;
-                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
-                                            } else {
-                                                menu_curopt = 2;
-                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
-                                            }
-                                            uint8_t opt2 = menuRun(flash_menu);
-                                            if (opt2) {
-                                                if (opt2 == 1)
-                                                    Config::flashload = true;
-                                                else
-                                                    Config::flashload = false;
-
-                                                if (Config::flashload != prev_flashload) {
-                                                    Config::save("flashload");
-                                                }
-                                                menu_curopt = opt2;
-                                                menu_saverect = false;
-                                            } else {
-                                                menu_curopt = 1;
-                                                menu_level = 2;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else if (opt2 == 4) {
-                                        menu_level = 3;
-                                        menu_curopt = 1;
-                                        menu_saverect = true;
-                                        while (1) {
                                             string mnu_str = MENU_RGTIMINGS[Config::lang];
                                             bool prev_opt = Config::tape_timing_rg;
                                             if (prev_opt) {
@@ -4486,6 +4420,88 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     break;
                                 }
                             }
+                        }
+                        else if (options_num == 13) {
+                            menu_level = 2;
+                            menu_curopt = 1;
+                            menu_saverect = true;
+                            while (1) {
+                                string stor_cas = MENU_CAS[Config::lang];
+                                uint8_t opt2 = menuRun(stor_cas);
+                                if (opt2) {
+                                    if (opt2 == 1) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
+                                            string TapeAutoload_menu = MENU_AUTOLOAD[Config::lang];
+                                            bool prev_TapeAutoload = Config::TapeAutoload;
+                                            if (prev_TapeAutoload) {
+                                                menu_curopt = 1;
+                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
+                                            } else {
+                                                menu_curopt = 2;
+                                                TapeAutoload_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
+                                            }
+                                            uint8_t opt2 = menuRun(TapeAutoload_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)
+                                                    Config::TapeAutoload = true;
+                                                else
+                                                    Config::TapeAutoload = false;
+
+                                                if (Config::TapeAutoload != prev_TapeAutoload) {
+                                                    Config::save("TapeAutoload");
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else if (opt2 == 2) {
+                                        menu_level = 3;
+                                        menu_curopt = 1;
+                                        menu_saverect = true;
+                                        while (1) {
+                                            string flash_menu = MENU_FLASHLOAD[Config::lang];
+                                            bool prev_flashload = Config::flashload;
+                                            if (prev_flashload) {
+                                                menu_curopt = 1;
+                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "Y");
+                                            } else {
+                                                menu_curopt = 2;
+                                                flash_menu += markSelectedOption(MENU_YESNO[Config::lang], "N");
+                                            }
+                                            uint8_t opt2 = menuRun(flash_menu);
+                                            if (opt2) {
+                                                if (opt2 == 1)
+                                                    Config::flashload = true;
+                                                else
+                                                    Config::flashload = false;
+
+                                                if (Config::flashload != prev_flashload) {
+                                                    Config::save("flashload");
+                                                }
+                                                menu_curopt = opt2;
+                                                menu_saverect = false;
+                                            } else {
+                                                menu_curopt = 1;
+                                                menu_level = 2;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    menu_curopt = opt2;
+                                    menu_saverect = false;
+                                } else {
+                                    menu_curopt = 13;
+                                    break;
+                                }
+                            }                            
                         }
                         else {
                             menu_curopt = opt;

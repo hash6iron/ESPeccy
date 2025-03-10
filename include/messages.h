@@ -222,6 +222,8 @@ static const char *MENU_PERSIST_LOAD[NLANGS] = { MENU_PERSIST_LOAD_EN, MENU_PERS
 
 static const char *MENU_STORAGE[NLANGS] = { MENU_STORAGE_EN, MENU_STORAGE_ES, MENU_STORAGE_PT };
 
+static const char *MENU_CAS[NLANGS] = { MENU_CAS_EN, MENU_CAS_ES, MENU_CAS_PT };
+
 static const char *MENU_YESNO[NLANGS] = { MENU_YESNO_EN, MENU_YESNO_ES, MENU_YESNO_PT };
 
 static const char *MENU_DISKCTRL[NLANGS] = { "Betadisk\n" , "Betadisk\n", "Betadisk\n" };

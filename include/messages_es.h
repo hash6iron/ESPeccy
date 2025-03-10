@@ -195,7 +195,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Otros\t>\n"\
     "Idioma\t>\n"\
     "Interfaz de Usuario\t>\n"\
-    "EAR config\t>\n"
+    "EAR config\t>\n"\
+    "Cinta\t>\n"    
 
 #define MENU_UPDATE_ES \
     "Actualizar\n"\
@@ -236,9 +237,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_STORAGE_ES "Almacenamiento\n"\
     "Betadisk\t>\n"\
-    "Auto carga de cinta\t>\n"\
-    "Carga r\xA0pida cinta\t>\n"\
     "Timings ROM R.G.\t>\n"
+
+#define MENU_CAS_ES "Cintas\n"\
+    "Auto carga de cinta\t>\n"\
+    "Carga r\xA0pida cinta\t>\n"
 
 #define MENU_YESNO_ES "S\xA1\t[Y]\n"\
     "No\t[N]\n"

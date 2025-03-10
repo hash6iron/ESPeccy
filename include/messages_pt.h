@@ -200,7 +200,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Outros\t>\n"\
     "Idioma\t>\n"\
     "Interface do Usu\xA0rio\t>\n"\
-    "EAR config\t>\n"
+    "EAR config\t>\n"\
+    "Fita\t>\n"
 
 #define MENU_UPDATE_PT \
     "Atualizar\n"\
@@ -244,6 +245,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Auto carregamento de fita\t>\n"\
     "Carregamento r\xA0pido\t>\n"\
     "Timings ROM R.G.\t>\n"
+
+#define MENU_CAS_PT "Cassette\n"\
+    "Auto carregamento de fita\t>\n"\
+    "Carregamento r\xA0pido\t>\n"
 
 #define MENU_YESNO_PT "Sim\t[Y]\n"\
     "N\x84o\t[N]\n"

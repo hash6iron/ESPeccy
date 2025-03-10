@@ -198,7 +198,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Other\t>\n"\
     "Language\t>\n"\
     "User Interface\t>\n"\
-    "EAR config\t>\n"
+    "EAR config\t>\n"\
+    "Tape\t>\n"
 
 #define MENU_UPDATE_EN \
     "Update\n"\
@@ -239,9 +240,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_STORAGE_EN "Storage\n"\
     "Betadisk\t>\n"\
-    "Auto tape load\t>\n"\
-    "Flash tape load\t>\n"\
     "R.G. ROM timings\t>\n"
+
+#define MENU_CAS_EN "Tape\n"\
+    "Auto tape load\t>\n"\
+    "Flash tape load\t>\n"
 
 #define MENU_YESNO_EN "Yes\t[Y]\n"\
     "No\t[N]\n"

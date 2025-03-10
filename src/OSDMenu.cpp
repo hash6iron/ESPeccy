@@ -55,7 +55,7 @@ using namespace std;
 #include "Z80_JLS/z80.h"
 #include "Tape.h"
 
-#define MENU_MAX_ROWS 13
+#define MENU_MAX_ROWS 14
 
 // Scroll
 #define UP true
