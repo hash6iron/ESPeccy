@@ -42,7 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Config.h"
 #include "cpuESP.h"
 #include "MemESP.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "hardpins.h"
 #include "messages.h"
 #include "OSDMain.h"
@@ -307,7 +307,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     string fnameLastSaved = "";
 
 //    printf("\nJust after entering dirtofile");
-//    ESPectrum::showMemInfo();
+//    ESPeccy::showMemInfo();
 //    printf("\n");
 
     // Populate filexts with valid filename extensions
@@ -353,7 +353,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     }
 
 //    printf("\nBefore checking tempdir");
-//    ESPectrum::showMemInfo();
+//    ESPeccy::showMemInfo();
 //    printf("\n");
 
     string tempDir = FileUtils::createTmpDir();
@@ -365,7 +365,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     }
 
 //    printf("\nAfter checking tempdir");
-//    ESPectrum::showMemInfo();
+//    ESPeccy::showMemInfo();
 //    printf("\n");
 
 
@@ -388,7 +388,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
     int iterations = 0;
 
 //    printf("\nBefore while");
-//    ESPectrum::showMemInfo();
+//    ESPeccy::showMemInfo();
 //    printf("\n");
 
     while ( !eof2 || ( fin && !feof(fin)) ) {
@@ -436,7 +436,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
                     if ( bufferSize ) {
 
 //                        printf("\nBefore buffer fill -> ");
-//                        ESPectrum::showMemInfo();
+//                        ESPeccy::showMemInfo();
 //                        printf("\n");
 
                         while ( buffer.size() < bufferSize && (de = readdir(dir)) != nullptr ) {
@@ -454,7 +454,7 @@ void FileUtils::DirToFile(string fpath, uint8_t ftype, unsigned long hash, unsig
 
                         // printf("Buffer size: %d\n",buffer.size());
 //                        printf("Before buffer sort -> ");
-//                        ESPectrum::showMemInfo();
+//                        ESPeccy::showMemInfo();
 //                        printf("\n");
 
                         // Sort buffer loaded with processed directory entries

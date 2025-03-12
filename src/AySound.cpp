@@ -34,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "AySound.h"
 #include "hardconfig.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 // #pragma GCC optimize("O3")
 

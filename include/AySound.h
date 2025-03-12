@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define AySound_h
 
 #include "hardconfig.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include <inttypes.h>
 #include <stddef.h>
 

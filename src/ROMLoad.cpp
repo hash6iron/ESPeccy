@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cpuESP.h"
 #include "Video.h"
 #include "MemESP.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "messages.h"
 #include "OSDMain.h"
 #include "Tape.h"
@@ -110,7 +110,7 @@ bool ROMLoad::load(string rom_fn, bool reset) {
 
     }
 
-    if (reset) ESPectrum::reset();
+    if (reset) ESPeccy::reset();
 
     // read ROM page if present
     readBlockFile(file, MemESP::ram[7], 0x4000);

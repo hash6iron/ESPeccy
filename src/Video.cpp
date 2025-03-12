@@ -134,7 +134,7 @@ IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
     static int cntvsync = 0;
 
     if (Config::load_monitor) {
-        ESPectrum::vsync = true;
+        ESPeccy::vsync = true;
         return;
     }
 
@@ -144,9 +144,9 @@ IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
 
         elapsedmicros += currentmicros - prevmicros;
 
-        if (elapsedmicros >= ESPectrum::target[0]) {
+        if (elapsedmicros >= ESPeccy::target[0]) {
 
-            ESPectrum::vsync = true;
+            ESPeccy::vsync = true;
 
             // This code is needed to "finetune" the sync. Without it, vsync and emu video gets slowly desynced.
             if (VIDEO::VsyncFinetune[0]) {
@@ -156,14 +156,14 @@ IRAM_ATTR void VGA6Bit::interrupt(void *arg) {
                 }
             }
 
-            elapsedmicros -= ESPectrum::target[0];
+            elapsedmicros -= ESPeccy::target[0];
 
-        } else ESPectrum::vsync = false;
+        } else ESPeccy::vsync = false;
 
     } else {
 
         elapsedmicros = 0;
-        ESPectrum::vsync = false;
+        ESPeccy::vsync = false;
 
     }
 
@@ -283,7 +283,7 @@ void VIDEO::Init() {
 
         // Wait for vertical sync to ensure vga.init is done
         for (;;) {
-            if (ESPectrum::vsync) break;
+            if (ESPeccy::vsync) break;
         }
 
     } else {
@@ -312,7 +312,14 @@ void VIDEO::Init() {
 
     precalcborder32();  // Precalc border 32 bits values
 
+#if 1
+    SaveRect = (uint32_t *) heap_caps_malloc(0x9000, /*MALLOC_CAP_INTERNAL |*/ MALLOC_CAP_32BIT);
+#else
     SaveRect = (uint32_t *) heap_caps_malloc(0x9000, MALLOC_CAP_INTERNAL | MALLOC_CAP_32BIT);
+#endif
+    if (!SaveRect) {
+        printf("ERROR can't alloc SaveRect!!!\n");
+    }
 
     // Set font & Codepage
     vga.setFont(SystemFont);

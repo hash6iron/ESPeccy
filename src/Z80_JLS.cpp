@@ -955,9 +955,9 @@ void Z80::bitTest(uint8_t mask, uint8_t reg) {
 
 IRAM_ATTR void Z80::check_trdos() {
 
-    if ((Config::DiskCtrl == 1 || ESPectrum::trdos == true || Z80Ops::isPentagon) && !Z80Ops::is2a3) {
+    if ((Config::DiskCtrl == 1 || ESPeccy::trdos == true || Z80Ops::isPentagon) && !Z80Ops::is2a3) {
 
-        if (!ESPectrum::trdos) {
+        if (!ESPeccy::trdos) {
 
             if (REG_PCh == 0x3D) {
 
@@ -965,7 +965,7 @@ IRAM_ATTR void Z80::check_trdos() {
                 if ((Z80Ops::is48) && (MemESP::romInUse == 0) || ((!Z80Ops::is48) && MemESP::romInUse == 1)) {
                     MemESP::romInUse = 4;
                     MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                    ESPectrum::trdos = true;
+                    ESPeccy::trdos = true;
                 }
 
             }
@@ -980,7 +980,7 @@ IRAM_ATTR void Z80::check_trdos() {
                     MemESP::romInUse = MemESP::romLatch;
 
                 MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                ESPectrum::trdos = false;
+                ESPeccy::trdos = false;
 
             }
 
@@ -992,7 +992,7 @@ IRAM_ATTR void Z80::check_trdos() {
 
 // IRAM_ATTR void Z80::check_trdos_unpage() {
 
-//     if (ESPectrum::trdos) {
+//     if (ESPeccy::trdos) {
 
 //         if (REG_PCh >= 0x40) {
 
@@ -1002,7 +1002,7 @@ IRAM_ATTR void Z80::check_trdos() {
 //                 MemESP::romInUse = MemESP::romLatch;
 
 //             MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-//             ESPectrum::trdos = false;
+//             ESPeccy::trdos = false;
 
 //         }
 
@@ -1012,7 +1012,7 @@ IRAM_ATTR void Z80::check_trdos() {
 //             if ((Z80Ops::is48) && (MemESP::romInUse == 0) || ((!Z80Ops::is48) && MemESP::romInUse == 1)) {
 //                 MemESP::romInUse = 4;
 //                 MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-//                 ESPectrum::trdos = true;
+//                 ESPeccy::trdos = true;
 //             }
 
 //     }
@@ -1116,7 +1116,7 @@ IRAM_ATTR void Z80::execute() {
     // if (CPU::tstates_diff >= 14) {
     //     while (1) {
     //         // printf("CPU::tstates_diff: %d\n",CPU::tstates_diff);
-    //         rvmWD1793Step(&ESPectrum::fdd); // FDD
+    //         rvmWD1793Step(&ESPeccy::fdd); // FDD
     //         CPU::tstates_diff -= 14;
     //         if (CPU::tstates_diff < 14) break;
     //     }

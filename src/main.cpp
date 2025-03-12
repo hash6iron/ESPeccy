@@ -32,12 +32,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 extern "C" void app_main(void) {
 
-  ESPectrum::setup();
+  ESPeccy::setup();
   
-  ESPectrum::loop();
+  ESPeccy::loop();
 
 }

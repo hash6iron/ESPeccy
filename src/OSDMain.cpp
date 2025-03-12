@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "FileUtils.h"
 #include "cpuESP.h"
 #include "Video.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "messages.h"
 #include "Config.h"
 #include "Snapshot.h"
@@ -153,7 +153,7 @@ static const uint8_t click128[116] = {   0,8,32,32,32,32,32,32,32,32,32,32,32,32
     size_t written;
     if (Z80Ops::is48)   pwm_audio_write((uint8_t *) click48, sizeof(click48), &written,  5 / portTICK_PERIOD_MS);
     else                pwm_audio_write((uint8_t *) click128, sizeof(click128), &written, 5 / portTICK_PERIOD_MS);
-    pwm_audio_set_volume(ESPectrum::aud_volume);
+    pwm_audio_set_volume(ESPeccy::aud_volume);
 }
 
 void OSD::esp_hard_reset() {
@@ -1221,10 +1221,10 @@ void OSD::drawKbdLayout(uint8_t layout) {
 
             if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEKBDLAYOUT);
 
-            ESPectrum::readKbdJoy();
+            ESPeccy::readKbdJoy();
 
-            if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-                if (ESPectrum::readKbd(&Nextkey, KBDREAD_MODEKBDLAYOUT)) {
+            if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+                if (ESPeccy::readKbd(&Nextkey, KBDREAD_MODEKBDLAYOUT)) {
                     if(!Nextkey.down) continue;
                     if (Nextkey.vk == fabgl::VK_F1 ||
                         Nextkey.vk == fabgl::VK_ESCAPE ||
@@ -1351,10 +1351,10 @@ void OSD::drawKbdLayout(uint8_t layout) {
 
 //         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead();
 
-//         ESPectrum::readKbdJoy();
+//         ESPeccy::readKbdJoy();
 
-//         if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-//             if (ESPectrum::readKbd(&Nextkey)) {
+//         if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+//             if (ESPeccy::readKbd(&Nextkey)) {
 //                 if(!Nextkey.down) continue;
 //                 if (Nextkey.vk == fabgl::VK_F1 ||
 //                     Nextkey.vk == fabgl::VK_ESCAPE ||
@@ -1399,7 +1399,7 @@ void OSD::drawStats() {
         y = VIDEO::brdlin_osdstart;
     }
 
-    VIDEO::vga.setTextColor(zxColor(7, 0), zxColor( ESPectrum::ESP_delay, 0));
+    VIDEO::vga.setTextColor(zxColor(7, 0), zxColor( ESPeccy::ESP_delay, 0));
     VIDEO::vga.setFont(SystemFont);
     VIDEO::vga.setCursor(x,y);
     VIDEO::vga.print(stats_lin1);
@@ -1914,7 +1914,7 @@ std::vector<std::string> extractValues(const std::string& input) {
 void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
     fabgl::VirtualKeyItem Nextkey;
 
-    ESPectrum::sync_realtape = true;
+    ESPeccy::sync_realtape = true;
 
     if (SHIFT && !CTRL) {
         if (KeytoESP == fabgl::VK_F1) { // Show H/W info
@@ -2026,7 +2026,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             showCheatDialog();
         }
         else
-            ESPectrum::sync_realtape = false;
+            ESPeccy::sync_realtape = false;
 
     } else if (CTRL && !SHIFT) {
 
@@ -2058,9 +2058,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         } else
         if (KeytoESP == fabgl::VK_F2) { // Turbo mode
 
-            ++ESPectrum::ESP_delay &= 0x03;
+            ++ESPeccy::ESP_delay &= 0x03;
 
-            ESPectrum::TurboModeSet();
+            ESPeccy::TurboModeSet();
 
         } else
         if (KeytoESP == fabgl::VK_F9) { // Input Poke
@@ -2082,12 +2082,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 // Clear Cheat data
                 CheatMngr::closeCheatFile();
 
-                ESPectrum::reset();
+                ESPeccy::reset();
 
                 if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
                 MemESP::romInUse = 4;
                 MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                ESPectrum::trdos = true;
+                ESPeccy::trdos = true;
 
             } else {
 
@@ -2098,33 +2098,33 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         } else
         // if (KeytoESP == fabgl::VK_F3) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar -= 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar -= 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         // } else
         // if (KeytoESP == fabgl::VK_F4) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar += 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar += 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         // } else
         // if (KeytoESP == fabgl::VK_F5) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar1 -= 1;
-        //     printf("ESPtestvar1: %d\n",ESPectrum::ESPtestvar1);
+        //     ESPeccy::ESPtestvar1 -= 1;
+        //     printf("ESPtestvar1: %d\n",ESPeccy::ESPtestvar1);
         // } else
         // if (KeytoESP == fabgl::VK_F6) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar1 += 1;
-        //     printf("ESPtestvar1: %d\n",ESPectrum::ESPtestvar1);
+        //     ESPeccy::ESPtestvar1 += 1;
+        //     printf("ESPtestvar1: %d\n",ESPeccy::ESPtestvar1);
         // } else
         // if (KeytoESP == fabgl::VK_F7) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar2 -= 1;
-        //     printf("ESPtestvar2: %d\n",ESPectrum::ESPtestvar2);
+        //     ESPeccy::ESPtestvar2 -= 1;
+        //     printf("ESPtestvar2: %d\n",ESPeccy::ESPtestvar2);
         // } else
         // if (KeytoESP == fabgl::VK_F8) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar2 += 1;
-        //     printf("ESPtestvar2: %d\n",ESPectrum::ESPtestvar2);
+        //     ESPeccy::ESPtestvar2 += 1;
+        //     printf("ESPtestvar2: %d\n",ESPeccy::ESPtestvar2);
         // }
         if (KeytoESP == fabgl::VK_F5) {
             if (Config::CenterH > -16) Config::CenterH--;
@@ -2159,10 +2159,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                 if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODENORMAL);
 
-                ESPectrum::readKbdJoy();
+                ESPeccy::readKbdJoy();
 
-                if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-                    if (ESPectrum::readKbd(&Nextkey, KBDREAD_MODENORMAL)) {
+                if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+                    if (ESPeccy::readKbd(&Nextkey, KBDREAD_MODENORMAL)) {
                         if(!Nextkey.down) continue;
                         if (Nextkey.vk == fabgl::VK_RETURN || Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY2A || Nextkey.vk == fabgl::VK_JOY1B || Nextkey.vk == fabgl::VK_JOY2B || Nextkey.vk == fabgl::VK_PAUSE) {
                             click();
@@ -2183,9 +2183,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             menu_saverect = false;
 
             if (FileUtils::isSDReady()) {
-                // ESPectrum::showMemInfo("Before F2 file dialog");
+                // ESPeccy::showMemInfo("Before F2 file dialog");
                 string mFile = fileDialog(FileUtils::SNA_Path, MENU_SNA_TITLE[Config::lang], DISK_SNAFILE, (scrW - OSD_FONT_W * 4) / OSD_FONT_W, 12);
-                // ESPectrum::showMemInfo("After F2 file dialog");
+                // ESPeccy::showMemInfo("After F2 file dialog");
                 if (mFile != "") {
                     string fprefix = mFile.substr(0,1);
                     // if (fprefix == "S") FileZ80::keepArch = true;
@@ -2230,13 +2230,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         }
         // else if (KeytoESP == fabgl::VK_F3) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar -= 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar -= 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         // }
         // else if (KeytoESP == fabgl::VK_F4) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar += 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar += 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         // }
         else if (KeytoESP == fabgl::VK_F3) {
 
@@ -2351,26 +2351,26 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         }
         // else if (KeytoESP == fabgl::VK_F7) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar1 -= 1;
-        //     printf("ESPtestvar1: %d\n",ESPectrum::ESPtestvar1);
+        //     ESPeccy::ESPtestvar1 -= 1;
+        //     printf("ESPtestvar1: %d\n",ESPeccy::ESPtestvar1);
         //     return;
         // }
         // else if (KeytoESP == fabgl::VK_F8) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar1 += 1;
-        //     printf("ESPtestvar1: %d\n",ESPectrum::ESPtestvar1);
+        //     ESPeccy::ESPtestvar1 += 1;
+        //     printf("ESPtestvar1: %d\n",ESPeccy::ESPtestvar1);
         //     return;
         // }
         // else if (KeytoESP == fabgl::VK_F9) {
         //     // Test variable decrease
-        //     ESPectrum::ESPtestvar -= 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar -= 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         //     return;
         // }
         // else if (KeytoESP == fabgl::VK_F10) {
         //     // Test variable increase
-        //     ESPectrum::ESPtestvar += 1;
-        //     printf("ESPtestvar: %d\n",ESPectrum::ESPtestvar);
+        //     ESPeccy::ESPtestvar += 1;
+        //     printf("ESPtestvar: %d\n",ESPeccy::ESPtestvar);
         //     return;
         // }
         else if (KeytoESP == fabgl::VK_F7) {
@@ -2421,7 +2421,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     OSD::drawStats();
                 }
 
-                ESPectrum::TapeNameScroller = 0;
+                ESPeccy::TapeNameScroller = 0;
 
             }
 
@@ -2463,19 +2463,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             } else VIDEO::OSD |= 0x04;
 
-            ESPectrum::totalseconds = 0;
-            ESPectrum::totalsecondsnodelay = 0;
+            ESPeccy::totalseconds = 0;
+            ESPeccy::totalsecondsnodelay = 0;
             VIDEO::framecnt = 0;
 
             if (KeytoESP == fabgl::VK_F9 || KeytoESP == fabgl::VK_VOLUMEDOWN) {
-                if (ESPectrum::aud_volume>ESP_VOLUME_MIN) {
-                    ESPectrum::aud_volume--;
-                    pwm_audio_set_volume(ESPectrum::aud_volume);
+                if (ESPeccy::aud_volume>ESP_VOLUME_MIN) {
+                    ESPeccy::aud_volume--;
+                    pwm_audio_set_volume(ESPeccy::aud_volume);
                 }
             } else {
-                if (ESPectrum::aud_volume<ESP_VOLUME_MAX) {
-                    ESPectrum::aud_volume++;
-                    pwm_audio_set_volume(ESPectrum::aud_volume);
+                if (ESPeccy::aud_volume<ESP_VOLUME_MAX) {
+                    ESPeccy::aud_volume++;
+                    pwm_audio_set_volume(ESPeccy::aud_volume);
                 }
             }
 
@@ -2494,7 +2494,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             VIDEO::vga.setFont(SystemFont);
             VIDEO::vga.setCursor(x + OSD_FONT_W, y + 1);
             VIDEO::vga.print(Config::load_monitor ? "TAP" : "VOL");
-            for (int i = 0; i < ESPectrum::aud_volume + 16; i++)
+            for (int i = 0; i < ESPeccy::aud_volume + 16; i++)
                 VIDEO::vga.fillRect(x + (i + 7) * OSD_FONT_W, y + 1, OSD_FONT_W - 1, 7, zxColor( 7, 0));
 
         }
@@ -2509,7 +2509,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                 if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                 Config::rom_file = Config::last_rom_file;
             } else
-                ESPectrum::reset();
+                ESPeccy::reset();
         }
         else if (KeytoESP == fabgl::VK_F12) { // ESP32 reset
             // ESP host reset
@@ -2806,11 +2806,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                         if (Config::load_monitor != prev_opt) {
                                             if (Config::load_monitor) {
-                                                ESPectrum::aud_volume = ESP_VOLUME_MAX;
+                                                ESPeccy::aud_volume = ESP_VOLUME_MAX;
                                             } else {
-                                                ESPectrum::aud_volume = Config::volume;
+                                                ESPeccy::aud_volume = Config::volume;
                                             }
-                                            pwm_audio_set_volume(ESPectrum::aud_volume);
+                                            pwm_audio_set_volume(ESPeccy::aud_volume);
                                             Config::save("load_monitor");
                                         }
                                         menu_curopt = opt2;
@@ -2883,10 +2883,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 mFile.erase(0, 1);
                                                 string fname = FileUtils::MountPoint + FileUtils::DSK_Path + mFile;
 
-                                                ESPectrum::Betadisk.EjectDisk(dsk_num - 1);
-                                                ESPectrum::Betadisk.InsertDisk(dsk_num - 1,fname);
+                                                ESPeccy::Betadisk.EjectDisk(dsk_num - 1);
+                                                ESPeccy::Betadisk.InsertDisk(dsk_num - 1,fname);
 
-                                            // rvmWD1793InsertDisk(&ESPectrum::fdd,dsk_num -1, fname);
+                                            // rvmWD1793InsertDisk(&ESPeccy::fdd,dsk_num -1, fname);
 
                                                 return;
                                             }
@@ -2896,7 +2896,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         }
                                     } else
                                     if (opt2 == 2) {
-                                        ESPectrum::Betadisk.EjectDisk(dsk_num - 1);
+                                        ESPeccy::Betadisk.EjectDisk(dsk_num - 1);
                                         return;
                                     }
                                 } else {
@@ -2964,7 +2964,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                     osdCenteredMsg(OSD_ROM_EJECT[Config::lang], LEVEL_INFO, 1000);
 
-                                    ESPectrum::reset();
+                                    ESPeccy::reset();
 
                                     return;
                                 } else {
@@ -3251,8 +3251,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                 // Clear Cheat data
                                 CheatMngr::closeCheatFile();
-
-                                ESPectrum::reset();
+                                ESPeccy::reset();
 
                                 return;
 
@@ -3290,7 +3289,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                                     Config::rom_file = Config::last_rom_file;
                                 } else
-                                    ESPectrum::reset();
+                                    ESPeccy::reset();
                             }
                             return;
                         }
@@ -3310,12 +3309,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                             // Clear Cheat data
                             CheatMngr::closeCheatFile();
 
-                            ESPectrum::reset();
+                            ESPeccy::reset();
 
                             if (Z80Ops::is128 || Z80Ops::isPentagon) MemESP::romLatch = 1;
                             MemESP::romInUse = 4;
                             MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
-                            ESPectrum::trdos = true;
+                            ESPeccy::trdos = true;
                             return;
 
                         }
@@ -3331,7 +3330,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 if ( FileUtils::isSDReady() ) ROMLoad::load(Config::last_rom_file);
                                 Config::rom_file = Config::last_rom_file;
                             } else
-                                ESPectrum::reset();
+                                ESPeccy::reset();
                             return;
                         }
                         else if (opt2 == 4) {
@@ -3674,9 +3673,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             else
                                                 Config::CursorAsJoy = false;
 
-                                            ESPectrum::PS2Controller.keyboard()->setLEDs(false,false,Config::CursorAsJoy);
-                                            if(ESPectrum::ps2kbd2)
-                                                ESPectrum::PS2Controller.keybjoystick()->setLEDs(false, false, Config::CursorAsJoy);
+                                            ESPeccy::PS2Controller.keyboard()->setLEDs(false,false,Config::CursorAsJoy);
+                                            if(ESPeccy::ps2kbd2)
+                                                ESPeccy::PS2Controller.keybjoystick()->setLEDs(false, false, Config::CursorAsJoy);
                                             Config::save("CursorAsJoy");
 
                                             menu_curopt = opt2;
@@ -3712,15 +3711,15 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             if (Config::TABasfire1 != prev_opt) {
 
                                                 if (Config::TABasfire1) {
-                                                    ESPectrum::VK_ESPECTRUM_FIRE1 = fabgl::VK_TAB;
-                                                    ESPectrum::VK_ESPECTRUM_FIRE2 = fabgl::VK_GRAVEACCENT;
-                                                    ESPectrum::VK_ESPECTRUM_TAB = fabgl::VK_NONE;
-                                                    ESPectrum::VK_ESPECTRUM_GRAVEACCENT = fabgl::VK_NONE;
+                                                    ESPeccy::VK_ESPECCY_FIRE1 = fabgl::VK_TAB;
+                                                    ESPeccy::VK_ESPECCY_FIRE2 = fabgl::VK_GRAVEACCENT;
+                                                    ESPeccy::VK_ESPECCY_TAB = fabgl::VK_NONE;
+                                                    ESPeccy::VK_ESPECCY_GRAVEACCENT = fabgl::VK_NONE;
                                                 } else {
-                                                    ESPectrum::VK_ESPECTRUM_FIRE1 = fabgl::VK_NONE;
-                                                    ESPectrum::VK_ESPECTRUM_FIRE2 = fabgl::VK_NONE;
-                                                    ESPectrum::VK_ESPECTRUM_TAB = fabgl::VK_TAB;
-                                                    ESPectrum::VK_ESPECTRUM_GRAVEACCENT = fabgl::VK_GRAVEACCENT;
+                                                    ESPeccy::VK_ESPECCY_FIRE1 = fabgl::VK_NONE;
+                                                    ESPeccy::VK_ESPECCY_FIRE2 = fabgl::VK_NONE;
+                                                    ESPeccy::VK_ESPECCY_TAB = fabgl::VK_TAB;
+                                                    ESPeccy::VK_ESPECCY_GRAVEACCENT = fabgl::VK_GRAVEACCENT;
                                                 }
 
                                                 Config::save("TABasfire1");
@@ -3903,7 +3902,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 if (Config::mousesamplerate != values[opt2 - 1]) {
                                                     Config::mousesamplerate = values[opt2 - 1];
                                                     Config::save("MouseSampleRate");
-                                                    ESPectrum::PS2Controller.mouse()->setSampleRate(Config::mousesamplerate);
+                                                    ESPeccy::PS2Controller.mouse()->setSampleRate(Config::mousesamplerate);
                                                 }
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
@@ -3925,7 +3924,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 if (Config::mousedpi != opt2 - 1) {
                                                     Config::mousedpi = opt2 - 1;
                                                     Config::save("MouseDPI");
-                                                    ESPectrum::PS2Controller.mouse()->setResolution(Config::mousedpi);
+                                                    ESPeccy::PS2Controller.mouse()->setResolution(Config::mousedpi);
                                                 }
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
@@ -3947,7 +3946,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 if (Config::mousescaling != opt2) {
                                                     Config::mousescaling = opt2;
                                                     Config::save("MouseScaling");
-                                                    ESPectrum::PS2Controller.mouse()->setScaling(Config::mousescaling);
+                                                    ESPeccy::PS2Controller.mouse()->setScaling(Config::mousescaling);
                                                 }
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
@@ -3995,12 +3994,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                                 if (Config::AY48 != prev_ay48) {
                                                 if (Z80Ops::is48) {
-                                                    ESPectrum::AY_emu = Config::AY48;
-                                                    if (ESPectrum::AY_emu == false) {
-                                                    for (int i=0; i < ESPectrum::samplesPerFrame; i++)
-                                                        AySound::SamplebufAY[i] = ESPectrum::audioBuffer[i] = 0;
+                                                    ESPeccy::AY_emu = Config::AY48;
+                                                    if (ESPeccy::AY_emu == false) {
+                                                    for (int i=0; i < ESPeccy::samplesPerFrame; i++)
+                                                        AySound::SamplebufAY[i] = ESPeccy::audioBuffer[i] = 0;
                                                 }
-                                                    ESPectrum::aud_active_sources = (Config::Covox & 0x01) | (ESPectrum::AY_emu << 1);
+                                                    ESPeccy::aud_active_sources = (Config::Covox & 0x01) | (ESPeccy::AY_emu << 1);
                                                 }
 
                                                 Config::save("AY48");
@@ -4046,10 +4045,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                 if (Config::Covox != (opt2 - 1)) {
                                                     Config::Covox = opt2 -1;
                                                     Config::save("Covox");
-                                                    ESPectrum::covoxData[0] = ESPectrum::covoxData[1] = ESPectrum::covoxData[2] = ESPectrum::covoxData[3] = 0;
-                                                    for (int i=0; i < ESPectrum::samplesPerFrame; i++)
-                                                        ESPectrum::SamplebufCOVOX[i] = ESPectrum::audioBuffer[i] = 0;
-                                                    ESPectrum::aud_active_sources = (Config::Covox & 0x01) | (ESPectrum::AY_emu << 1);
+                                                    ESPeccy::covoxData[0] = ESPeccy::covoxData[1] = ESPeccy::covoxData[2] = ESPeccy::covoxData[3] = 0;
+                                                    for (int i=0; i < ESPeccy::samplesPerFrame; i++)
+                                                        ESPeccy::SamplebufCOVOX[i] = ESPeccy::audioBuffer[i] = 0;
+                                                    ESPeccy::aud_active_sources = (Config::Covox & 0x01) | (ESPeccy::AY_emu << 1);
                                                 }
                                                 menu_curopt = opt2;
                                                 menu_saverect = false;
@@ -4171,7 +4170,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                                     Config::save("ALUTK");
 
-                                                    // ALU Changed, Reset ESPectrum if we're using some TK model
+                                                    // ALU Changed, Reset the emulator if we're using some TK model
                                                     if (Config::arch[0] == 'T') {
 
                                                         if (Config::videomode) {
@@ -4191,7 +4190,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                                             // Clear Cheat data
                                                             CheatMngr::closeCheatFile();
 
-                                                            ESPectrum::reset();
+                                                            ESPeccy::reset();
                                                         }
 
                                                         return;
@@ -4706,12 +4705,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     VIDEO::vga.fillRect(osdInsideX(), osdInsideY(), OSD_COLS * OSD_FONT_W, 50, zxColor(0, 0));
 
                     // Decode Logo in EBF8 format
-                    int logo_w = (ESPectrum_logo[5] << 8) + ESPectrum_logo[4]; // Get Width
-                    int logo_h = (ESPectrum_logo[7] << 8) + ESPectrum_logo[6]; // Get Height
+                    int logo_w = (ESPeccy_logo[5] << 8) + ESPeccy_logo[4]; // Get Width
+                    int logo_h = (ESPeccy_logo[7] << 8) + ESPeccy_logo[6]; // Get Height
                     int pos_x = osdInsideX() + ( OSD_COLS * OSD_FONT_W - logo_w ) / 2;
                     int pos_y = osdInsideY() + ( 50 - logo_h ) / 2;
 
-                    drawCompressedBMP(pos_x, pos_y, ESPectrum_logo);
+                    drawCompressedBMP(pos_x, pos_y, ESPeccy_logo);
 
                     VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
 
@@ -4782,10 +4781,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODENORMAL);
 
-                        ESPectrum::readKbdJoy();
+                        ESPeccy::readKbdJoy();
 
-                        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-                            if (ESPectrum::readKbd(&Nextkey, KBDREAD_MODENORMAL)) {
+                        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+                            if (ESPeccy::readKbd(&Nextkey, KBDREAD_MODENORMAL)) {
                                 if(!Nextkey.down) continue;
                                 if (Nextkey.vk == fabgl::VK_F1 || Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_RETURN || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY1B || Nextkey.vk == fabgl::VK_JOY2A || Nextkey.vk == fabgl::VK_JOY2B) break;
                             }
@@ -4807,7 +4806,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             }
         }
         else
-            ESPectrum::sync_realtape = false;
+            ESPeccy::sync_realtape = false;
     }
 }
 
@@ -4968,7 +4967,7 @@ void OSD::HWInfo() {
 
     VIDEO::vga.print(" Hardware info\n");
     VIDEO::vga.print(" --------------------------------------------\n");
-    VIDEO::vga.print(ESPectrum::getHardwareInfo().c_str());
+    VIDEO::vga.print(ESPeccy::getHardwareInfo().c_str());
 
     VIDEO::vga.print("\n Memory info\n");
     VIDEO::vga.print(" --------------------------------------------\n");
@@ -5000,7 +4999,7 @@ void OSD::HWInfo() {
     textout = " Main  Task Stack HWM     : " + to_string(wm) + "\n";
     VIDEO::vga.print(textout.c_str());
 
-    wm = uxTaskGetStackHighWaterMark(ESPectrum::audioTaskHandle);
+    wm = uxTaskGetStackHighWaterMark(ESPeccy::audioTaskHandle);
     textout = " Audio Task Stack HWM     : " + to_string(wm) + "\n";
     VIDEO::vga.print(textout.c_str());
 
@@ -5015,11 +5014,11 @@ void OSD::HWInfo() {
     while (1) {
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEDIALOG);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
             fabgl::VirtualKeyItem Nextkey;
-            ESPectrum::readKbd(&Nextkey, KBDREAD_MODEDIALOG);
+            ESPeccy::readKbd(&Nextkey, KBDREAD_MODEDIALOG);
             if(!Nextkey.down) continue;
             if (Nextkey.vk == fabgl::VK_F1 || Nextkey.vk == fabgl::VK_ESCAPE || Nextkey.vk == fabgl::VK_RETURN || Nextkey.vk == fabgl::VK_JOY1A || Nextkey.vk == fabgl::VK_JOY1B || Nextkey.vk == fabgl::VK_JOY2A || Nextkey.vk == fabgl::VK_JOY2B) {
                 click();
@@ -5886,11 +5885,11 @@ uint8_t OSD::msgDialog(string title, string msg) {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEDIALOG);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEDIALOG)) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEDIALOG)) {
                 if (!Menukey.down) continue;
 
                 if (Menukey.vk == fabgl::VK_LEFT || Menukey.vk == fabgl::VK_JOY1LEFT || Menukey.vk == fabgl::VK_JOY2LEFT) {
@@ -6350,7 +6349,7 @@ void OSD::joyDialog(uint8_t joynum) {
 
     // Read joy definition into joyDropdown
     for (int n=0; n<12; n++)
-        joyDropdown[n][6] = ESPectrum::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)];
+        joyDropdown[n][6] = ESPeccy::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)];
 
     // Draw Joy DropDowns
     for (int n=0; n<12; n++) {
@@ -6391,11 +6390,11 @@ void OSD::joyDialog(uint8_t joynum) {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEINPUTMULTI);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
-        while (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+        while (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
-            ESPectrum::readKbd(&Nextkey, KBDREAD_MODEINPUTMULTI);
+            ESPeccy::readKbd(&Nextkey, KBDREAD_MODEINPUTMULTI);
 
             if(!Nextkey.down) continue;
 
@@ -6610,7 +6609,7 @@ void OSD::joyDialog(uint8_t joynum) {
                         // Check if there are changes and ask to save them
                         bool changed = false;
                         for (int n = 0; n < 12; n++) {
-                            if (ESPectrum::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)] != joyDropdown[n][6]) {
+                            if (ESPeccy::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)] != joyDropdown[n][6]) {
                                 changed = true;
                                 break;
                             }
@@ -6629,7 +6628,7 @@ void OSD::joyDialog(uint8_t joynum) {
                                 for (int n = m; n < m + 12; n++) {
                                     // Save to config (only changes)
                                     if (Config::joydef[n] != (uint16_t) joyDropdown[n - m][6]) {
-                                        ESPectrum::JoyVKTranslation[n] = (fabgl::VirtualKey) joyDropdown[n - m][6];
+                                        ESPeccy::JoyVKTranslation[n] = (fabgl::VirtualKey) joyDropdown[n - m][6];
                                         Config::joydef[n] = (uint16_t) joyDropdown[n - m][6];
                                         char joykey[9];
                                         sprintf(joykey,"joydef%02u",n);
@@ -6701,7 +6700,7 @@ void OSD::joyDialog(uint8_t joynum) {
                     // Check if there are changes and ask to discard them
                     bool changed = false;
                     for (int n = 0; n < 12; n++) {
-                        if (ESPectrum::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)] != joyDropdown[n][6]) {
+                        if (ESPeccy::JoyVKTranslation[n + (joynum == 1 ? 0 : 12)] != joyDropdown[n][6]) {
                             changed = true;
                             break;
                         }
@@ -6733,23 +6732,23 @@ void OSD::joyDialog(uint8_t joynum) {
         if (joyDialogMode) {
 
             for (int n = (joynum == 1 ? fabgl::VK_JOY1LEFT : fabgl::VK_JOY2LEFT); n <= (joynum == 1 ? fabgl::VK_JOY1Z : fabgl::VK_JOY2Z); n++) {
-                if (ESPectrum::PS2Controller.keyboard()->isVKDown((fabgl::VirtualKey) n))
+                if (ESPeccy::PS2Controller.keyboard()->isVKDown((fabgl::VirtualKey) n))
                     joyControl[n - (joynum == 1 ? 248 : 260)][2] = zxColor(4,1);
                 else
                     joyControl[n - (joynum == 1 ? 248 : 260)][2] = zxColor(0,0);
             }
 
-            if (ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_JOY1A)) {
+            if (ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_JOY1A)) {
                 joyTestExitCount1++;
                 if (joyTestExitCount1 == 30)
-                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_ESCAPE,true,false);
+                    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_ESCAPE,true,false);
             } else
                 joyTestExitCount1 = 0;
 
-            if (ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_JOY2A)) {
+            if (ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_JOY2A)) {
                 joyTestExitCount2++;
                 if (joyTestExitCount2 == 30)
-                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_ESCAPE,true,false);
+                    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_ESCAPE,true,false);
             } else
                 joyTestExitCount2 = 0;
 
@@ -6879,11 +6878,11 @@ void OSD::pokeDialog() {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEINPUTMULTI);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
-            ESPectrum::readKbd(&Nextkey, KBDREAD_MODEINPUTMULTI);
+            ESPeccy::readKbd(&Nextkey, KBDREAD_MODEINPUTMULTI);
 
             if(!Nextkey.down) continue;
 
@@ -7213,8 +7212,8 @@ void OSD::pokeDialog() {
 
 int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
     int ascii = 0;
-    if ( ( Nextkey.CTRL  || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) &&
-         ( Nextkey.SHIFT || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LSHIFT) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RSHIFT) )
+    if ( ( Nextkey.CTRL  || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) &&
+         ( Nextkey.SHIFT || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_LSHIFT) || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_RSHIFT) )
        ) {
         *mode_E = !*mode_E;
     }
@@ -7262,7 +7261,7 @@ int OSD::VirtualKey2ASCII(fabgl::VirtualKeyItem Nextkey, bool * mode_E ) {
         case fabgl::VK_TILDE:           ascii = '~'; break;     /**< Tilde: ~ */
     }
 
-      if ( Nextkey.CTRL || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPectrum::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
+      if ( Nextkey.CTRL || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_LCTRL) || ESPeccy::PS2Controller.keyboard()->isVKDown(fabgl::VK_RCTRL) ) {
         if ( !*mode_E ) {
             switch (Nextkey.vk) {
                 case fabgl::VK_1        : ascii = '!'; break; /**< Exclamation mark: ! */
@@ -7395,11 +7394,11 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEINPUT);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
-            ESPectrum::readKbd(&Nextkey, KBDREAD_MODEINPUT);
+            ESPeccy::readKbd(&Nextkey, KBDREAD_MODEINPUT);
 
             if(!Nextkey.down) continue;
 
@@ -7456,8 +7455,8 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
                         if ( result_flags ) *result_flags = 1;
                         return "";
                     }
-                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
-                    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
+                    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
+                    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
                     return inputValue;
 
                 } else
@@ -7522,8 +7521,8 @@ string OSD::input(int x, int y, string inputLabel, int maxSize, int maxDisplaySi
 
     if ( result_flags ) *result_flags = 1;
 
-    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
-    ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
+    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, false, false);
+    ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, false, false);
 
     return "";
 

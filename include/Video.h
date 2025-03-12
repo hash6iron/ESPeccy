@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define VIDEO_h
 
 #include <inttypes.h>
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "ESP32Lib/VGA/VGA6Bit.h"
 
 #define SPEC_W 256

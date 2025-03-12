@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define CPU_h
 
 #include <inttypes.h>
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 #define TSTATES_PER_FRAME_48 69888
 #define TSTATES_PER_FRAME_TK_50 71136

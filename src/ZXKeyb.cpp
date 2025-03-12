@@ -33,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "ZXKeyb.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "RealTape.h"
 #include "Config.h"
 
@@ -282,13 +282,13 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
 
         bool curSSstatus = ZXKBD_SS; // SS
         if (lastSSstatus != curSSstatus) {
-            ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, curSSstatus, false);
+            ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LCTRL, curSSstatus, false);
             lastSSstatus = curSSstatus;
         }
 
         bool curCSstatus = ZXKBD_CS; // CS
         if (lastCSstatus != curCSstatus) {
-            ESPectrum::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, curCSstatus, false);
+            ESPeccy::PS2Controller.keyboard()->injectVirtualKey(fabgl::VK_LSHIFT, curCSstatus, false);
             lastCSstatus = curCSstatus;
         }
 
@@ -348,12 +348,12 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
                 vki.down = true;
                 vki.SHIFT = shift_down;
                 vki.CTRL = ctrl_down;
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(vki, false);
+                ESPeccy::PS2Controller.keyboard()->injectVirtualKey(vki, false);
                 vki.down = false;
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(vki, false);
+                ESPeccy::PS2Controller.keyboard()->injectVirtualKey(vki, false);
             } else {
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(injectKey, true, false);
-                ESPectrum::PS2Controller.keyboard()->injectVirtualKey(injectKey, false, false);
+                ESPeccy::PS2Controller.keyboard()->injectVirtualKey(injectKey, true, false);
+                ESPeccy::PS2Controller.keyboard()->injectVirtualKey(injectKey, false, false);
             }
             zxDel = lastzxK == injectKey ? REPPER : REPDEL;
             lastzxK = injectKey;

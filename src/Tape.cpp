@@ -160,8 +160,13 @@ int Tape::inflateCSW(int blocknumber, long startPos, long data_length) {
 
     uint32_t *speccyram = (uint32_t *)MemESP::ram[1];
 
+#if 0
     memcpy(VIDEO::SaveRect,speccyram,0x8000);
     memset(MemESP::ram[1],0,0x8000);
+#else
+    memcpy(VIDEO::SaveRect,speccyram,0x4000);
+    memset(MemESP::ram[1],0,0x4000);
+#endif
 
     if (inflateInit(&stream, MemESP::ram[1])) {
         printf("inflateInit() failed!\n");
@@ -224,7 +229,11 @@ int Tape::inflateCSW(int blocknumber, long startPos, long data_length) {
     // printf("Total output bytes: %u\n", (mz_uint32)stream.total_out);
     // printf("Success.\n");
 
+#if 0
     memcpy(speccyram,VIDEO::SaveRect,0x8000);
+#else
+    memcpy(speccyram,VIDEO::SaveRect,0x4000);
+#endif
 
     return EXIT_SUCCESS;
 
@@ -292,7 +301,7 @@ void Tape::LoadTape(string mFile) {
 
         }
 
-        ESPectrum::TapeNameScroller = 0;
+        ESPeccy::TapeNameScroller = 0;
 
     } else if (FileUtils::hasExtension(mFile, "tzx")) {
 
@@ -304,7 +313,7 @@ void Tape::LoadTape(string mFile) {
         // Read and analyze tzx file
         Tape::TZX_Open(mFile);
 
-        ESPectrum::TapeNameScroller = 0;
+        ESPeccy::TapeNameScroller = 0;
 
         // printf("%s loaded.\n",mFile.c_str());
 

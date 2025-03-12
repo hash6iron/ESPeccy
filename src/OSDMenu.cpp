@@ -44,7 +44,7 @@ using namespace std;
 
 #include "FileUtils.h"
 #include "Config.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "cpuESP.h"
 #include "Video.h"
 #include "messages.h"
@@ -490,11 +490,11 @@ short OSD::menuRun(const string new_menu, const string& statusbar, int (*proc_cb
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
                 if (!Menukey.down) continue;
                 if (proc_cb) {
                     int retcb = proc_cb(Menukey);
@@ -642,11 +642,11 @@ unsigned short OSD::simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy,
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
                 if (!Menukey.down) continue;
                 if (Menukey.vk == fabgl::VK_UP || Menukey.vk == fabgl::VK_JOY1UP || Menukey.vk == fabgl::VK_JOY2UP) {
                     if (focus == 1 and begin_row > 1) {
@@ -802,11 +802,11 @@ short OSD::menuSlotsWithPreview(const string new_menu, const string& statusbar, 
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
                 if (!Menukey.down) continue;
                 if (proc_cb) {
                     int retcb = proc_cb(Menukey);
@@ -1251,11 +1251,11 @@ int OSD::menuTape(string title) {
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
 
                 if (!Menukey.down) continue;
 
@@ -1674,14 +1674,14 @@ short OSD::menuGenericRun(const string title, const string& statusbar, void *use
 
         if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-        ESPectrum::readKbdJoy();
+        ESPeccy::readKbdJoy();
 
         // Process external keyboard
-        if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+        if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
             ResetRowScrollContext(rowScrollCTX);
 
-            if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+            if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
                 if (!Menukey.down) continue;
                 if (proc_cb) {
                     int retcb = proc_cb(Menukey);

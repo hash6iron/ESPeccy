@@ -33,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "cpuESP.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "MemESP.h"
 #include "Ports.h"
 #include "hardconfig.h"
@@ -84,10 +84,10 @@ void CPU::reset() {
         statesInFrame = TSTATES_PER_FRAME_48;
         IntStart = INT_START48;
         IntEnd = INT_END48 + CPU::latetiming;
-        ESPectrum::target[0] = MICROS_PER_FRAME_48;
-        ESPectrum::target[1] = MICROS_PER_FRAME_48;
-        ESPectrum::target[2] = MICROS_PER_FRAME_48_125SPEED;
-        ESPectrum::target[3] = MICROS_PER_FRAME_48_150SPEED;                        
+        ESPeccy::target[0] = MICROS_PER_FRAME_48;
+        ESPeccy::target[1] = MICROS_PER_FRAME_48;
+        ESPeccy::target[2] = MICROS_PER_FRAME_48_125SPEED;
+        ESPeccy::target[3] = MICROS_PER_FRAME_48_150SPEED;                        
 
     } else if (Config::arch == "TK90X" || Config::arch == "TK95") {
 
@@ -100,26 +100,26 @@ void CPU::reset() {
         case 0:
             Ports::getFloatBusData = &Ports::getFloatBusData48;
             statesInFrame = TSTATES_PER_FRAME_48;
-            ESPectrum::target[0] = MICROS_PER_FRAME_48;
-            ESPectrum::target[1] = MICROS_PER_FRAME_48;
-            ESPectrum::target[2] = MICROS_PER_FRAME_48_125SPEED;
-            ESPectrum::target[3] = MICROS_PER_FRAME_48_150SPEED;                        
+            ESPeccy::target[0] = MICROS_PER_FRAME_48;
+            ESPeccy::target[1] = MICROS_PER_FRAME_48;
+            ESPeccy::target[2] = MICROS_PER_FRAME_48_125SPEED;
+            ESPeccy::target[3] = MICROS_PER_FRAME_48_150SPEED;                        
             break;
         case 1:
             Ports::getFloatBusData = &Ports::getFloatBusDataTK;
             statesInFrame = TSTATES_PER_FRAME_TK_50;
-            ESPectrum::target[0] = MICROS_PER_FRAME_TK_50;
-            ESPectrum::target[1] = MICROS_PER_FRAME_TK_50;
-            ESPectrum::target[2] = MICROS_PER_FRAME_TK_50_125SPEED;
-            ESPectrum::target[3] = MICROS_PER_FRAME_TK_50_150SPEED;                        
+            ESPeccy::target[0] = MICROS_PER_FRAME_TK_50;
+            ESPeccy::target[1] = MICROS_PER_FRAME_TK_50;
+            ESPeccy::target[2] = MICROS_PER_FRAME_TK_50_125SPEED;
+            ESPeccy::target[3] = MICROS_PER_FRAME_TK_50_150SPEED;                        
             break;
         case 2:
             Ports::getFloatBusData = &Ports::getFloatBusDataTK;
             statesInFrame = TSTATES_PER_FRAME_TK_60;
-            ESPectrum::target[0] = MICROS_PER_FRAME_TK_60;
-            ESPectrum::target[1] = MICROS_PER_FRAME_TK_60;
-            ESPectrum::target[2] = MICROS_PER_FRAME_TK_60_125SPEED;
-            ESPectrum::target[3] = MICROS_PER_FRAME_TK_60_150SPEED;
+            ESPeccy::target[0] = MICROS_PER_FRAME_TK_60;
+            ESPeccy::target[1] = MICROS_PER_FRAME_TK_60;
+            ESPeccy::target[2] = MICROS_PER_FRAME_TK_60_125SPEED;
+            ESPeccy::target[3] = MICROS_PER_FRAME_TK_60_150SPEED;
         }
 
         IntStart = INT_STARTTK;
@@ -134,10 +134,10 @@ void CPU::reset() {
         statesInFrame = TSTATES_PER_FRAME_128;
         IntStart = INT_START128;
         IntEnd = INT_END128 + CPU::latetiming;
-        ESPectrum::target[0] = MICROS_PER_FRAME_128;
-        ESPectrum::target[1] = MICROS_PER_FRAME_128;
-        ESPectrum::target[2] = MICROS_PER_FRAME_128_125SPEED;
-        ESPectrum::target[3] = MICROS_PER_FRAME_128_150SPEED;                        
+        ESPeccy::target[0] = MICROS_PER_FRAME_128;
+        ESPeccy::target[1] = MICROS_PER_FRAME_128;
+        ESPeccy::target[2] = MICROS_PER_FRAME_128_125SPEED;
+        ESPeccy::target[3] = MICROS_PER_FRAME_128_150SPEED;                        
     } else if (Config::arch == "+2A" || Config::arch=="+3") {
         Ports::getFloatBusData = &Ports::getFloatBusData2A3;
         Z80Ops::is48 = false;
@@ -147,10 +147,10 @@ void CPU::reset() {
         statesInFrame = TSTATES_PER_FRAME_128;
         IntStart = INT_STARTPLUS2A3;
         IntEnd = INT_ENDPLUS2A3 + CPU::latetiming;
-        ESPectrum::target[0] = MICROS_PER_FRAME_128;
-        ESPectrum::target[1] = MICROS_PER_FRAME_128;
-        ESPectrum::target[2] = MICROS_PER_FRAME_128_125SPEED;
-        ESPectrum::target[3] = MICROS_PER_FRAME_128_150SPEED;
+        ESPeccy::target[0] = MICROS_PER_FRAME_128;
+        ESPeccy::target[1] = MICROS_PER_FRAME_128;
+        ESPeccy::target[2] = MICROS_PER_FRAME_128_125SPEED;
+        ESPeccy::target[3] = MICROS_PER_FRAME_128_150SPEED;
     } else if (Config::arch == "Pentagon") {
         Ports::getFloatBusData = &Ports::getFloatBusDataPentagon;
         Z80Ops::is48 = false;
@@ -160,10 +160,10 @@ void CPU::reset() {
         statesInFrame = TSTATES_PER_FRAME_PENTAGON;
         IntStart = INT_START_PENTAGON;
         IntEnd = INT_END_PENTAGON + CPU::latetiming;
-        ESPectrum::target[0] = MICROS_PER_FRAME_PENTAGON;
-        ESPectrum::target[1] = MICROS_PER_FRAME_PENTAGON;
-        ESPectrum::target[2] = MICROS_PER_FRAME_PENTAGON_125SPEED;
-        ESPectrum::target[3] = MICROS_PER_FRAME_PENTAGON_150SPEED;
+        ESPeccy::target[0] = MICROS_PER_FRAME_PENTAGON;
+        ESPeccy::target[1] = MICROS_PER_FRAME_PENTAGON;
+        ESPeccy::target[2] = MICROS_PER_FRAME_PENTAGON_125SPEED;
+        ESPeccy::target[3] = MICROS_PER_FRAME_PENTAGON_150SPEED;
     }
 
     if (Config::arch == "+2A" || Config::arch=="+3") {
@@ -197,12 +197,12 @@ void CPU::reset() {
 IRAM_ATTR void CPU::loop() {
 
     // Reset audio buffer vars
-    ESPectrum::audbufcnt = 0;
-    ESPectrum::audbufcntover = 0;
-    ESPectrum::audioBitBuf = 0;
-    ESPectrum::audioBitbufCount = 0;
-    ESPectrum::audbufcntAY = 0;
-    ESPectrum::audbufcntCOVOX = 0;
+    ESPeccy::audbufcnt = 0;
+    ESPeccy::audbufcntover = 0;
+    ESPeccy::audioBitBuf = 0;
+    ESPeccy::audioBitbufCount = 0;
+    ESPeccy::audbufcntAY = 0;
+    ESPeccy::audbufcntCOVOX = 0;
 
     // Check NMI
     if (Z80::isNMI()) {
@@ -230,8 +230,8 @@ IRAM_ATTR void CPU::loop() {
     // // FDD calcs
     // CPU::tstates_diff += CPU::tstates - CPU::prev_tstates;
 
-    // if ((ESPectrum::fdd.control & (kRVMWD177XHLD | kRVMWD177XHLT)) != 0) {
-    //     rvmWD1793Step(&ESPectrum::fdd, CPU::tstates_diff / WD177XSTEPSTATES); // FDD
+    // if ((ESPeccy::fdd.control & (kRVMWD177XHLD | kRVMWD177XHLT)) != 0) {
+    //     rvmWD1793Step(&ESPeccy::fdd, CPU::tstates_diff / WD177XSTEPSTATES); // FDD
     // }
 
     // CPU::tstates_diff = CPU::tstates_diff % WD177XSTEPSTATES;

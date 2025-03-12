@@ -45,7 +45,7 @@ using namespace std;
 #include "OSDMain.h"
 #include "FileUtils.h"
 #include "Config.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "cpuESP.h"
 #include "Video.h"
 #include "messages.h"
@@ -430,10 +430,10 @@ reset:
 
             if (ZXKeyb::Exists) ZXKeyb::ZXKbdRead(KBDREAD_MODEFILEBROWSER);
 
-            ESPectrum::readKbdJoy();
+            ESPeccy::readKbdJoy();
 
             // Process external keyboard
-            if (ESPectrum::PS2Controller.keyboard()->virtualKeyAvailable()) {
+            if (ESPeccy::PS2Controller.keyboard()->virtualKeyAvailable()) {
 
                 idle = 0;
 
@@ -458,7 +458,7 @@ reset:
                     VIDEO::vga.print(std::string(12,' ').c_str());
                 }
 
-                if (ESPectrum::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
+                if (ESPeccy::readKbd(&Menukey, KBDREAD_MODEFILEBROWSER)) {
 
                     if (!Menukey.down) continue;
 

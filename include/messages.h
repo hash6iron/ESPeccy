@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPECTRUM_MESSAGES_h
-#define ESPECTRUM_MESSAGES_h
+#ifndef ESPECCY_MESSAGES_h
+#define ESPECCY_MESSAGES_h
 
 #define EMU_VERSION "       v1.3 "
 
@@ -638,4 +638,4 @@ static const char *STARTMSG_CLOSE[NLANGS] = { "This message will close in %02ds"
 
 #include "images.h"
 
-#endif // ESPECTRUM_MESSAGES_h
+#endif // ESPECCY_MESSAGES_h
