@@ -453,5 +453,5 @@ bool Keymap::getKeymapFromFile(fabgl::KeyboardLayout &kbdcustom)
 void Keymap::activeKeyboardLayout(fabgl::KeyboardLayout &kbdcustom)
 {
     printf("Base layout loaded\n");
-    ESPectrum::PS2Controller.keyboard()->setLayout(&kbdcustom);
+    ESPeccy::PS2Controller.keyboard()->setLayout(&kbdcustom);
 }
