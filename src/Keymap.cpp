@@ -42,7 +42,7 @@ using namespace std;
 fabgl::KeyboardLayout   Keymap::kbdcustom;
 
 // File with custom layout
-char              Keymap::keymapfilename[25]  = "/key.map";
+char                    Keymap::keymapfilename[25]  = "/key.map";
 
 // Base path for key.map configuration file
 string                  Keymap::keymapfile_path = MOUNT_POINT_SD;
