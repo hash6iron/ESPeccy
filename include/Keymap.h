@@ -41,7 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include "FileUtils.h"
 #include "fabgl.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 using namespace std;
 
