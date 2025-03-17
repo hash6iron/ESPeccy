@@ -38,12 +38,12 @@ import binascii
 
 # Configuración de archivos y nombres de variables
 variables = [
-    ("ESPectrum_logo", "ESPeccy-logo-cropped.png", "espectrum-logo-cropped.png"),
-    ("Layout_ZX", "Layout_ZX-ESPeccy.png", "Layout_ZX.png"),
-    ("Layout_TK", "Layout_TK-ESPeccy.png", "Layout_TK.png"),
-    ("ZX_Kbd", "ZX_Kbd-ESPeccy.png", "ZX_Kbd.png"),
-    ("PS2_Kbd", "PS2_Kbd-ESPeccy.png", "PS2_Kbd.png"),
-    ("Layout_ZX81", "Layout_ZX81-ESPeccy.png", "Layout_ZX81.png"),
+    ("ESPeccy_logo", "ESPeccy-logo-cropped.png"),
+    ("Layout_ZX", "Layout_ZX-ESPeccy.png"),
+    ("Layout_TK", "Layout_TK-ESPeccy.png"),
+    ("ZX_Kbd", "ZX_Kbd-ESPeccy.png"),
+    ("PS2_Kbd", "PS2_Kbd-ESPeccy.png"),
+    ("Layout_ZX81", "Layout_ZX81-ESPeccy.png"),
 ]
 
 # Función para ejecutar EBF-convert.py y generar archivos .ebf8
@@ -101,23 +101,17 @@ def hex_dump(ebf8_file):
     return formatted_hex
 
 # Generar el bloque de código C para cada variable
-def generate_include(variable_name, ESPeccy_file, normal_file):
+def generate_include(variable_name, png_file):
     # Generar los archivos .ebf8 para ambas versiones
-    generate_ebf8_files(ESPeccy_file)
-    generate_ebf8_files(normal_file)
+    generate_ebf8_files(png_file)
 
     # Obtener el volcado hexadecimal para ambas versiones
-    ESPeccy_hex = hex_dump(ESPeccy_file.replace(".png", ".ebf8"))
-    normal_hex = hex_dump(normal_file.replace(".png", ".ebf8"))
+    data_hex = hex_dump(png_file.replace(".png", ".ebf8"))
 
     # Generar el bloque de código C
     return f"""
 const uint8_t {variable_name}[] = {{
-#ifdef ESPECCY_VERSION
-    {ESPeccy_hex}
-#else
-    {normal_hex}
-#endif
+    {data_hex}
 }};
 """
 
@@ -132,8 +126,8 @@ def delete_ebf_files():
 def main():
     include = "/*\n\nESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC\n\nCopyright (c) 2024 Juan José Ponteprino [SplinterGU]\nhttps://github.com/SplinterGU/ESPeccy\n\nThis project is a fork of ESPectrum.\nESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]\nhttps://github.com/EremusOne/ZX-ESPectrum-IDF\n\nBased on previous work:\n- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]\n  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote\n- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes\n  https://github.com/rampa069/ZX-ESPectrum\n- Original project by Pete Todd\n  https://github.com/retrogubbins/paseVGA\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <https://www.gnu.org/licenses/>.\n\n*/\n\n#ifndef __IMAGES_H\n#define __IMAGES_H\n"
 
-    for variable_name, ESPeccy_file, normal_file in variables:
-        include += generate_include(variable_name, ESPeccy_file, normal_file)
+    for variable_name, png_file in variables:
+        include += generate_include(variable_name, png_file)
 
     include += "\n#endif // __IMAGES_H\n"
 

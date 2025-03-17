@@ -43,9 +43,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace std;
 
-uint8_t* MemESP::rom[5];
+uint8_t* MemESP::rom[5] = { NULL, NULL, NULL, NULL, NULL };
 
-uint8_t* MemESP::ram[8] = { NULL };
+uint8_t* MemESP::ram[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 #ifdef TIME_MACHINE_ENABLED
 uint32_t* MemESP::timemachine[TIME_MACHINE_SLOTS][8];
@@ -70,39 +70,51 @@ uint8_t MemESP::lastContendedMemReadWrite = 0xff;
 
 bool MemESP::Init() {
 
+    bool is48k = Config::arch == "48K" || Config::arch == "TK90X" || Config::arch == "TK95";
+
     if (Config::psramsize > 0) {
 
         // 48K pages in SRAM (faster)
-        MemESP::ram[0] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[2] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+        MemESP::ram[0] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT);
+        MemESP::ram[2] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT);
 
         // Video pages in SRAM (faster)
-        MemESP::ram[5] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[7] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+        MemESP::ram[5] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT);
+        MemESP::ram[7] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT);
 
         // Rest of pages in PSRAM
-        MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
-        MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+
+        MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 
         #ifdef TIME_MACHINE_ENABLED
         // Allocate time machine RAM
         for (int i=0;i < TIME_MACHINE_SLOTS; i++)
             for (int n=0; n < 8; n++)
-                MemESP::timemachine[i][n] = (uint32_t *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+                MemESP::timemachine[i][n] = (uint32_t *) heap_caps_malloc(0x4000, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         #endif
 
     } else {
 
-        MemESP::ram[5] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[0] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[2] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[7] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
-        MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-        MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+        MemESP::ram[0] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        MemESP::ram[2] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+        MemESP::ram[5] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        MemESP::ram[7] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+        if (!is48k) {
+#if 0
+            MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x8000, MALLOC_CAP_8BIT);
+            MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
+#else
+            MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+#endif
+            MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        }
 
     }
 
@@ -143,26 +155,35 @@ void MemESP::Reset() {
     if (Config::psramsize == 0) {
         if ( MemESP::pagingLock ) { // *48k
             free( MemESP::ram[1] ); MemESP::ram[1] = NULL;
+#if 0
             MemESP::ram[3] = NULL;
+#else
+            free( MemESP::ram[3] ); MemESP::ram[3] = NULL;
+#endif
             free( MemESP::ram[4] ); MemESP::ram[4] = NULL;
             free( MemESP::ram[6] ); MemESP::ram[6] = NULL;
         } else {
-            if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_calloc(0x8000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+#if 0
+            if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x8000, MALLOC_CAP_8BIT);
             MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
-            if ( !MemESP::ram[4] ) MemESP::ram[4] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
-            if ( !MemESP::ram[6] ) MemESP::ram[6] = (unsigned char *) heap_caps_calloc(0x4000, sizeof(unsigned char), MALLOC_CAP_8BIT);
+#else
+            if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            if ( !MemESP::ram[3] ) MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+#endif
+            if ( !MemESP::ram[4] ) MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            if ( !MemESP::ram[6] ) MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
             if ( !MemESP::ram[1] ) {
                 if (Config::slog_on) printf("ERROR! Unable to allocate ram1\n");
-                return;
+            }
+            if ( !MemESP::ram[3] ) {
+                if (Config::slog_on) printf("ERROR! Unable to allocate ram3\n");
             }
             if ( !MemESP::ram[4] ) {
                 if (Config::slog_on) printf("ERROR! Unable to allocate ram4\n");
-                return;
             }
             if ( !MemESP::ram[6] ) {
                 if (Config::slog_on) printf("ERROR! Unable to allocate ram6\n");
-                return;
             }
         }
     }
@@ -247,10 +268,10 @@ void MemESP::Tm_Load(uint8_t slot) {
 
     if (tr_dos) {
         MemESP::romInUse = 4;
-        ESPectrum::trdos = true;
+        ESPeccy::trdos = true;
     } else {
         MemESP::romInUse = MemESP::romLatch;
-        ESPectrum::trdos = false;
+        ESPeccy::trdos = false;
     }
 
     MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
@@ -327,7 +348,7 @@ void MemESP::Tm_DoTimeMachine() {
     MemESP::tm_slotdata[MemESP::cur_timemachine].videoLatch = MemESP::videoLatch;
     MemESP::tm_slotdata[MemESP::cur_timemachine].romLatch = MemESP::romLatch;
     MemESP::tm_slotdata[MemESP::cur_timemachine].pagingLock = MemESP::pagingLock;
-    MemESP::tm_slotdata[MemESP::cur_timemachine].trdos = ESPectrum::trdos;
+    MemESP::tm_slotdata[MemESP::cur_timemachine].trdos = ESPeccy::trdos;
 
     if (MemESP::cur_timemachine == 7) {
         for (int n=0; n < 8; n++)

@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPectrum_h
-#define ESPectrum_h
+#ifndef ESPECCY_H
+#define ESPECCY_H
 #include <string>
 #include "hardpins.h"
 #include "CaptureBMP.h"
@@ -104,7 +104,7 @@ using namespace std;
 #define ESP_VOLUME_MAX 0
 #define ESP_VOLUME_MIN -16
 
-class ESPectrum
+class ESPeccy
 {
 public:
 
@@ -123,10 +123,10 @@ public:
     static void readKbdJoy();
     static fabgl::PS2Controller PS2Controller;
     static fabgl::VirtualKey JoyVKTranslation[24];
-    static fabgl::VirtualKey VK_ESPECTRUM_FIRE1;
-    static fabgl::VirtualKey VK_ESPECTRUM_FIRE2;
-    static fabgl::VirtualKey VK_ESPECTRUM_TAB;
-    static fabgl::VirtualKey VK_ESPECTRUM_GRAVEACCENT;
+    static fabgl::VirtualKey VK_ESPECCY_FIRE1;
+    static fabgl::VirtualKey VK_ESPECCY_FIRE2;
+    static fabgl::VirtualKey VK_ESPECCY_TAB;
+    static fabgl::VirtualKey VK_ESPECCY_GRAVEACCENT;
 
     // Audio
     static void BeeperGetSample();
@@ -200,7 +200,7 @@ public:
     // static uint32_t sessid;
 
     static string getHardwareInfo();
-    static void showMemInfo(const char* caption = "ESPectrum");
+    static void showMemInfo(const char* caption = NULL);
 
     static uint8_t TurboModeSet(int8_t esp_delay = -1);
 

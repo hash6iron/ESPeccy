@@ -34,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Ports.h"
 #include "Config.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "Z80_JLS/z80.h"
 #include "MemESP.h"
 #include "Video.h"
@@ -238,92 +238,92 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
         data = 0xff;
 
         // Check if TRDOS Rom is mapped.
-        if (ESPectrum::trdos) {
+        if (ESPeccy::trdos) {
 
             switch (address8 & 0xe3) {
                 case 0x03:
-                    data = ESPectrum::Betadisk.ReadStatusReg();
+                    data = ESPeccy::Betadisk.ReadStatusReg();
                     // printf("WD1793 Read Status Register: %d\n",(int)data);
                     return data;
                 case 0x23:
-                    data = ESPectrum::Betadisk.ReadTrackReg();
+                    data = ESPeccy::Betadisk.ReadTrackReg();
                     // printf("WD1793 Read Track Register: %d\n",(int)data);
                     return data;
                 case 0x43:
-                    data = ESPectrum::Betadisk.ReadSectorReg();
+                    data = ESPeccy::Betadisk.ReadSectorReg();
                     // printf("WD1793 Read Sector Register: %d\n",(int)data);
                     return data;
                 case 0x63:
-                    data = ESPectrum::Betadisk.ReadDataReg();
+                    data = ESPeccy::Betadisk.ReadDataReg();
                     // printf("WD1793 Read Data Register: %d\n",(int)data);
                     return data;
                 case 0xe3:
-                    data = ESPectrum::Betadisk.ReadSystemReg();
+                    data = ESPeccy::Betadisk.ReadSystemReg();
                     // printf("WD1793 Read Control Register: %d\n",(int)data);
                     return data;
             }
         }
 
-        if (ESPectrum::ps2mouse) {
+        if (ESPeccy::ps2mouse) {
 
             if((address & 0x05ff) == 0x01df) {
 
                 MouseDelta delta;
 
-                while (ESPectrum::PS2Controller.mouse()->deltaAvailable()) {
+                while (ESPeccy::PS2Controller.mouse()->deltaAvailable()) {
 
-                    if (ESPectrum::PS2Controller.mouse()->getNextDelta(&delta)) {
+                    if (ESPeccy::PS2Controller.mouse()->getNextDelta(&delta)) {
 
-                        ESPectrum::mouseX = (ESPectrum::mouseX + delta.deltaX) & 0xff;
-                        ESPectrum::mouseY = (ESPectrum::mouseY + delta.deltaY) & 0xff;
-                        ESPectrum::mouseButtonL = delta.buttons.left;
-                        ESPectrum::mouseButtonR = delta.buttons.right;
+                        ESPeccy::mouseX = (ESPeccy::mouseX + delta.deltaX) & 0xff;
+                        ESPeccy::mouseY = (ESPeccy::mouseY + delta.deltaY) & 0xff;
+                        ESPeccy::mouseButtonL = delta.buttons.left;
+                        ESPeccy::mouseButtonR = delta.buttons.right;
 
                     } else break;
 
                 }
 
-                return (uint8_t) ESPectrum::mouseX;
+                return (uint8_t) ESPeccy::mouseX;
             }
 
             if((address & 0x05ff) == 0x05df) {
 
                 MouseDelta delta;
 
-                while (ESPectrum::PS2Controller.mouse()->deltaAvailable()) {
+                while (ESPeccy::PS2Controller.mouse()->deltaAvailable()) {
 
-                    if (ESPectrum::PS2Controller.mouse()->getNextDelta(&delta)) {
+                    if (ESPeccy::PS2Controller.mouse()->getNextDelta(&delta)) {
 
-                        ESPectrum::mouseX = (ESPectrum::mouseX + delta.deltaX) & 0xff;
-                        ESPectrum::mouseY = (ESPectrum::mouseY + delta.deltaY) & 0xff;
-                        ESPectrum::mouseButtonL = delta.buttons.left;
-                        ESPectrum::mouseButtonR = delta.buttons.right;
+                        ESPeccy::mouseX = (ESPeccy::mouseX + delta.deltaX) & 0xff;
+                        ESPeccy::mouseY = (ESPeccy::mouseY + delta.deltaY) & 0xff;
+                        ESPeccy::mouseButtonL = delta.buttons.left;
+                        ESPeccy::mouseButtonR = delta.buttons.right;
 
                     } else break;
 
                 }
 
-                return (uint8_t) ESPectrum::mouseY;
+                return (uint8_t) ESPeccy::mouseY;
             }
 
             if((address & 0x05ff) == 0x00df) {
 
                 MouseDelta delta;
 
-                while (ESPectrum::PS2Controller.mouse()->deltaAvailable()) {
+                while (ESPeccy::PS2Controller.mouse()->deltaAvailable()) {
 
-                    if (ESPectrum::PS2Controller.mouse()->getNextDelta(&delta)) {
+                    if (ESPeccy::PS2Controller.mouse()->getNextDelta(&delta)) {
 
-                        ESPectrum::mouseX = (ESPectrum::mouseX + delta.deltaX) & 0xff;
-                        ESPectrum::mouseY = (ESPectrum::mouseY + delta.deltaY) & 0xff;
-                        ESPectrum::mouseButtonL = delta.buttons.left;
-                        ESPectrum::mouseButtonR = delta.buttons.right;
+                        ESPeccy::mouseX = (ESPeccy::mouseX + delta.deltaX) & 0xff;
+                        ESPeccy::mouseY = (ESPeccy::mouseY + delta.deltaY) & 0xff;
+                        ESPeccy::mouseButtonL = delta.buttons.left;
+                        ESPeccy::mouseButtonR = delta.buttons.right;
 
                     } else break;
 
                 }
 
-                return 0xff & (ESPectrum::mouseButtonL ? 0xfd : 0xff) & (ESPectrum::mouseButtonR ? 0xfe : 0xff);
+                return 0xff & (ESPeccy::mouseButtonL ? 0xfd : 0xff) & (ESPeccy::mouseButtonR ? 0xfe : 0xff);
             }
         }
 
@@ -331,11 +331,11 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
         if ((Config::joystick1 == JOY_KEMPSTON || Config::joystick2 == JOY_KEMPSTON || Config::joyPS2 == JOYPS2_KEMPSTON) && ((address & 0x00E0) == 0 || address8 == 0xDF)) return port[0x1f];
 
         // Fuller Joystick
-        if (!ESPectrum::trdos && (Config::joystick1 == JOY_FULLER || Config::joystick2 == JOY_FULLER || Config::joyPS2 == JOYPS2_FULLER) && address8 == 0x7F) return port[0x7f];
+        if (!ESPeccy::trdos && (Config::joystick1 == JOY_FULLER || Config::joystick2 == JOY_FULLER || Config::joyPS2 == JOYPS2_FULLER) && address8 == 0x7F) return port[0x7f];
 
 
         // Sound (AY-3-8912)
-        if (ESPectrum::AY_emu) {
+        if (ESPeccy::AY_emu) {
 
             // ZX81
             if (Config::romSet == "ZX81+") {
@@ -345,7 +345,7 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
             }
 
             // Fullerbox
-            if (!ESPectrum::trdos && address8 == 0x3f) {
+            if (!ESPeccy::trdos && address8 == 0x3f) {
                 return AySound::getRegisterData();
             }
 
@@ -441,7 +441,7 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 
         }
 
-        if (ESPectrum::ESP_delay) { // Disable beeper on turbo mode
+        if (ESPeccy::ESP_delay) { // Disable beeper on turbo mode
 
             if (Config::load_monitor) {
                 Audiobit = Tape::tapeEarBit ? 255 : 0; // For load tape monitor
@@ -456,20 +456,20 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 #endif
             }
 
-            if (Audiobit != ESPectrum::lastaudioBit) {
-                ESPectrum::BeeperGetSample();
-                ESPectrum::lastaudioBit = Audiobit;
+            if (Audiobit != ESPeccy::lastaudioBit) {
+                ESPeccy::BeeperGetSample();
+                ESPeccy::lastaudioBit = Audiobit;
             }
 
         }
 
         // ZX81
-        if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
+        if (ESPeccy::AY_emu && Config::romSet == "ZX81+") {
             if (address8 == 0xcf || address8 == 0xdf || address8 == 0x1f || address8 == 0x0f) {
                 if (address8 & 0x80) {  // Latch register
                     AySound::selectedRegister = data & 0x0f;
                 } else { // Write data
-                    ESPectrum::AYGetSample();
+                    ESPeccy::AYGetSample();
                     AySound::setRegisterData(data);
                 }
                 VIDEO::Draw(3, true);   // I/O Contention (Late)
@@ -478,11 +478,11 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
         }
 
         // FullerBox
-        if (!ESPectrum::trdos && ESPectrum::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
+        if (!ESPeccy::trdos && ESPeccy::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
             if (address8 == 0x3f) {
                 AySound::selectedRegister = data & 0x0f;
             } else if (address8 == 0x5f) {
-                ESPectrum::AYGetSample();
+                ESPeccy::AYGetSample();
                 AySound::setRegisterData(data);
             }
 
@@ -495,12 +495,12 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
         }
 
         // AY ========================================================================
-        if ((ESPectrum::AY_emu) && ((address & 0x8002) == 0x8000)) {
+        if ((ESPeccy::AY_emu) && ((address & 0x8002) == 0x8000)) {
 
             if ((address & 0x4000) != 0)
                 AySound::selectedRegister = data & 0x0f;
             else {
-                ESPectrum::AYGetSample();
+                ESPeccy::AYGetSample();
                 AySound::setRegisterData(data);
             }
 
@@ -521,12 +521,12 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
     } else {
 
         // ZX81
-        if (ESPectrum::AY_emu && Config::romSet == "ZX81+") {
+        if (ESPeccy::AY_emu && Config::romSet == "ZX81+") {
             if (address8 == 0xcf || address8 == 0xdf || address8 == 0x1f || address8 == 0x0f) {
                 if (address8 & 0x80) {  // Latch register
                     AySound::selectedRegister = data & 0x0f;
                 } else { // Write data
-                    ESPectrum::AYGetSample();
+                    ESPeccy::AYGetSample();
                     AySound::setRegisterData(data);
                 }
                 ioContentionLate(MemESP::ramContended[rambank]);
@@ -535,11 +535,11 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
         }
 
         // FullerBox
-        if (!ESPectrum::trdos && ESPectrum::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
+        if (!ESPeccy::trdos && ESPeccy::AY_emu && (address8 == 0x3f || address8 == 0x5f)) {
             if (address8 == 0x3f) {
                 AySound::selectedRegister = data & 0x0f;
             } else if (address8 == 0x5f) {
-                ESPectrum::AYGetSample();
+                ESPeccy::AYGetSample();
                 AySound::setRegisterData(data);
             }
 
@@ -552,12 +552,12 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
         }
 
         // AY ========================================================================
-        if ((ESPectrum::AY_emu) && ((address & 0x8002) == 0x8000)) {
+        if ((ESPeccy::AY_emu) && ((address & 0x8002) == 0x8000)) {
 
             if ((address & 0x4000) != 0)
                 AySound::selectedRegister = data & 0x0f;
             else {
-                ESPectrum::AYGetSample();
+                ESPeccy::AYGetSample();
                 AySound::setRegisterData(data);
             }
 
@@ -566,34 +566,34 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
         }
 
         // Check if TRDOS Rom is mapped.
-        if (ESPectrum::trdos) {
+        if (ESPeccy::trdos) {
 
             // int lowByte = address & 0xFF;
 
             switch (address8) {
                 case 0xFF:
                     // printf("WD1793 Write Control Register: %d\n",data);
-                    ESPectrum::Betadisk.WriteSystemReg(data);
+                    ESPeccy::Betadisk.WriteSystemReg(data);
                     goto lateIOContention;
                     break;
                 case 0x1F:
                     // printf("WD1793 Write Command Register: %d\n",data);
-                    ESPectrum::Betadisk.WriteCommandReg(data);
+                    ESPeccy::Betadisk.WriteCommandReg(data);
                     goto lateIOContention;
                     break;
                 case 0x3F:
                     // printf("WD1793 Write Track Register: %d\n",data);
-                    ESPectrum::Betadisk.WriteTrackReg(data);
+                    ESPeccy::Betadisk.WriteTrackReg(data);
                     goto lateIOContention;
                     break;
                 case 0x5F:
                     // printf("WD1793 Write Sector Register: %d\n",data);
-                    ESPectrum::Betadisk.WriteSectorReg(data);
+                    ESPeccy::Betadisk.WriteSectorReg(data);
                     goto lateIOContention;
                     break;
                 case 0x7F:
                     // printf("WD1793 Write Data Register: %d\n",data);
-                    ESPectrum::Betadisk.WriteDataReg(data);
+                    ESPeccy::Betadisk.WriteDataReg(data);
                     goto lateIOContention;
                     break;
             }
@@ -605,30 +605,30 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
                 break;
             case CovoxMONO:
                 if ((address & 0x00FF) == 0x00FB) {
-                    ESPectrum::covoxData[0] = ESPectrum::covoxData[1] = ESPectrum::covoxData[2] = ESPectrum::covoxData[3] = data;
-                    ESPectrum::COVOXGetSample();
+                    ESPeccy::covoxData[0] = ESPeccy::covoxData[1] = ESPeccy::covoxData[2] = ESPeccy::covoxData[3] = data;
+                    ESPeccy::COVOXGetSample();
                     goto lateIOContention;
                 }
                 break;
             case CovoxSTEREO:
                 if ((address & 0x00FF) == 0x0F) {
-                    ESPectrum::covoxData[0] = ESPectrum::covoxData[1] = data;
-                    ESPectrum::COVOXGetSample();
+                    ESPeccy::covoxData[0] = ESPeccy::covoxData[1] = data;
+                    ESPeccy::COVOXGetSample();
                     goto lateIOContention;
                 }
                 if ((address & 0x00FF) == 0x4F) {
-                    ESPectrum::covoxData[2] = ESPectrum::covoxData[3] = data;
-                    ESPectrum::COVOXGetSample();
+                    ESPeccy::covoxData[2] = ESPeccy::covoxData[3] = data;
+                    ESPeccy::COVOXGetSample();
                     goto lateIOContention;
                 }
                 break;
             case CovoxSOUNDDRIVE1:
                 if ((address & 0x00AF) == 0x000F) {
                     switch (address & 0x0050) {
-                        case 0x00: ESPectrum::covoxData[0] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0x10: ESPectrum::covoxData[1] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0x40: ESPectrum::covoxData[2] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0x50: ESPectrum::covoxData[3] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x00: ESPeccy::covoxData[0] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x10: ESPeccy::covoxData[1] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x40: ESPeccy::covoxData[2] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x50: ESPeccy::covoxData[3] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
                         default: break;
                     }
                 }
@@ -636,10 +636,10 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
             case CovoxSOUNDDRIVE2:
                 if ((address & 0x00F1) == 0x00F1) {
                     switch (address & 0x000A) {
-                        case 0x0: ESPectrum::covoxData[0] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0x2: ESPectrum::covoxData[1] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0x8: ESPectrum::covoxData[2] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
-                        case 0xA: ESPectrum::covoxData[3] = data; ESPectrum::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x0: ESPeccy::covoxData[0] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x2: ESPeccy::covoxData[1] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0x8: ESPeccy::covoxData[2] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
+                        case 0xA: ESPeccy::covoxData[3] = data; ESPeccy::COVOXGetSample(); goto lateIOContention; break;
                         default: break;
                     }
                 }

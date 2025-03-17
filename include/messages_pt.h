@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPECTRUM_MESSAGES_PT_h
-#define ESPECTRUM_MESSAGES_PT_h
+#ifndef ESPECCY_MESSAGES_PT_h
+#define ESPECCY_MESSAGES_PT_h
 
 #define ERR_FS_EXT_FAIL_PT "\xAD" "Armazenamento externo n\x84o dispon\xA1vel!"
 
@@ -363,4 +363,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Miniaturas\t>\n"\
     "Tela instant\x83nea\t>\n"
 
-#endif // ESPECTRUM_MESSAGES_PT_h
+#endif // ESPECCY_MESSAGES_PT_h

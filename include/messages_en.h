@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPECTRUM_MESSAGES_EN_h
-#define ESPECTRUM_MESSAGES_EN_h
+#ifndef ESPECCY_MESSAGES_EN_h
+#define ESPECCY_MESSAGES_EN_h
 
 #define ERR_FS_EXT_FAIL_EN "Cannot mount external storage!"
 
@@ -359,4 +359,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Thumbnails\t>\n"\
     "Instant preview\t>\n"
 
-#endif // ESPECTRUM_MESSAGES_EN_h
+#endif // ESPECCY_MESSAGES_EN_h

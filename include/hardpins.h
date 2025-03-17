@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPectrum_hardpins_h
-#define ESPectrum_hardpins_h
+#ifndef ESPECCY_HARDPINS_H
+#define ESPECCY_HARDPINS_H
 
 #include "hardconfig.h"
 
@@ -79,4 +79,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define KM_COL_3 36
 #define KM_COL_4 39
 
-#endif // ESPectrum_hardpins_h
+#endif // ESPECCY_HARDPINS_H

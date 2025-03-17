@@ -36,7 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define Ports_h
 
 #include <inttypes.h>
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 class Ports {
 

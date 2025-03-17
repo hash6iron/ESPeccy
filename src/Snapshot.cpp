@@ -39,7 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "cpuESP.h"
 #include "Video.h"
 #include "MemESP.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "Ports.h"
 #include "messages.h"
 #include "OSDMain.h"
@@ -85,7 +85,7 @@ bool LoadSnapshot(string filename, string force_arch, string force_romset, uint8
             VIDEO::Draw_OSD169 = Z80Ops::is2a3 ? VIDEO::MainScreen_OSD_2A3 : VIDEO::MainScreen_OSD;
         else
             VIDEO::Draw_OSD43  = Z80Ops::isPentagon ? VIDEO::BottomBorder_OSD_Pentagon : VIDEO::BottomBorder_OSD;
-        ESPectrum::TapeNameScroller = 0;
+        ESPeccy::TapeNameScroller = 0;
     }
 
     return res;
@@ -273,7 +273,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
     }
 
-    ESPectrum::reset();
+    ESPeccy::reset();
 
     // printf("FileSNA::load: Opening %s: size = %d\n", sna_fn.c_str(), sna_size);
 
@@ -353,10 +353,10 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
         if (tr_dos) {
             MemESP::romInUse = 4;
-            ESPectrum::trdos = true;
+            ESPeccy::trdos = true;
         } else {
             MemESP::romInUse = MemESP::romLatch;
-            ESPectrum::trdos = false;
+            ESPeccy::trdos = false;
         }
 
         MemESP::ramCurrent[0] = MemESP::rom[MemESP::romInUse];
@@ -603,7 +603,7 @@ bool FileSNA::save(string sna_file, bool blockMode, bool force_saverom) {
         writeByteFile(tmp_port, file);
         // printf("7FFD: %u\n",(unsigned int)tmp_port);
 
-        if (ESPectrum::trdos)
+        if (ESPeccy::trdos)
             writeByteFile(1, file);     // TR-DOS paged
         else
             writeByteFile(0, file);     // TR-DOS not paged
@@ -832,7 +832,7 @@ bool FileZ80::load(string z80_fn) {
 
     }
 
-    ESPectrum::reset();
+    ESPeccy::reset();
 
     keepArch = false;
 
@@ -1221,7 +1221,7 @@ void FileZ80::loadCompressedMemPage(FILE *f, uint16_t dataLen, uint8_t* memPage,
 
 void DoKeyboardLoad_48K() {
 
-    ESPectrum::reset(); // Reset machine
+    ESPeccy::reset(); // Reset machine
 
     for (int i=0; i<125; i++) CPU::loop(); // Run 125 frames (about 1 1/4 seconds)
 
@@ -1254,7 +1254,7 @@ void FileZ80::loader48() {
 
 void DoKeyboardLoad_128K_Pentagon() {
 
-    ESPectrum::reset(); // Reset machine
+    ESPeccy::reset(); // Reset machine
 
     for (int i=0; i<60; i++) CPU::loop(); // Run 100 frames (about 2 seconds)
     bitWrite(Ports::port[6], 0, false); // Set ENTER pressed for Speccy
@@ -1265,7 +1265,7 @@ void DoKeyboardLoad_128K_Pentagon() {
 
 void DoKeyboardLoad_128K_es() {
 
-    ESPectrum::reset(); // Reset machine
+    ESPeccy::reset(); // Reset machine
 
     for (int i=0; i<50; i++) CPU::loop(); // Run 50 frames (about 1/2 seconds)
 
@@ -1309,7 +1309,7 @@ void DoKeyboardLoad_128K_es() {
 
 void DoKeyboardLoad_ZX81() {
 
-    ESPectrum::reset(); // Reset machine
+    ESPeccy::reset(); // Reset machine
 
     for (int i=0; i<15; i++) CPU::loop(); // Run 15 frames for ZX81+ ROM to load
 
@@ -1956,7 +1956,7 @@ bool FileSP::load(string sp_fn) {
 
     }
 
-    ESPectrum::reset();
+    ESPeccy::reset();
 
     // Read in the registers
     Z80::setRegBC(readWordFileLE(file));

@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPECTRUM_OSD_H
-#define ESPECTRUM_OSD_H
+#ifndef ESPECCY_OSD_H
+#define ESPECCY_OSD_H
 
 #include "fabgl.h"
 #include <string>
@@ -312,4 +312,4 @@ static inline std::string trim_copy(std::string s) {
     return s;
 }
 
-#endif // ESPECTRUM_OSD_H
+#endif // ESPECCY_OSD_H

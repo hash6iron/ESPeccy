@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <inttypes.h>
 
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 
 //#define ZXKBDREAD_MODENORMAL 0
 //#define ZXKBDREAD_MODEINTERACTIVE 1

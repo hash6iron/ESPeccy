@@ -42,7 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Config.h"
 #include "FileUtils.h"
 #include "messages.h"
-#include "ESPectrum.h"
+#include "ESPeccy.h"
 #include "roms.h"
 #include "OSDMain.h"
 
@@ -754,20 +754,20 @@ void Config::setJoyMap(uint8_t joynum, uint8_t joytype) {
 
         bool save = false;
         if (newJoy[n - m] != fabgl::VK_NONE) {
-            ESPectrum::JoyVKTranslation[n] = newJoy[n - m];
+            ESPeccy::JoyVKTranslation[n] = newJoy[n - m];
             save = true;
         } else {
 
             if (joytype != JOY_KEMPSTON) {
-                if (ESPectrum::JoyVKTranslation[n] >= fabgl::VK_KEMPSTON_RIGHT && ESPectrum::JoyVKTranslation[n] <= fabgl::VK_KEMPSTON_ALTFIRE) {
-                    ESPectrum::JoyVKTranslation[n] = fabgl::VK_NONE;
+                if (ESPeccy::JoyVKTranslation[n] >= fabgl::VK_KEMPSTON_RIGHT && ESPeccy::JoyVKTranslation[n] <= fabgl::VK_KEMPSTON_ALTFIRE) {
+                    ESPeccy::JoyVKTranslation[n] = fabgl::VK_NONE;
                     save = true;
                 }
             }
 
             if (joytype != JOY_FULLER) {
-                if (ESPectrum::JoyVKTranslation[n] >= fabgl::VK_FULLER_RIGHT && ESPectrum::JoyVKTranslation[n] <= fabgl::VK_FULLER_FIRE) {
-                    ESPectrum::JoyVKTranslation[n] = fabgl::VK_NONE;
+                if (ESPeccy::JoyVKTranslation[n] >= fabgl::VK_FULLER_RIGHT && ESPeccy::JoyVKTranslation[n] <= fabgl::VK_FULLER_FIRE) {
+                    ESPeccy::JoyVKTranslation[n] = fabgl::VK_NONE;
                     save = true;
                 }
             }
@@ -776,8 +776,8 @@ void Config::setJoyMap(uint8_t joynum, uint8_t joytype) {
 
         if (save) {
             // Save to config (only changes)
-            if (Config::joydef[n] != (uint16_t) ESPectrum::JoyVKTranslation[n]) {
-                Config::joydef[n] = (uint16_t) ESPectrum::JoyVKTranslation[n];
+            if (Config::joydef[n] != (uint16_t) ESPeccy::JoyVKTranslation[n]) {
+                Config::joydef[n] = (uint16_t) ESPeccy::JoyVKTranslation[n];
                 char joykey[9];
                 sprintf(joykey,"joydef%02u",n);
                 Config::save(joykey);

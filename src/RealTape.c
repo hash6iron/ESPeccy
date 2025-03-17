@@ -84,8 +84,8 @@ void IRAM_ATTR RealTape_isr_handle(void) {
 
 /* Función para liberar el buffer anterior (si existe) y asignar uno nuevo.
 
- * (int audio_freq               ESPectrum::Audio_freq[1])
- * (int samples_per_frame        ESPectrum::samplesPerFrame)
+ * (int audio_freq               ESPeccy::Audio_freq[1])
+ * (int samples_per_frame        ESPeccy::samplesPerFrame)
  * (uint32_t states_in_frame     CPU::statesInFrame)
  */
 
@@ -108,8 +108,7 @@ void RealTape_realloc_buffers(int audio_freq, int samples_per_frame, uint32_t st
     __capture_frame_buffer_size = (double)samples_per_frame;
     __capture_buffer_size = (int)(__capture_frame_buffer_size * 4);
 
-    __capture_buffer = (volatile uint8_t*) heap_caps_malloc(__capture_buffer_size,
-                                         MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    __capture_buffer = (volatile uint8_t*) heap_caps_malloc(__capture_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
     if (__capture_buffer == NULL) {
         printf("Error al asignar el buffer de captura\n");

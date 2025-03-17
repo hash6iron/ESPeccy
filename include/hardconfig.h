@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPectrum_hardconfig_h
-#define ESPectrum_hardconfig_h
+#ifndef ESPECCY_HARDCONFIG_H
+#define ESPECCY_HARDCONFIG_H
 
 ///////////////////////////////////////////////////////////////////////////////
 // LOG_DEBUG_TIMING generates simple timing log messages to console every second.
@@ -49,4 +49,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // #define TESTING_CODE
 
-#endif // ESPectrum_config_h
+#endif // ESPECCY_HARDCONFIG_H

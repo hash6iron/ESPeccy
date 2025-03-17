@@ -32,8 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef ESPECTRUM_MESSAGES_ES_h
-#define ESPECTRUM_MESSAGES_ES_h
+#ifndef ESPECCY_MESSAGES_ES_h
+#define ESPECCY_MESSAGES_ES_h
 
 #define ERR_FS_EXT_FAIL_ES "\xAD" "Almacenamiento externo no disponible!"
 
@@ -356,4 +356,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Miniaturas\t>\n"\
     "Vista instant\xA0nea\t>\n"
 
-#endif // ESPECTRUM_MESSAGES_ES_h
+#endif // ESPECCY_MESSAGES_ES_h
