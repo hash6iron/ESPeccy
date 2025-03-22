@@ -2339,16 +2339,17 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             }
             if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
         }
-        //else if (KeytoESP == fabgl::VK_F6) {
-        //    // Start / Stop .tap reproduction
-        //    if (Tape::tapeFileName=="none") {
-        //        OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-        //    } else {
-        //        if (Tape::tapeStatus == TAPE_STOPPED) Tape::Play();
-        //        else                                  Tape::Stop();
-        //    }
-        //    click();
-        //}
+        else if (KeytoESP == fabgl::VK_F6) {
+            // Start / Stop .tap reproduction
+            if (Tape::tapeFileName=="none") {
+                OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+            } else {
+                if (Tape::tapeStatus & TAPE_STOPPED_FORCED) { OSD::osdCenteredMsg(OSD_TAPE_PLAY[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED; } // Play
+                else
+                if (Tape::tapeStatus == TAPE_LOADING)       { OSD::osdCenteredMsg(OSD_TAPE_STOP[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED | TAPE_STOPPED_FORCED; } // Stop
+            }
+            click();
+        }
         // else if (KeytoESP == fabgl::VK_F7) {
         //     // Test variable decrease
         //     ESPeccy::ESPtestvar1 -= 1;
@@ -2731,19 +2732,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 }
                                 menu_curopt = tap_num;
                             }
-                            //else if (tap_num == 2) {
-                            //    // Start / Stop .tap reproduction
-                            //    if (Tape::tapeFileName=="none") {
-                            //        OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                            //        menu_curopt = 2;
-                            //        menu_saverect = false;
-                            //    } else {
-                            //        if (Tape::tapeStatus == TAPE_STOPPED) Tape::Play();
-                            //        else                                  Tape::Stop();
-                            //        return;
-                            //    }
-                            //}
                             else if (tap_num == 2) {
+                                // Start / Stop .tap reproduction
+                                if (Tape::tapeFileName=="none") {
+                                    OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+                                } else {
+                                    if (Tape::tapeStatus & TAPE_STOPPED_FORCED) { OSD::osdCenteredMsg(OSD_TAPE_PLAY[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED; return; } // Play
+                                    else
+                                    if (Tape::tapeStatus == TAPE_LOADING)       { OSD::osdCenteredMsg(OSD_TAPE_STOP[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED | TAPE_STOPPED_FORCED; return; } // Stop
+                                }
+                                menu_curopt = tap_num;
+                                menu_saverect = false;
+                            }
+                            else if (tap_num == 3) {
                                 // Eject Tape
                                 click();
                                 if (Tape::tapeFileName=="none") {
@@ -2753,13 +2754,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     Tape::Eject();
                                     osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
                                 }
-                                menu_curopt = 2;
+                                menu_curopt = tap_num;
                             }
-                            else if (tap_num == 3) {
+                            else if (tap_num == 4) {
                                 // Tape Browser
                                 if (Tape::tapeFileName=="none") {
                                     OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                                    menu_curopt = 3;
+                                    menu_curopt = tap_num;
                                     menu_saverect = false;
                                 } else {
     //                                menu_level = 0;
@@ -2778,11 +2779,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         } else
                                             break;
                                     }
-                                    menu_curopt = 3;
+                                    menu_curopt = tap_num;
                                     menu_saverect = false;
                                 }
                             }
-                            else if (tap_num == 4) {
+                            else if (tap_num == 5) {
                                 menu_level = 2;
                                 menu_curopt = 1;
                                 menu_saverect = true;
@@ -2816,13 +2817,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = opt2;
                                         menu_saverect = false;
                                     } else {
-                                        menu_curopt = 4;
+                                        menu_curopt = tap_num;
                                         menu_level = 1;
                                         break;
                                     }
                                 }
                             }
-                            else if (tap_num == 5) {
+                            else if (tap_num == 6) {
                                 menu_level = 2;
                                 menu_curopt = 1;
                                 menu_saverect = true;
@@ -2842,7 +2843,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = opt2;
                                         menu_saverect = false;
                                     } else {
-                                        menu_curopt = 5;
+                                        menu_curopt = tap_num;
                                         menu_level = 1;
                                         break;
                                     }

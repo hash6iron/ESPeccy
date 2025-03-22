@@ -60,6 +60,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_TAPE_SELECT_ERR_PT "Arquivo de fita n\x84o selecionado"
 
+#define OSD_TAPE_PLAY_PT "--- Reproduzir fita ---"
+
+#define OSD_TAPE_STOP_PT "--- Deter fita ---"
+
 #define OSD_FILE_INDEXING_PT "Indexa\x87\x84o"
 
 #define OSD_FILE_INDEXING_PT_1 "   Ordena\x87\x84o   "
@@ -147,6 +151,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_PT \
     "Fitas\n"\
     "Escolher (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
     "Ejetar fita\n"\
     "Navegador fita\t>\n"\
     "Monitor LOAD\t>\n"\

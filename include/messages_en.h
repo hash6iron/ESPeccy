@@ -58,6 +58,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_TAPE_SELECT_ERR_EN "No tape file selected"
 
+#define OSD_TAPE_PLAY_EN "--- Play tape ---"
+
+#define OSD_TAPE_STOP_EN "--- Stop tape ---"
+
 #define OSD_FILE_INDEXING_EN "Indexing"
 
 #define OSD_FILE_INDEXING_EN_1 "  Sorting   "
@@ -145,6 +149,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_EN \
     "Tapes\n"\
     "Select (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
     "Eject Tape\n"\
     "Tape browser\t>\n"\
     "LOAD monitor\t>\n"\

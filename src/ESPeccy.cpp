@@ -2967,7 +2967,7 @@ IRAM_ATTR void ESPeccy::loop() {
 
         // ===== Start detect loading
         // TODO: Move this to a function in Tape.cpp (maybe)
-        Ports::loading = Ports::in254_count > 40;
+        Ports::loading = Ports::in254_count > 255;
 
         // Start / Stop .tap reproduction
         if (Tape::tapeFileType != TAPE_FTYPE_EMPTY && (!RealTape_enabled || Config::realtape_mode != REALTAPE_FORCE_LOAD)) {
@@ -2977,10 +2977,7 @@ IRAM_ATTR void ESPeccy::loop() {
                     Tape::Play();
                 }
             } else {
-                if (Tape::tapeStatus == TAPE_LOADING &&
-                    tapeCurBlock != Tape::tapeCurBlock /*&&
-                    Tape::tapePhase != TAPE_PHASE_PAUSE_GDB &&
-                    Tape::tapePhase != TAPE_PHASE_PAUSE */)
+                if (Tape::tapeStatus == TAPE_LOADING && tapeCurBlock != Tape::tapeCurBlock)
                 {
                     tapeCurBlock = Tape::tapeCurBlock;
                     Tape::Stop();
