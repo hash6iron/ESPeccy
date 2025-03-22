@@ -147,7 +147,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_PT \
     "Fitas\n"\
     "Escolher (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
     "Ejetar fita\n"\
     "Navegador fita\t>\n"\
     "Monitor LOAD\t>\n"\

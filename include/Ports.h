@@ -56,6 +56,9 @@ public:
     static uint8_t LastOutTo1FFD;
     static uint8_t LastOutTo7FFD;
 
+    static int16_t in254_count;
+    static bool loading;
+
 private:
 
     static void ioContentionLate(bool contend);
