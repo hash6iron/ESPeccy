@@ -145,7 +145,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_EN \
     "Tapes\n"\
     "Select (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
     "Eject Tape\n"\
     "Tape browser\t>\n"\
     "LOAD monitor\t>\n"\

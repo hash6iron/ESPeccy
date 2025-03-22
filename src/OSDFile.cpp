@@ -480,45 +480,67 @@ reset:
                             }
 
                         } else {
-                            uint8_t letra = rowGet(menu,FileUtils::fileTypes[ftype].focus).at(0);
-                            // printf("%d %d\n",(int)letra,fsearch);
-                            if (toupper(letra) != toupper(fsearch)) {
-                                // Seek first ocurrence of letter/number
-                                long prevpos = ftell(dirfile);
-                                char buf[FILENAMELEN+1];
-                                int cnt = 0;
-                                fseek(dirfile,0,SEEK_SET);
-                                while(!feof(dirfile)) {
-                                    fgets(buf, sizeof(buf), dirfile);
+
+                            long prevpos = ftell(dirfile);
+
+                            long curritem = FileUtils::fileTypes[ftype].begin_row - 2 + FileUtils::fileTypes[ftype].focus - 2 + 1;
+
+                            fseek(dirfile, curritem * FILENAMELEN, SEEK_SET);
+
+                            char fsearch_ch = toupper(char(fsearch));
+
+                            // Seek first ocurrence of letter/number
+                            char buf[FILENAMELEN];
+
+                            bool found = false;
+
+                            while(!feof(dirfile)) {
+                                size_t read_size = fread(buf, sizeof(char), FILENAMELEN, dirfile);
+                                if (read_size != FILENAMELEN) break;
+                                // printf("%c %d\n",buf[0],int(buf[0]));
+                                if (toupper(buf[buf[0] == ' ']) == fsearch_ch) { found = true; break; }
+                            }
+
+                            if (!found) {
+                                fseek(dirfile, 0, SEEK_SET);
+                                while(ftell(dirfile) < prevpos) {
+                                    size_t read_size = fread(buf, sizeof(char), FILENAMELEN, dirfile);
                                     // printf("%c %d\n",buf[0],int(buf[0]));
-                                    if (toupper(buf[0]) == toupper(char(fsearch))) break;
-                                    cnt++;
+                                    if (toupper(buf[buf[0] == ' ']) == fsearch_ch) { found = true; break; }
                                 }
-                                // printf("Cnt: %d Letra: %d\n",cnt,int(letra));
-                                if (!feof(dirfile)) {
-                                    last_begin_row = FileUtils::fileTypes[ftype].begin_row;
-                                    last_focus = FileUtils::fileTypes[ftype].focus;
-                                    if (real_rows > virtual_rows) {
-                                        int m = cnt + virtual_rows - real_rows;
-                                        if (m > 0) {
-                                            FileUtils::fileTypes[ftype].focus = m + 2;
-                                            FileUtils::fileTypes[ftype].begin_row = cnt - m + 2;
-                                        } else {
-                                            FileUtils::fileTypes[ftype].focus = 2;
-                                            FileUtils::fileTypes[ftype].begin_row = cnt + 2;
-                                        }
+                            }
+
+                            if (found) {
+                                int cnt = ftell(dirfile)/FILENAMELEN - 1;
+
+                                last_begin_row = FileUtils::fileTypes[ftype].begin_row;
+                                last_focus = FileUtils::fileTypes[ftype].focus;
+                                if (real_rows > virtual_rows) {
+                                    int m = cnt + virtual_rows - real_rows;
+                                    if (m > 0) {
+                                        FileUtils::fileTypes[ftype].focus = m + 2;
+                                        FileUtils::fileTypes[ftype].begin_row = cnt - m + 2;
+
                                     } else {
-                                        FileUtils::fileTypes[ftype].focus = cnt + 2;
-                                        FileUtils::fileTypes[ftype].begin_row = 2;
+                                        FileUtils::fileTypes[ftype].focus = 2;
+                                        FileUtils::fileTypes[ftype].begin_row = cnt + 2;
+
                                     }
-                                    // printf("Real rows: %d; Virtual rows: %d\n",real_rows,virtual_rows);
-                                    // printf("Focus: %d, Begin_row: %d\n",(int) FileUtils::fileTypes[ftype].focus,(int) FileUtils::fileTypes[ftype].begin_row);
-                                    fd_Redraw(title,fdir,ftype);
-                                    click();
-                                } else
-                                    fseek(dirfile,prevpos,SEEK_SET);
+                                } else {
+                                    FileUtils::fileTypes[ftype].focus = cnt + 2;
+                                    FileUtils::fileTypes[ftype].begin_row = 2;
+
+                                }
+                                // printf("Real rows: %d; Virtual rows: %d\n",real_rows,virtual_rows);
+                                // printf("Focus: %d, Begin_row: %d\n",(int) FileUtils::fileTypes[ftype].focus,(int) FileUtils::fileTypes[ftype].begin_row);
+                                fd_Redraw(title,fdir,ftype);
+                                click();
+
+                            } else {
+                                fseek(dirfile,prevpos,SEEK_SET);
 
                             }
+
                         }
 
                     } else if (Menukey.vk == fabgl::VK_F2 && ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE ) ) {  // Dirty hack

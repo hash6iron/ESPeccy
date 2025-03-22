@@ -248,30 +248,31 @@ volatile uint32_t pwmcount = 0;
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 static bool IRAM_ATTR timer_group_isr(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
-{
-    pwm_audio_data_t *handle = g_pwm_audio_handle;
-    if (handle == NULL) {
-        return false;
-    }
 #else
 static void IRAM_ATTR timer_group_isr(void *para)
+#endif
 {
     pwm_audio_data_t *handle = g_pwm_audio_handle;
     if (handle == NULL) {
-        return ;
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        return false;
+#else
+        return;
+#endif
     }
-
-
-    // RealTape
-    RealTape_isr_handle();
 
     // pwmcount++;
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     /* Clear the interrupt */
     timer_group_clr_intr_status_in_isr(handle->config.tg_num, handle->config.timer_num);
     /* After the alarm has been triggered we need enable it again, so it is triggered the next time */
     timer_group_enable_alarm_in_isr(handle->config.tg_num, handle->config.timer_num);
+
 #endif
+
+    // RealTape
+    RealTape_isr_handle();
 
     static uint8_t wave_h, wave_l;
     static uint16_t value;

@@ -142,7 +142,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_ES \
     "Cintas\n"\
     "Elegir (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
     "Expulsar cinta\n"\
     "Navegador cinta\t>\n"\
 	"Monitor LOAD\t>\n"\

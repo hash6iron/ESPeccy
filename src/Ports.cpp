@@ -64,6 +64,9 @@ uint8_t Ports::port254 = 0;
 uint8_t Ports::LastOutTo1FFD = 0;
 uint8_t Ports::LastOutTo7FFD = 0;
 
+int16_t Ports::in254_count = 0;
+bool Ports::loading = false;
+
 uint8_t (*Ports::getFloatBusData)() = &Ports::getFloatBusData48;
 
 uint8_t Ports::getFloatBusData48() {
@@ -197,6 +200,8 @@ IRAM_ATTR uint8_t Ports::input(uint16_t address) {
 
     // ULA PORT
     if ((address & 0x0001) == 0) {
+
+        in254_count++;
 
         if (Config::arch[0] == 'T' && Config::ALUTK > 0) {
             VIDEO::Draw( 3 + tkIOcon(address), false);
