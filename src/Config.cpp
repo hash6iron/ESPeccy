@@ -46,8 +46,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "roms.h"
 #include "OSDMain.h"
 
-#include "RealTape.h"
-
 string   Config::arch = "48K";
 string   Config::romSet = "48K";
 string   Config::romSet48 = "48K";
@@ -398,10 +396,6 @@ void Config::save() {
 // Function to save the configuration
 void Config::save(string value) {
 
-    int realtape_state = RealTape_enabled;
-
-    if (realtape_state) RealTape_pause();
-
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -415,7 +409,6 @@ void Config::save(string value) {
     err = nvs_open("storage", NVS_READWRITE, &handle);
     if (err != ESP_OK) {
         printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
-        if (realtape_state) RealTape_start();
         return;
     }
 
@@ -450,8 +443,6 @@ void Config::save(string value) {
 
     // Close NVS
     nvs_close(handle);
-
-    if (realtape_state) RealTape_start();
 
 }
 

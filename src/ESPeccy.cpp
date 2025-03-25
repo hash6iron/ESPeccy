@@ -2953,8 +2953,6 @@ IRAM_ATTR void ESPeccy::COVOXGetSample() {
 
 IRAM_ATTR void ESPeccy::loop() {
 
-    int tapeCurBlock = 0;
-
     for(;;) {
 
         ts_start = esp_timer_get_time();
@@ -2965,31 +2963,7 @@ IRAM_ATTR void ESPeccy::loop() {
 
         RealTape_prepare_frame();
 
-        // ===== Start detect loading
-        // TODO: Move this to a function in Tape.cpp (maybe)
-        Ports::loading = Ports::in254_count > 255;
-
-        // Start / Stop .tap reproduction
-        if (Tape::tapeFileType != TAPE_FTYPE_EMPTY && (!RealTape_enabled || Config::realtape_mode != REALTAPE_FORCE_LOAD)) {
-            if (Ports::loading) {
-                if (Tape::tapeStatus == TAPE_STOPPED) {
-                    tapeCurBlock = Tape::tapeCurBlock;
-                    Tape::Play();
-                }
-            } else {
-                if (Tape::tapeStatus == TAPE_LOADING && tapeCurBlock != Tape::tapeCurBlock)
-                {
-                    tapeCurBlock = Tape::tapeCurBlock;
-                    Tape::Stop();
-                }
-            }
-        }
-
-        //printf("loading %s %d %s\n", Ports::loading ? "true" : "false", Ports::in254_count, Tape::tapeStatus == TAPE_STOPPED ? "STOPPED" : "LOADING");
-
-        Ports::in254_count = 0;
-        // ===== End detect loading
-
+        Tape::ManageLoading();
 
         CPU::loop();
 

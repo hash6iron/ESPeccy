@@ -75,9 +75,12 @@ static uint32_t __samples_per_frame = 0;
 /* Puntero estático a la configuración/parámetros */
 static RealTapeParams *rt_params = NULL;
 
+static uint32_t *_gpio_in = NULL, _gpio_mask = 0;
+
 void IRAM_ATTR RealTape_isr_handle(void) {
     if (RealTape_enabled) {
-        __capture_buffer[__sample_index++] = (uint8_t) gpio_get_level((gpio_num_t)*(rt_params->gpio_num));
+        //__capture_buffer[__sample_index++] = (uint8_t) gpio_get_level((gpio_num_t)*(rt_params->gpio_num));
+        __capture_buffer[__sample_index++] = (*_gpio_in & _gpio_mask) != 0;
         if (__sample_index >= __capture_buffer_size) __sample_index = 0;
     }
 }
@@ -149,6 +152,13 @@ void RealTape_init(RealTapeParams *params) {
             *(rt_params->gpio_num) = GPIO_NUM_39;
     }
 
+    if (*(rt_params->gpio_num) < 32) {
+        _gpio_in = &GPIO.in;
+        _gpio_mask = 1 << *(rt_params->gpio_num);
+     } else {
+        _gpio_in = &GPIO.in1;
+        _gpio_mask = 1 << (*(rt_params->gpio_num) - 32);
+     }
 
 #if 0
     gpio_config_t io_conf;

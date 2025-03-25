@@ -195,6 +195,8 @@ public:
 
     static double tapeCompensation;
 
+    static void ManageLoading();
+
 private:
 
     static void (*GetBlock)();

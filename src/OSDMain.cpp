@@ -5039,14 +5039,9 @@ void OSD::HWInfo() {
 
 esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
-    bool realtape_was_enabled = RealTape_enabled;
-
-    if (realtape_was_enabled) RealTape_pause();
-
     // get the currently running partition
     const esp_partition_t *partition = esp_ota_get_running_partition();
     if (partition == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5066,7 +5061,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
     const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
     if (target == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5191,7 +5185,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
         } else {
             printf("esp_partition_read failed, err=0x%x.\n", result);
             progressDialog("","",0,2);
-            if (realtape_was_enabled) RealTape_start();
             return result;
         }
     }
@@ -5208,7 +5201,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (result != ESP_OK) {
         printf("esp_partition_erase_range failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5261,7 +5253,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
 
@@ -5276,7 +5267,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (result != ESP_OK) {
         printf("esp_ota_set_boot_partition failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5293,7 +5283,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5314,7 +5303,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5334,7 +5322,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5354,7 +5341,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5372,7 +5358,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5393,7 +5378,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
 
@@ -5414,7 +5398,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5434,7 +5417,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5454,7 +5436,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5472,7 +5453,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5492,7 +5472,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5512,7 +5491,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5532,7 +5510,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5550,7 +5527,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5585,7 +5561,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5605,7 +5580,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5626,16 +5600,11 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
 esp_err_t OSD::updateFirmware(FILE *firmware) {
 
-    bool realtape_was_enabled = RealTape_enabled;
-
-    if (realtape_was_enabled) RealTape_pause();
-
     char ota_write_data[FWBUFFSIZE + 1] = { 0 };
 
     // get the currently running partition
     const esp_partition_t *partition = esp_ota_get_running_partition();
     if (partition == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5645,7 +5614,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
     const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
     if (target == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5667,7 +5635,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     esp_err_t result = esp_ota_begin(target, OTA_SIZE_UNKNOWN, &ota_handle);
     if (result != ESP_OK) {
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5687,7 +5654,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
         result = esp_ota_write(ota_handle,(const void *) ota_write_data, bytesread);
         if (result != ESP_OK) {
             progressDialog("","",0,2);
-            if (realtape_was_enabled) RealTape_start();
             return result;
         }
         byteswritten += bytesread;
@@ -5697,11 +5663,9 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     }
 
     result = esp_ota_end(ota_handle);
-    if (result != ESP_OK)
-    {
+    if (result != ESP_OK) {
         // printf("esp_ota_end failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5709,7 +5673,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (result != ESP_OK) {
         // printf("esp_ota_set_boot_partition failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
