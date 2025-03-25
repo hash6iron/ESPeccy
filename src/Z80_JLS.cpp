@@ -2425,14 +2425,20 @@ IRAM_ATTR void Z80::decodeOpcodebf()
 
     if (REG_PC == 0x56b && Config::realtape_mode != REALTAPE_FORCE_LOAD) { // LOAD trap
 
-        // printf("Trap Load!\n");
+        //printf("Trap Load FL:%d NAME:%s STAT:%s TYPE:%s\n", Config::flashload, Tape::tapeFileName.c_str(), Tape::tapeStatus == TAPE_STOPPED ? "STOPPED" : Tape::tapeStatus == TAPE_LOADING ? "LOADING" : "STOPPED_FORCED", Tape::tapeFileType == TAPE_FTYPE_TAP ? "TAP" : Tape::tapeFileType == TAPE_FTYPE_TZX ? "TZX" : "EMPTY" );
 
         if (Config::flashload &&
             Tape::tapeFileType == TAPE_FTYPE_TAP &&
             Tape::tapeFileName != "none" &&
-            Tape::tapeStatus != TAPE_LOADING ) {
-            // printf("Loading tape %s\n",Tape::tapeFileName.c_str());
-            if (Tape::FlashLoad()) REG_PC = 0x5e2;
+            Tape::tapeStatus != TAPE_LOADING) {
+
+            //printf("Loading tape %s\n",Tape::tapeFileName.c_str());
+
+            if (Tape::FlashLoad()) {
+                REG_PC = 0x5e2;
+                Tape::Stop(); // Force Stop
+            }
+
         }
 
     }

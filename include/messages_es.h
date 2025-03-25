@@ -58,9 +58,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_TAPE_SELECT_ERR_ES "Fichero de cinta no seleccionado"
 
+#define OSD_TAPE_PLAY_ES "--- Reproducir cinta ---"
+
+#define OSD_TAPE_STOP_ES "--- Detener cinta ---"
+
 #define OSD_FILE_INDEXING_ES "Indexando"
+
 #define OSD_FILE_INDEXING_ES_1 "   Ordenando   "
+
 #define OSD_FILE_INDEXING_ES_2 "Grabando \xA1ndice"
+
 #define OSD_FILE_INDEXING_ES_3 "   Limpiando   "
 
 #define OSD_FIRMW_UPDATE_ES "Actualizar firmware"
@@ -142,6 +149,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_TAPE_ES \
     "Cintas\n"\
     "Elegir (TAP,TZX)\t>\n"\
+    "Play/Stop\n"\
     "Expulsar cinta\n"\
     "Navegador cinta\t>\n"\
 	"Monitor LOAD\t>\n"\

@@ -49,6 +49,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // Tape status definitions
 #define TAPE_STOPPED 0
 #define TAPE_LOADING 1
+#define TAPE_STOPPED_FORCED 0x80
 
 // Saving status
 #define SAVE_STOPPED 0
@@ -193,6 +194,8 @@ public:
     static void renameBlock(int block, string new_name);
 
     static double tapeCompensation;
+
+    static void ManageLoading();
 
 private:
 

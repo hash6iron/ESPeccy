@@ -1257,6 +1257,7 @@ void DoKeyboardLoad_128K_Pentagon() {
     ESPeccy::reset(); // Reset machine
 
     for (int i=0; i<60; i++) CPU::loop(); // Run 100 frames (about 2 seconds)
+
     bitWrite(Ports::port[6], 0, false); // Set ENTER pressed for Speccy
     CPU::loop(); // Run 1 frame more for reading ENTER key
     bitWrite(Ports::port[6], 0, true); // Set ENTER released for Speccy

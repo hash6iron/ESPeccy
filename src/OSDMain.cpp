@@ -2340,14 +2340,15 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             if (VIDEO::OSD) OSD::drawStats(); // Redraw stats for 16:9 modes
         }
         else if (KeytoESP == fabgl::VK_F6) {
-           // Start / Stop .tap reproduction
-           if (Tape::tapeFileName=="none") {
-               OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-           } else {
-               if (Tape::tapeStatus == TAPE_STOPPED) Tape::Play();
-               else                                  Tape::Stop();
-           }
-           click();
+            // Start / Stop .tap reproduction
+            if (Tape::tapeFileName=="none") {
+                OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+            } else {
+                if (Tape::tapeStatus & TAPE_STOPPED_FORCED) { OSD::osdCenteredMsg(OSD_TAPE_PLAY[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED; } // Play
+                else
+                if (Tape::tapeStatus == TAPE_LOADING)       { OSD::osdCenteredMsg(OSD_TAPE_STOP[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED | TAPE_STOPPED_FORCED; } // Stop
+            }
+            click();
         }
         // else if (KeytoESP == fabgl::VK_F7) {
         //     // Test variable decrease
@@ -2731,19 +2732,19 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                 }
                                 menu_curopt = tap_num;
                             }
-                            //else if (tap_num == 2) {
-                            //    // Start / Stop .tap reproduction
-                            //    if (Tape::tapeFileName=="none") {
-                            //        OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                            //        menu_curopt = 2;
-                            //        menu_saverect = false;
-                            //    } else {
-                            //        if (Tape::tapeStatus == TAPE_STOPPED) Tape::Play();
-                            //        else                                  Tape::Stop();
-                            //        return;
-                            //    }
-                            //}
                             else if (tap_num == 2) {
+                                // Start / Stop .tap reproduction
+                                if (Tape::tapeFileName=="none") {
+                                    OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
+                                } else {
+                                    if (Tape::tapeStatus & TAPE_STOPPED_FORCED) { OSD::osdCenteredMsg(OSD_TAPE_PLAY[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED; return; } // Play
+                                    else
+                                    if (Tape::tapeStatus == TAPE_LOADING)       { OSD::osdCenteredMsg(OSD_TAPE_STOP[Config::lang], LEVEL_OK); Tape::tapeStatus = TAPE_STOPPED | TAPE_STOPPED_FORCED; return; } // Stop
+                                }
+                                menu_curopt = tap_num;
+                                menu_saverect = false;
+                            }
+                            else if (tap_num == 3) {
                                 // Eject Tape
                                 click();
                                 if (Tape::tapeFileName=="none") {
@@ -2753,13 +2754,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     Tape::Eject();
                                     osdCenteredMsg(OSD_TAPE_EJECT[Config::lang], LEVEL_INFO, 1000);
                                 }
-                                menu_curopt = 2;
+                                menu_curopt = tap_num;
                             }
-                            else if (tap_num == 3) {
+                            else if (tap_num == 4) {
                                 // Tape Browser
                                 if (Tape::tapeFileName=="none") {
                                     OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
-                                    menu_curopt = 3;
+                                    menu_curopt = tap_num;
                                     menu_saverect = false;
                                 } else {
     //                                menu_level = 0;
@@ -2778,11 +2779,11 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         } else
                                             break;
                                     }
-                                    menu_curopt = 3;
+                                    menu_curopt = tap_num;
                                     menu_saverect = false;
                                 }
                             }
-                            else if (tap_num == 4) {
+                            else if (tap_num == 5) {
                                 menu_level = 2;
                                 menu_curopt = 1;
                                 menu_saverect = true;
@@ -2816,13 +2817,13 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = opt2;
                                         menu_saverect = false;
                                     } else {
-                                        menu_curopt = 4;
+                                        menu_curopt = tap_num;
                                         menu_level = 1;
                                         break;
                                     }
                                 }
                             }
-                            else if (tap_num == 5) {
+                            else if (tap_num == 6) {
                                 menu_level = 2;
                                 menu_curopt = 1;
                                 menu_saverect = true;
@@ -2842,7 +2843,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                         menu_curopt = opt2;
                                         menu_saverect = false;
                                     } else {
-                                        menu_curopt = 5;
+                                        menu_curopt = tap_num;
                                         menu_level = 1;
                                         break;
                                     }
@@ -5054,14 +5055,9 @@ void OSD::HWInfo() {
 
 esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
-    bool realtape_was_enabled = RealTape_enabled;
-
-    if (realtape_was_enabled) RealTape_pause();
-
     // get the currently running partition
     const esp_partition_t *partition = esp_ota_get_running_partition();
     if (partition == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5081,7 +5077,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
     const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
     if (target == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5206,7 +5201,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
         } else {
             printf("esp_partition_read failed, err=0x%x.\n", result);
             progressDialog("","",0,2);
-            if (realtape_was_enabled) RealTape_start();
             return result;
         }
     }
@@ -5223,7 +5217,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (result != ESP_OK) {
         printf("esp_partition_erase_range failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5276,7 +5269,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
 
@@ -5291,7 +5283,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
     if (result != ESP_OK) {
         printf("esp_ota_set_boot_partition failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5308,7 +5299,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5329,7 +5319,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5349,7 +5338,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5369,7 +5357,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5387,7 +5374,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5408,7 +5394,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
 
@@ -5429,7 +5414,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5449,7 +5433,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5469,7 +5452,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5487,7 +5469,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5507,7 +5488,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5527,7 +5507,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5547,7 +5526,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5565,7 +5543,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             if (result != ESP_OK) {
                 printf("esp_partition_write failed, err=0x%x.\n", result);
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5600,7 +5577,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5620,7 +5596,6 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
             }
             if (result != ESP_OK) {
                 progressDialog("","",0,2);
-                if (realtape_was_enabled) RealTape_start();
                 return result;
             }
         }
@@ -5641,16 +5616,11 @@ esp_err_t OSD::updateROM(FILE *customrom, uint8_t arch) {
 
 esp_err_t OSD::updateFirmware(FILE *firmware) {
 
-    bool realtape_was_enabled = RealTape_enabled;
-
-    if (realtape_was_enabled) RealTape_pause();
-
     char ota_write_data[FWBUFFSIZE + 1] = { 0 };
 
     // get the currently running partition
     const esp_partition_t *partition = esp_ota_get_running_partition();
     if (partition == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5660,7 +5630,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (strcmp(partition->label,"esp0")==0) splabel = "esp1"; else splabel= "esp0";
     const esp_partition_t *target = esp_partition_find_first(ESP_PARTITION_TYPE_APP,ESP_PARTITION_SUBTYPE_ANY,splabel.c_str());
     if (target == NULL) {
-        if (realtape_was_enabled) RealTape_start();
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -5682,7 +5651,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     esp_err_t result = esp_ota_begin(target, OTA_SIZE_UNKNOWN, &ota_handle);
     if (result != ESP_OK) {
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5702,7 +5670,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
         result = esp_ota_write(ota_handle,(const void *) ota_write_data, bytesread);
         if (result != ESP_OK) {
             progressDialog("","",0,2);
-            if (realtape_was_enabled) RealTape_start();
             return result;
         }
         byteswritten += bytesread;
@@ -5712,11 +5679,9 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     }
 
     result = esp_ota_end(ota_handle);
-    if (result != ESP_OK)
-    {
+    if (result != ESP_OK) {
         // printf("esp_ota_end failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
@@ -5724,7 +5689,6 @@ esp_err_t OSD::updateFirmware(FILE *firmware) {
     if (result != ESP_OK) {
         // printf("esp_ota_set_boot_partition failed, err=0x%x.\n", result);
         progressDialog("","",0,2);
-        if (realtape_was_enabled) RealTape_start();
         return result;
     }
 
