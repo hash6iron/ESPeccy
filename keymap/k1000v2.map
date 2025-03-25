@@ -13,7 +13,12 @@
   // Enjoy it!
   //
   //
-  // By Hash6iron (Antonio Tamairon, 2025)
+  // By Hash6iron (Antonio Tamairon, 2025) for ESPeccy
+  // 
+  // This custom layout is used to Windyoung K1000 USB/PS2 Keyboard 
+  // to emulate a real Spectrum+ Keyboard. 
+  // This layout has special keys as original like:
+  // GRAPH, INV VIDEO, TRUE VIDEO, EDIT, EXTEND MODE (see image in /keymap)
   // *********************************************************************************************
   
   
