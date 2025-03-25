@@ -14,7 +14,11 @@ Based on previous work:
 - Original project by Pete Todd
   https://github.com/retrogubbins/paseVGA
 
+Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
+https://github.com/SplinterGU/ESPeccy
+
 About keymap.cpp
+-----------------------------------------------
 Copyright (c) 2025 Antonio Tamairon [Hash6iron]
 https://github.com/Hash6iron
 
