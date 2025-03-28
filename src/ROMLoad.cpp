@@ -40,7 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MemESP.h"
 #include "ESPeccy.h"
 #include "messages.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "Tape.h"
 #include "Z80_JLS/z80.h"
 

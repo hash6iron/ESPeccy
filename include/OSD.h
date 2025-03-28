@@ -95,6 +95,9 @@ using namespace std;
 #define RENDER_PREVIEW_OK_MORE          2
 #define RENDER_PREVIEW_REQUEST_NO_FOUND 3
 
+
+#define INPUT_CANCELED      1
+
 typedef struct MenuState
 {
     unsigned short begin_row;       // First real displayed row
@@ -138,6 +141,7 @@ public:
     static int  prepare_checkbox_menu(string &menu, string curopt);
     static void pref_rom_menu();
     static void do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT);
+    static void do_OSD_MenuUpdateROM(uint8_t arch);
     static void HWInfo();
     // static void UART_test();
 
@@ -159,6 +163,11 @@ public:
     static void saveBackbufferData(bool force = false);
 
     // Menu
+    static void LoadState();
+    static void SaveState();
+    static void FileBrowser();
+    static void FileEject();
+
     static unsigned short menuRealRowFor(uint8_t virtual_row_num);
     // static bool menuIsSub(uint8_t virtual_row_num);
     static void menuPrintRow(uint8_t virtual_row_num, uint8_t line_type);
@@ -167,6 +176,7 @@ public:
     static short menuRun(const string new_menu, const string& statusbar = "", int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr);
     static short menuSlotsWithPreview(const string new_menu, const string& statusbar, int (*proc_cb)(fabgl::VirtualKeyItem Menukey) = nullptr);
     static unsigned short simpleMenuRun(string new_menu, uint16_t posx, uint16_t posy, uint8_t max_rows, uint8_t max_cols);
+    static string getStatusBar(uint8_t ftype, bool thumb_funcs_enabled);
     static string fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols, uint8_t mfrows);
     static int menuTape(string title);
     static void menuScroll(bool up);

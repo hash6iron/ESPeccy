@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MemESP.h"
 #include "ZXKeyb.h"
 #include "Config.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "messages.h"
 #include "hardconfig.h"
 #include "hardpins.h"

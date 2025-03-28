@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "FileUtils.h"
 #include "messages.h"
 #include "Config.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "esp_vfs.h"
 
 void CaptureToBmp()

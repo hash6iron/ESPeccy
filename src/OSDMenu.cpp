@@ -48,7 +48,7 @@ using namespace std;
 #include "cpuESP.h"
 #include "Video.h"
 #include "messages.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include <math.h>
 #include "ZXKeyb.h"
 #include "pwm_audio.h"
@@ -312,7 +312,7 @@ int OSD::menuProcessSnapshot(fabgl::VirtualKeyItem Menukey) {
         uint8_t flags = 0;
 
         string new_name = input(1, focus, "", SLOTNAME_LEN, min(SLOTNAME_LEN, cols - 4), zxColor(0,0), zxColor(7,0), rowGet(menu, idx), "", &flags);
-        if ( !( flags & 1 ) ) { // if not canceled
+        if ( !( flags & INPUT_CANCELED ) ) { // if not canceled
             renameSlot(idx, new_name);
         }
 
@@ -1352,8 +1352,9 @@ int OSD::menuTape(string title) {
                         case TapeBlock::Number_array_header:
                         case TapeBlock::Character_array_header:
                         case TapeBlock::Code_header: {
-                            string new_name = input(21, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), Tape::getBlockName(blocknum));
-                            if ( new_name != "" ) {
+                            uint8_t flags;
+                            string new_name = input(21, focus, "", 10, 10, zxColor(0,0), zxColor(7,0), Tape::getBlockName(blocknum), "", &flags);
+                            if ( new_name != "" && !(flags & INPUT_CANCELED) ) {
                                 Tape::renameBlock( begin_row - 2 + focus, new_name );
                             }
                             tapemenuRedraw(title, true);
@@ -1577,7 +1578,7 @@ int OSD::menuProcessPokeInput(fabgl::VirtualKeyItem Menukey) {
         Poke poke = CheatMngr::getInputPoke(currentCheat, idx - 1);
 //        string value = to_string(poke.value);
         string new_value = input(cols - 5, focus, "", 3, 3, zxColor(0,0), zxColor(7,0), "", "0123456789", &flags, FILTER_ALLOWED );
-        if ( !( flags & 1 ) && new_value != "" ) { // if not canceled
+        if ( !( flags & INPUT_CANCELED ) && new_value != "" ) { // if not canceled
             int nv = stoi(new_value);
             if ( nv < 256 ) poke = CheatMngr::setPokeValue(currentCheat, idx - 1, (uint8_t) nv);
             string value = to_string(poke.value);

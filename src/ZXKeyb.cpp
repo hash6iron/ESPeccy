@@ -151,77 +151,73 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
             // Detect and process physical kbd menu key combinations
             // CS+SS+<1..0> -> F1..F10 Keys, CS+SS+Q -> F11, CS+SS+W -> F12, CS+SS+S -> Capture screen
             if (ZXKBD_CS && ZXKBD_SS) {
-                     if (ZXKBD_1) {                                        injectKey = fabgl::VK_F1; }
-                else if (ZXKBD_2) {                                        injectKey = fabgl::VK_F2; }
-                else if (ZXKBD_3) {                                        injectKey = fabgl::VK_F3; }
-                else if (ZXKBD_4) {                                        injectKey = fabgl::VK_F4; }
-                else if (ZXKBD_5) {                                        injectKey = fabgl::VK_F5; }
-                else if (ZXKBD_6) {                                        injectKey = fabgl::VK_F6; }
-                else if (ZXKBD_7) {                                        injectKey = fabgl::VK_F7; }
-                else if (ZXKBD_8) {                                        injectKey = fabgl::VK_F8; }
-                else if (ZXKBD_9) {                                        injectKey = fabgl::VK_F9; }
-                else if (ZXKBD_0) {                                        injectKey = fabgl::VK_F10; }
-                else if (ZXKBD_Q) {                                        injectKey = fabgl::VK_F11; }
-                else if (ZXKBD_W) {                                        injectKey = fabgl::VK_F12; }
-                else if (ZXKBD_P) {                                        injectKey = fabgl::VK_PAUSE; }         // P -> Pause
-                else if (ZXKBD_I) { shift_down = true;                     injectKey = fabgl::VK_F1; }            // I -> INFO
-                else if (ZXKBD_E) { shift_down = true;                     injectKey = fabgl::VK_F6; }            // E -> Eject tape
-                else if (ZXKBD_R) {                     ctrl_down = true;  injectKey = fabgl::VK_F11; }           // R -> Reset to TR-DOS
-                else if (ZXKBD_T) {                     ctrl_down = true;  injectKey = fabgl::VK_F2; }            // T -> Turbo
-                else if (ZXKBD_B) { shift_down = true;                     injectKey = fabgl::VK_PRINTSCREEN; }   // B -> BMP capture
-                else if (ZXKBD_O) {                     ctrl_down = true;  injectKey = fabgl::VK_F9; }            // O -> Poke
-                else if (ZXKBD_Y) { shift_down = true;                     injectKey = fabgl::VK_F3; }            // Y -> Cartridge
-                else if (ZXKBD_U) { shift_down = true;                     injectKey = fabgl::VK_F9; }            // O -> Poke
-                else if (ZXKBD_N) {                     ctrl_down = true;  injectKey = fabgl::VK_F10; }           // N -> NMI
-                else if (ZXKBD_K) {                     ctrl_down = true;  injectKey = fabgl::VK_F1; }            // K -> Help / Kbd layout
-                else if (ZXKBD_S) { shift_down = true;                     injectKey = fabgl::VK_F2; }            // S -> Save snapshot
-                else if (ZXKBD_D) { shift_down = true;                     injectKey = fabgl::VK_F5; }            // D -> Load .SCR
-                else if (ZXKBD_G) {                                        injectKey = fabgl::VK_PRINTSCREEN; }   // G -> Capture SCR
-                else if (ZXKBD_Z) {                     ctrl_down = true;  injectKey = fabgl::VK_F5; }            // Z -> CenterH
-                else if (ZXKBD_X) {                     ctrl_down = true;  injectKey = fabgl::VK_F6; }            // X -> CenterH
-                else if (ZXKBD_C) {                     ctrl_down = true;  injectKey = fabgl::VK_F7; }            // C -> CenterV
-                else if (ZXKBD_V) {                     ctrl_down = true;  injectKey = fabgl::VK_F8; }            // V -> CenterV
+                     if (ZXKBD_1)       {                                           injectKey = fabgl::VK_F1;               }   // Main Menu
+                else if (ZXKBD_2)       {                                           injectKey = fabgl::VK_F2;               }   // Load State
+                else if (ZXKBD_3)       {   shift_down = true;                      injectKey = fabgl::VK_F2;               }   // Save State
+                else if (ZXKBD_5)       {                                           injectKey = fabgl::VK_F5;               }   // File Browser
+                else if (ZXKBD_6)       {   shift_down = true;                      injectKey = fabgl::VK_F5;               }   // Tape Browser
+                else if (ZXKBD_7)       {                                           injectKey = fabgl::VK_F6;               }   // Play/Stop
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_F8;               }   // CPU Stats
+                else if (ZXKBD_9)       {                                           injectKey = fabgl::VK_F9;               }   // Vol-
+                else if (ZXKBD_0)       {                                           injectKey = fabgl::VK_F10;              }   // Vol+
+                else if (ZXKBD_Q)       {                                           injectKey = fabgl::VK_F11;              }   // Hard Reset
+                else if (ZXKBD_W)       {                                           injectKey = fabgl::VK_F12;              }   // ESP32 Reset
+                else if (ZXKBD_P)       {                                           injectKey = fabgl::VK_PAUSE;            }   // P -> Pause
+                else if (ZXKBD_I)       {   shift_down = true;                      injectKey = fabgl::VK_F1;               }   // I -> INFO
+                else if (ZXKBD_E)       {   shift_down = true;                      injectKey = fabgl::VK_F6;               }   // E -> Eject tape
+                else if (ZXKBD_R)       {                       ctrl_down = true;   injectKey = fabgl::VK_F11;              }   // R -> Reset to TR-DOS
+                else if (ZXKBD_T)       {                       ctrl_down = true;   injectKey = fabgl::VK_F2;               }   // T -> Turbo
+                else if (ZXKBD_B)       {   shift_down = true;                      injectKey = fabgl::VK_PRINTSCREEN;      }   // B -> BMP capture
+                else if (ZXKBD_O)       {                       ctrl_down = true;   injectKey = fabgl::VK_F9;               }   // O -> Poke
+                else if (ZXKBD_U)       {   shift_down = true;                      injectKey = fabgl::VK_F9;               }   // U -> Cheats
+                else if (ZXKBD_N)       {                       ctrl_down = true;   injectKey = fabgl::VK_F10;              }   // N -> NMI
+                else if (ZXKBD_K)       {                       ctrl_down = true;   injectKey = fabgl::VK_F1;               }   // K -> Help / Kbd layout
+                else if (ZXKBD_G)       {                                           injectKey = fabgl::VK_PRINTSCREEN;      }   // G -> Capture SCR
+                else if (ZXKBD_Z)       {                       ctrl_down = true;   injectKey = fabgl::VK_F5;               }   // Z -> CenterH
+                else if (ZXKBD_X)       {                       ctrl_down = true;   injectKey = fabgl::VK_F6;               }   // X -> CenterH
+                else if (ZXKBD_C)       {                       ctrl_down = true;   injectKey = fabgl::VK_F7;               }   // C -> CenterV
+                else if (ZXKBD_V)       {                       ctrl_down = true;   injectKey = fabgl::VK_F8;               }   // V -> CenterV
             }
             break;
 
         case KBDREAD_MODEFILEBROWSER:
             if (ZXKBD_CS && !ZXKBD_SS) { // CS + !SS
-                     if (ZXKBD_ENTER)   { injectKey = fabgl::VK_JOY1C; } // CS + ENTER -> SPACE / SELECT
-                else if (ZXKBD_SPACE)   { injectKey = fabgl::VK_ESCAPE; } // BREAK -> ESCAPE
-                else if (ZXKBD_0)       { injectKey = fabgl::VK_BACKSPACE; } // CS + 0 -> BACKSPACE
-                else if (ZXKBD_7)       { injectKey = fabgl::VK_UP; } // 7 -> VK_UP
-                else if (ZXKBD_6)       { injectKey = fabgl::VK_DOWN; } // 6 -> VK_DOWN
-                else if (ZXKBD_5)       { injectKey = fabgl::VK_LEFT; } // 5 -> VK_LEFT
-                else if (ZXKBD_8)       { injectKey = fabgl::VK_RIGHT; } // 8 -> VK_RIGHT
+                     if (ZXKBD_ENTER)   {                                           injectKey = fabgl::VK_JOY1C;            }   // CS + ENTER -> SPACE / SELECT
+                else if (ZXKBD_SPACE)   {                                           injectKey = fabgl::VK_ESCAPE;           }   // BREAK -> ESCAPE
+                else if (ZXKBD_0)       {                                           injectKey = fabgl::VK_BACKSPACE;        }   // CS + 0 -> BACKSPACE
+                else if (ZXKBD_7)       {                                           injectKey = fabgl::VK_UP;               }   // 7 -> VK_UP
+                else if (ZXKBD_6)       {                                           injectKey = fabgl::VK_DOWN;             }   // 6 -> VK_DOWN
+                else if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> VK_LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> VK_RIGHT
             }
             else
             if (ZXKBD_CS && ZXKBD_SS) {
-                     if (ZXKBD_7)       { injectKey = fabgl::VK_PAGEUP; } // 7 -> VK_PAGEUP
-                else if (ZXKBD_6)       { injectKey = fabgl::VK_PAGEDOWN; } // 6 -> VK_PAGEDOWN
-                else if (ZXKBD_5)       { shift_down = true; injectKey = fabgl::VK_LEFT; } // 5 -> SS + VK_LEFT
-                else if (ZXKBD_8)       { shift_down = true; injectKey = fabgl::VK_RIGHT; } // 8 -> SS + VK_RIGHT
-                else if (ZXKBD_G)       { injectKey = fabgl::VK_PRINTSCREEN; } // G -> USE THIS SCR
-                else if (ZXKBD_N)       { injectKey = fabgl::VK_F2; } // N -> NUEVO / RENOMBRAR
-                else if (ZXKBD_R)       { shift_down = true; injectKey = fabgl::VK_F2; } // R -> NUEVO Con ROM
-                else if (ZXKBD_M)       { injectKey = fabgl::VK_F6; } // M -> MOVE / MOVER
-                else if (ZXKBD_D)       { injectKey = fabgl::VK_F8; } // D -> DELETE / BORRAR
-                else if (ZXKBD_F)       { injectKey = fabgl::VK_F3; } // F -> FIND / BUSQUEDA
-                else if (ZXKBD_Z)       { ctrl_down = true; injectKey = fabgl::VK_LEFT; } // Z -> CTRL + LEFT
-                else if (ZXKBD_X)       { ctrl_down = true; injectKey = fabgl::VK_RIGHT; } // X -> CTRL + RIGHT
-                else if (ZXKBD_C)       { ctrl_down = true; injectKey = fabgl::VK_UP; } // C -> CTRL + UP
-                else if (ZXKBD_V)       { ctrl_down = true; injectKey = fabgl::VK_DOWN; } // V -> CTRL + DOWN
+                     if (ZXKBD_7)       {                                           injectKey = fabgl::VK_PAGEUP;           }   // 7 -> VK_PAGEUP
+                else if (ZXKBD_6)       {                                           injectKey = fabgl::VK_PAGEDOWN;         }   // 6 -> VK_PAGEDOWN
+                else if (ZXKBD_5)       {   shift_down = true;                      injectKey = fabgl::VK_LEFT;             }   // 5 -> SS + VK_LEFT
+                else if (ZXKBD_8)       {   shift_down = true;                      injectKey = fabgl::VK_RIGHT;            }   // 8 -> SS + VK_RIGHT
+                else if (ZXKBD_G)       {                                           injectKey = fabgl::VK_PRINTSCREEN;      }   // G -> USE THIS SCR
+                else if (ZXKBD_N)       {                                           injectKey = fabgl::VK_F2;               }   // N -> NUEVO / RENOMBRAR
+                else if (ZXKBD_R)       {   shift_down = true;                      injectKey = fabgl::VK_F2;               }   // R -> NUEVO Con ROM
+                else if (ZXKBD_M)       {                                           injectKey = fabgl::VK_F6;               }   // M -> MOVE / MOVER
+                else if (ZXKBD_D)       {                                           injectKey = fabgl::VK_F8;               }   // D -> DELETE / BORRAR
+                else if (ZXKBD_F)       {                                           injectKey = fabgl::VK_F3;               }   // F -> FIND / BUSQUEDA
+                else if (ZXKBD_Z)       {                       ctrl_down = true;   injectKey = fabgl::VK_LEFT;             }   // Z -> CTRL + LEFT
+                else if (ZXKBD_X)       {                       ctrl_down = true;   injectKey = fabgl::VK_RIGHT;            }   // X -> CTRL + RIGHT
+                else if (ZXKBD_C)       {                       ctrl_down = true;   injectKey = fabgl::VK_UP;               }   // C -> CTRL + UP
+                else if (ZXKBD_V)       {                       ctrl_down = true;   injectKey = fabgl::VK_DOWN;             }   // V -> CTRL + DOWN
             }
             break;
 
         case KBDREAD_MODEINPUT:
         {
             if (ZXKBD_CS && !ZXKBD_SS) { // CS
-                     if (ZXKBD_7)       { injectKey = fabgl::VK_END; } // 7 -> END
-                else if (ZXKBD_6)       { injectKey = fabgl::VK_HOME; } // 6 -> HOME
-                else if (ZXKBD_5)       { injectKey = fabgl::VK_LEFT; } // 5 -> LEFT
-                else if (ZXKBD_8)       { injectKey = fabgl::VK_RIGHT; } // 8 -> RIGHT
-                else if (ZXKBD_0)       { injectKey = fabgl::VK_BACKSPACE; } // CS + 0 -> BACKSPACE
-                else if (ZXKBD_SPACE)   { injectKey = fabgl::VK_ESCAPE; } // CS + SPACE && !SS -> ESCAPE
+                     if (ZXKBD_7)       {                                           injectKey = fabgl::VK_END;              }   // 7 -> END
+                else if (ZXKBD_6)       {                                           injectKey = fabgl::VK_HOME;             }   // 6 -> HOME
+                else if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> RIGHT
+                else if (ZXKBD_0)       {                                           injectKey = fabgl::VK_BACKSPACE;        }   // CS + 0 -> BACKSPACE
+                else if (ZXKBD_SPACE)   {                                           injectKey = fabgl::VK_ESCAPE;           }   // CS + SPACE && !SS -> ESCAPE
             }
             break;
         }
@@ -229,47 +225,51 @@ void ZXKeyb::ZXKbdRead(uint8_t mode) {
         case KBDREAD_MODEINPUTMULTI:
         {
             if (ZXKBD_CS && !ZXKBD_SS) { // CS
-                     if (ZXKBD_7)       { injectKey = fabgl::VK_UP; } // 7 -> VK_UP
-                else if (ZXKBD_6)       { injectKey = fabgl::VK_DOWN; } // 6 -> VK_DOWN
-                else if (ZXKBD_5)       { injectKey = fabgl::VK_LEFT; } // 5 -> LEFT
-                else if (ZXKBD_8)       { injectKey = fabgl::VK_RIGHT; } // 8 -> RIGHT
-                else if (ZXKBD_0)       { injectKey = fabgl::VK_BACKSPACE; } // CS + 0 -> BACKSPACE
-                else if (ZXKBD_SPACE)   { injectKey = fabgl::VK_ESCAPE; } // CS + SPACE && !SS -> ESCAPE
+                     if (ZXKBD_7)       {                                           injectKey = fabgl::VK_UP;               }   // 7 -> VK_UP
+                else if (ZXKBD_6)       {                                           injectKey = fabgl::VK_DOWN;             }   // 6 -> VK_DOWN
+                else if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> RIGHT
+                else if (ZXKBD_0)       {                                           injectKey = fabgl::VK_BACKSPACE;        }   // CS + 0 -> BACKSPACE
+                else if (ZXKBD_SPACE)   {                                           injectKey = fabgl::VK_ESCAPE;           }   // CS + SPACE && !SS -> ESCAPE
             }
             break;
         }
 
         case KBDREAD_MODEKBDLAYOUT:
-                 if (ZXKBD_SPACE)       { injectKey = fabgl::VK_ESCAPE; } // SPACE -> ESCAPE
-            else if (ZXKBD_ENTER)       { injectKey = fabgl::VK_ESCAPE; } // RETURN -> ESCAPE
+                 if (ZXKBD_SPACE)       {                                           injectKey = fabgl::VK_ESCAPE;           }   // SPACE -> ESCAPE
+            else if (ZXKBD_ENTER)       {                                           injectKey = fabgl::VK_ESCAPE;           }   // RETURN -> ESCAPE
             else if (ZXKBD_CS && ZXKBD_SS) { // CS + SS
-                if (ZXKBD_K)            { injectKey = fabgl::VK_ESCAPE; }
+                if (ZXKBD_K)            {                                           injectKey = fabgl::VK_ESCAPE;           }
+            }
+            else if (ZXKBD_CS && !ZXKBD_SS) { // CS
+                     if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> RIGHT
             }
             break;
 
         case KBDREAD_MODEDIALOG:
             if (ZXKBD_CS && !ZXKBD_SS) { // CS
-                     if (ZXKBD_5)       { injectKey = fabgl::VK_LEFT; } // 5 -> LEFT
-                else if (ZXKBD_8)       { injectKey = fabgl::VK_RIGHT; } // 8 -> RIGHT
-                else if (ZXKBD_SPACE)   { injectKey = fabgl::VK_ESCAPE; } // CS + SPACE && !SS -> ESCAPE
+                     if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> RIGHT
+                else if (ZXKBD_SPACE)   {                                           injectKey = fabgl::VK_ESCAPE;           }   // CS + SPACE && !SS -> ESCAPE
             }
             else if (ZXKBD_CS && ZXKBD_SS) { // CS + SS
-                if (ZXKBD_I)            { injectKey = fabgl::VK_F1; } // For exit from HWInfo
+                if (ZXKBD_I)            {                                           injectKey = fabgl::VK_F1;               }   // For exit from HWInfo
             }
             break;
 
         case KBDREAD_MODEBIOS:
             if (ZXKBD_CS && !ZXKBD_SS) { // CS
-                     if (ZXKBD_7)       { injectKey = fabgl::VK_UP; } // 7 -> VK_UP
-                else if (ZXKBD_6)       { injectKey = fabgl::VK_DOWN; } // 6 -> VK_DOWN
-                else if (ZXKBD_5)       { injectKey = fabgl::VK_LEFT; } // 5 -> LEFT
-                else if (ZXKBD_8)       { injectKey = fabgl::VK_RIGHT; } // 8 -> RIGHT
-                else if (ZXKBD_0)       { injectKey = fabgl::VK_BACKSPACE; } // CS + 0 -> BACKSPACE
-                else if (ZXKBD_SPACE)   { injectKey = fabgl::VK_ESCAPE; } // CS + SPACE && !SS -> ESCAPE
+                     if (ZXKBD_7)       {                                           injectKey = fabgl::VK_UP;               }   // 7 -> VK_UP
+                else if (ZXKBD_6)       {                                           injectKey = fabgl::VK_DOWN;             }   // 6 -> VK_DOWN
+                else if (ZXKBD_5)       {                                           injectKey = fabgl::VK_LEFT;             }   // 5 -> LEFT
+                else if (ZXKBD_8)       {                                           injectKey = fabgl::VK_RIGHT;            }   // 8 -> RIGHT
+                else if (ZXKBD_0)       {                                           injectKey = fabgl::VK_BACKSPACE;        }   // CS + 0 -> BACKSPACE
+                else if (ZXKBD_SPACE)   {                                           injectKey = fabgl::VK_ESCAPE;           }   // CS + SPACE && !SS -> ESCAPE
             }
             else
             if (!ZXKBD_CS && ZXKBD_SS) { // SS
-                if (ZXKBD_S || ZXKBD_0) { injectKey = fabgl::VK_F10; }
+                if (ZXKBD_S || ZXKBD_0) {                                           injectKey = fabgl::VK_F10;              }
             }
             break;
 

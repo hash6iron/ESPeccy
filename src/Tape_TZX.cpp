@@ -41,7 +41,7 @@ using namespace std;
 
 #include "Tape.h"
 #include "FileUtils.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "Config.h"
 #include "messages.h"
 #include "Z80_JLS/z80.h"

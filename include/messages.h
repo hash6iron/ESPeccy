@@ -61,11 +61,12 @@ static const int LANGCODEPAGE[NLANGS] = { 437, 437, 860 };
 
 static const char *ERR_FS_EXT_FAIL[NLANGS] = { ERR_FS_EXT_FAIL_EN, ERR_FS_EXT_FAIL_ES, ERR_FS_EXT_FAIL_PT };
 
+static const char *ERR_INVALID_OPERATION[NLANGS] = { ERR_INVALID_OPERATION_EN, ERR_INVALID_OPERATION_ES, ERR_INVALID_OPERATION_PT };
+
 #define ERR_DIR_OPEN "Cannot open directory!"
 
 // OSD
 #define OSD_TITLE  " ESPeccy - The ESP32 powered emulator         "
-//#define OSD_BOTTOM " zxespectrum.speccy.org     " EMU_VERSION
 #define OSD_BOTTOM " github.com/SplinterGU/ESPeccy "
 
 static const char *OSD_MSGDIALOG_YES[NLANGS] = { OSD_MSGDIALOG_YES_EN, OSD_MSGDIALOG_YES_ES, OSD_MSGDIALOG_YES_PT };
@@ -87,6 +88,12 @@ static const char *OSD_PAUSE[NLANGS] = { OSD_PAUSE_EN,OSD_PAUSE_ES,OSD_PAUSE_PT 
 #define OSD_ROM_LOAD_ERR "ERROR Loading ROM file"
 
 #define OSD_PLEASE_WAIT "Please Wait..."
+
+static const char *OSD_DISK_INSERTED[NLANGS] = { OSD_DISK_INSERTED_EN, OSD_DISK_INSERTED_ES, OSD_DISK_INSERTED_PT };
+
+static const char *OSD_DISK_EJECTED[NLANGS] = { OSD_DISK_EJECTED_EN, OSD_DISK_EJECTED_ES, OSD_DISK_EJECTED_PT };
+
+static const char *OSD_DISK_ERR[NLANGS] = { OSD_DISK_ERR_EN, OSD_DISK_ERR_ES, OSD_DISK_ERR_PT };
 
 static const char *OSD_READONLY_FILE_WARN[NLANGS] = { OSD_READONLY_FILE_WARN_EN, OSD_READONLY_FILE_WARN_ES, OSD_READONLY_FILE_WARN_PT };
 
@@ -160,7 +167,11 @@ static const char *OSD_ROM_BEGIN[NLANGS] = { OSD_ROM_BEGIN_EN,OSD_ROM_BEGIN_ES,O
 
 static const char *OSD_ROM_WRITE[NLANGS] = { OSD_ROM_WRITE_EN,OSD_ROM_WRITE_ES,OSD_ROM_WRITE_PT };
 
-static const char *MENU_SNA_TITLE[NLANGS] = { MENU_SNA_TITLE_EN,MENU_SNA_TITLE_ES,MENU_SNA_TITLE_PT };
+static const char *MENU_FILE[NLANGS] = { MENU_FILE_EN,MENU_FILE_ES,MENU_FILE_PT };
+
+static const char *MENU_FILE_CLOSE[NLANGS] = { MENU_FILE_CLOSE_EN,MENU_FILE_CLOSE_ES,MENU_FILE_CLOSE_PT };
+
+static const char *MENU_FILE_OPEN_TITLE[NLANGS] = { MENU_FILE_OPEN_TITLE_EN,MENU_FILE_OPEN_TITLE_ES,MENU_FILE_OPEN_TITLE_PT };
 
 static const char *MENU_SAVE_SNA_TITLE[NLANGS] = { MENU_SAVE_SNA_TITLE_EN,MENU_SAVE_SNA_TITLE_ES,MENU_SAVE_SNA_TITLE_PT };
 
@@ -184,25 +195,21 @@ static const char *MENU_DELETE_CURRENT_FILE[NLANGS] = { MENU_DELETE_CURRENT_FILE
 
 static const char *OSD_TAPE_EJECT[NLANGS] = { OSD_TAPE_EJECT_EN,OSD_TAPE_EJECT_ES,OSD_TAPE_EJECT_PT };
 
+static const char *OSD_ROM_INSERTED[NLANGS] = { OSD_ROM_INSERTED_EN,OSD_ROM_INSERTED_ES,OSD_ROM_INSERTED_PT };
+
 static const char *OSD_ROM_EJECT[NLANGS] = { OSD_ROM_EJECT_EN,OSD_ROM_EJECT_ES,OSD_ROM_EJECT_PT };
 
 static const char *MENU_DELETE_SNA[NLANGS] = { MENU_DELETE_SNA_EN,MENU_DELETE_SNA_ES,MENU_DELETE_SNA_PT };
 
 static const char *TRDOS_RESET_ERR[NLANGS] = { TRDOS_RESET_ERR_EN,TRDOS_RESET_ERR_ES,TRDOS_RESET_ERR_PT };
 
-static const char *MENU_SNA[NLANGS] = { MENU_SNA_EN,MENU_SNA_ES,MENU_SNA_PT };
-
-static const char *MENU_TAPE[NLANGS] = { MENU_TAPE_EN,MENU_TAPE_ES,MENU_TAPE_PT };
+static const char *MENU_STATE[NLANGS] = { MENU_STATE_EN,MENU_STATE_ES,MENU_STATE_PT };
 
 static const char *MENU_TAPEMONITOR[NLANGS] = { "LOAD monitor\n", "Monitor LOAD\n", "Monitor LOAD\n" };
 
 static const char *MENU_REALTAPE[NLANGS] = { MENU_REALTAPE_EN, MENU_REALTAPE_ES, MENU_REALTAPE_PT };
 
 static const char *MENU_BETADISK[NLANGS] = { MENU_BETADISK_EN,MENU_BETADISK_ES,MENU_BETADISK_PT };
-
-static const char *MENU_BETADRIVE[NLANGS] = { MENU_BETADRIVE_EN,MENU_BETADRIVE_ES,MENU_BETADRIVE_PT };
-
-static const char *MENU_ROM_CART[NLANGS] = { MENU_ROM_CART_EN, MENU_ROM_CART_ES, MENU_ROM_CART_PT };
 
 static const char *MENU_MAIN[3] = { MENU_MAIN_EN,MENU_MAIN_ES,MENU_MAIN_PT };
 
@@ -220,9 +227,9 @@ static const char *MENU_SCANLINES[NLANGS] = { "Scanlines\n", "Scanlines\n", "Sca
 
 static const char *MENU_RESET[NLANGS] = { MENU_RESET_EN, MENU_RESET_ES, MENU_RESET_PT };
 
-static const char *MENU_PERSIST_SAVE[NLANGS] = { MENU_PERSIST_SAVE_EN, MENU_PERSIST_SAVE_ES, MENU_PERSIST_SAVE_PT };
+static const char *MENU_STATE_SAVE[NLANGS] = { MENU_STATE_SAVE_EN, MENU_STATE_SAVE_ES, MENU_STATE_SAVE_PT };
 
-static const char *MENU_PERSIST_LOAD[NLANGS] = { MENU_PERSIST_LOAD_EN, MENU_PERSIST_LOAD_ES, MENU_PERSIST_LOAD_PT };
+static const char *MENU_STATE_LOAD[NLANGS] = { MENU_STATE_LOAD_EN, MENU_STATE_LOAD_ES, MENU_STATE_LOAD_PT };
 
 static const char *MENU_STORAGE[NLANGS] = { MENU_STORAGE_EN, MENU_STORAGE_ES, MENU_STORAGE_PT };
 
@@ -357,8 +364,8 @@ static const char *MENU_ROM_PREF_TK95[NLANGS] = {
 
 static const char *MENU_INTERFACE_LANG[3] = { MENU_INTERFACE_LANG_EN, MENU_INTERFACE_LANG_ES, MENU_INTERFACE_LANG_PT };
 
-#define MENU_JOYS "Joystick 1\n"\
-    "Joystick 2\n"
+#define MENU_JOYS "Joystick 1\t>\n"\
+    "Joystick 2\t>\n"
 
 static const char *MENU_JOY[NLANGS] = { MENU_JOY_EN MENU_JOYS, MENU_JOY_ES MENU_JOYS, MENU_JOY_PT MENU_JOYS };
 
@@ -417,7 +424,7 @@ static const char *MENU_MOUSE_DPI[NLANGS] = { "Resolution\n" MENU_MOUSE_DPI_ITEM
 
 static const char *MENU_MOUSE_SCALING[NLANGS] = { "Scaling\n" MENU_MOUSE_SCALING_ITEMS, "Escalado\n" MENU_MOUSE_SCALING_ITEMS, "Escala\n" MENU_MOUSE_SCALING_ITEMS };
 
-static const char *AboutMsg[NLANGS][5] = {
+static const char *AboutMsg[NLANGS][4] = {
 	// English
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"
@@ -442,41 +449,21 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71Collaborators:\r"
 	"\r"
 	"\n21ackerman            \n71Code & ideas\r"
-	"\n31Armand              \n71Testing & broadcasting\r"
 	"\n41azesmbog            \n71Testing & ideas\r"
-	"\n51Carlo Brini         \n71Our UK guy ;)\r"
 	"\n61David Carri\xA2n       \n71H/W code, ZX kbd\r"
-	"\n21Rodolfo Guerra      \n71Our LATAM guy ;)\r"
+	"\n21Rodolfo Guerra      \n71Testing & ideas\r"
 	"\n31Ram\xA2n Mart\xA1nez      \n71AY emul. improvements\r"
-	"\n41Ron                 \n71Testing & broadcasting\r"
 	"\n51J.L. S\xA0nchez        \n71Z80 core improvements\r"
 	"\n61Antonio Villena     \n71Hardware support\r"
 	"\n21ZjoyKiLer           \n71Testing & ideas"
  	,
-	"\n71Thanks for help and donations to:\r"
-	"\r"
-	"\n21Abel Bayon @Baycorps    \n71Amstrad Eterno\r"
-	"\n31Pablo Forcen Soler      \n71AUA\r"
-	"\n41Jordi Ramos Montes\r"
-	"\n51Tsvetan Usunov          \n71Olimex Ltd.\r"
-	"\r"
 	"\n71ZX81+ ROM included courtesy of:\r"
 	"\r"
-	"\n21Paul Farrow"
-	,
-	"\n71Thanks also to:\r"
+	"\n21Paul Farrow\r"
+    "\r"
+	"\n71Thanks to:\r"
 	"\r"
-	"\n21Retrowiki.es \n71and its great community\r"
-	"\n31Ron \n71for his cool RetroCrypta\r"
-	"\n41Viejoven FX, \n51J.Ortiz \"El Spectrumero\"\r"
-	"\n61J.C. Gonz\xA0lez Amestoy \n71for RVM\r"
-	"\n21VidaExtraRetro, \n31C\x82sar Nicol\xA0s-Gonz\xA0lez\r"
-	"\n41Rodolfo Guerra, \n51All creators in\r"
-	"ZX Spectrum server at Discord\r"
-	"\r"
-	"\n71and, of course, to:\r"
-	"\r"
-	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
+	"\n51Sir Clive Sinclair"
 	},
 	// Español
 	{
@@ -502,46 +489,26 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71Colaboradores:\r"
 	"\r"
 	"\n21ackerman            \n71C\xA2" "digo e ideas\r"
-	"\n31Armand              \n71Testing y difusi\xA2n\r"
 	"\n41azesmbog            \n71Testing e ideas\r"
-	"\n51Carlo Brini         \n71ESPectrum en UK ;)\r"
 	"\n61David Carri\xA2n       \n71C\xA2" "digo h/w, teclado ZX\r"
-	"\n21Rodolfo Guerra      \n71ESPectrum en LATAM ;)\r"
+	"\n21Rodolfo Guerra      \n71Testing e ideas\r"
 	"\n31Ram\xA2n Mart\xA1nez      \n71Mejoras emulaci\xA2n AY\r"
-	"\n41Ron                 \n71Testing y difusi\xA2n\r"
 	"\n51J.L. S\xA0nchez        \n71Mejoras core Z80\r"
 	"\n61Antonio Villena     \n71Soporte hardware\r"
 	"\n21ZjoyKiLer           \n71Testing e ideas"
 	,
-	"\n71Gracias por su ayuda y donaciones a:\r"
-	"\r"
-	"\n21Abel Bayon @Baycorps    \n71Amstrad Eterno\r"
-	"\n31Pablo Forcen Soler      \n71AUA\r"
-	"\n41Jordi Ramos Montes\r"
-	"\n51Tsvetan Usunov          \n71Olimex Ltd.\r"
-	"\r"
 	"\n71ZX81+ ROM incluida por cortes\xA1" "a de:\r"
 	"\r"
-	"\n21Paul Farrow"\
-	,
-	"\n71Gracias tambi\x82n a:\r"
+	"\n21Paul Farrow\r"
+    "\r"
+	"\n71Gracias a:\r"
 	"\r"
-	"\n21Retrowiki.es \n71y su magn\xA1" "fica comunidad\r"
-	"\n31Ron \n71por su genial RetroCrypta\r"
-	"\n41Viejoven FX, \n51J.Ortiz \"El Spectrumero\"\r"
-	"\n61J.C. Gonz\xA0lez Amestoy \n71por RVM\r"
-	"\n21VidaExtraRetro, \n31C\x82sar Nicol\xA0s-Gonz\xA0lez\r"
-	"\n41Rodolfo Guerra, \n51Todos los creadores en\r"
-	"el servidor ZXSpectrum en Discord\r"
-	"\r"
-	"\n71y, por supuesto, a:\r"
-	"\r"
-	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
+	"\n51Sir Clive Sinclair"
 	},
 	// Portugues
 	{
 	"\nF1(C)2024 Juan Jos\x82 Ponteprino \"SplinterGU\"\r"
-	"\r" \
+	"\r"
 	"\nA1ESP\nF1eccy \x82 um fork do \nA1ESP\nF1ectrum.\r"
 	"\r"
 	"\r"
@@ -549,7 +516,7 @@ static const char *AboutMsg[NLANGS][5] = {
 	"(C)2023      David Crespo  \"dcrespo3d\""
 	,
 	"\n21Baseado no ZX-ESPectrum-Wiimote\r"
-	"(C)2020-2023 David Crespo\r"\
+	"(C)2020-2023 David Crespo\r"
 	"\r"
 	"\n31Inspirado em projetos anteriores\r"
 	"de Pete Todd e Rampa & Queru\r"
@@ -562,41 +529,21 @@ static const char *AboutMsg[NLANGS][5] = {
 	"\n71Colaboradores:\r"
 	"\r"
 	"\n21ackerman            \n71C\xA2" "digo e ideias\r"
-	"\n31Armand              \n71Teste e difus\x84o\r"
 	"\n41azesmbog            \n71Teste e ideias\r"
-	"\n51Carlo Brini         \n71ESPectrum em UK ;)\r"
 	"\n61David Carri\xA2n       \n71C\xA2" "digo h/w, teclado ZX\r"
-	"\n21Rodolfo Guerra      \n71ESPectrum na LATAM ;)\r"
+	"\n21Rodolfo Guerra      \n71Teste e ideias\r"
 	"\n31Ram\xA2n Mart\xA1nez      \n71Melhorias na emula\x87\x84o AY\r"
-	"\n41Ron                 \n71Teste e difus\x84o\r"
 	"\n51J.L. S\xA0nchez        \n71Melhorias no core Z80\r"
 	"\n61Antonio Villena     \n71Suporte do hardware\r"
 	"\n21ZjoyKiLer           \n71Teste e ideias"
 	,
-	"\n71Obrigado pela sua ajuda e doa\x87\x94" "es a:\r"
-	"\r"
-	"\n21Abel Bayon @Baycorps    \n71Amstrad Eterno\r"
-	"\n31Pablo Forcen Soler      \n71AUA\r"
-	"\n41Jordi Ramos Montes\r"
-	"\n51Tsvetan Usunov          \n71Olimex Ltd.\r"
-	"\r"
 	"\n71ZX81+ ROM inclu\xA1" "da como cortesia de:\r"
 	"\r"
-	"\n21Paul Farrow"
-	,
-	"\n71Obrigado tamb\x82m a:\r"
+	"\n21Paul Farrow\r"
+    "\r"
+	"\n71Obrigado a:\r"
 	"\r"
-	"\n21Retrowiki.es \n71e sua magn\xA1" "fica comunidade\r"
-	"\n31Ron \n71por sua brilhante RetroCrypta\r"
-	"\n41Viejoven FX, \n51J.Ortiz \"El Spectrumero\"\r"
-	"\n61J.C. Gonz\xA0lez Amestoy \n71por RVM\r"
-	"\n21VidaExtraRetro, \n31C\x82sar Nicol\xA0s-Gonz\xA0lez\r"
-	"\n41Rodolfo Guerra, \n51Todos os criadores no\r"
-	"servidor ZXSpectrum no Discord\r"
-	"\r"
-	"\n71e, \x82 claro, a:\r"
-	"\r"
-	"\n51Sir Clive Sinclair \n71& \n21M\n61a\n41t\n51t\n31h\n21e\n61w \n41S\n51m\n31i\n21t\n61h"
+	"\n51Sir Clive Sinclair"
 	}
  };
 

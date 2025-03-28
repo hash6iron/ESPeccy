@@ -63,7 +63,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Tape.h"
 #include "Config.h"
 #include "FileUtils.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "messages.h"
 
 #include "RealTape.h"
