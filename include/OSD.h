@@ -161,6 +161,7 @@ public:
     static void restoreBackbufferData(bool force = false);
     static void saveBackbufferData(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool force = false);
     static void saveBackbufferData(bool force = false);
+    static void flushBackbufferData();
 
     // Menu
     static void LoadState();

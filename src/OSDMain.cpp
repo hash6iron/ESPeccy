@@ -218,6 +218,13 @@ void OSD::saveBackbufferData(bool force) {
     OSD::saveBackbufferData(x, y, w, h, force);
 }
 
+void OSD::flushBackbufferData() {
+    while(SaveRectpos) {
+        OSD::restoreBackbufferData(true);
+    }
+}
+
+
 // // Cursor to OSD first row,col
 void OSD::osdHome() { VIDEO::vga.setCursor(osdInsideX(), osdInsideY()); }
 
@@ -1728,8 +1735,8 @@ static string getStringStateCatalog()
         while ((de = readdir(dir)) != nullptr) {
             string fname = de->d_name;
             if (de->d_type == DT_REG && FileUtils::hasExtension(fname, "sna")) {
-                if (fname.substr(0,7) == "state") {
-                    // Extraer la parte entre "state" y la extension
+                if (fname.substr(0,7) == "persist") {
+                    // Extraer la parte entre "persist" y la extension
                     int index = stoi(fname.substr(7, fname.length() - 4 - 7))-1;
                     if (cat[index] == "") cat[index] = "*";
                 }
@@ -1928,6 +1935,8 @@ bool OSD::browseCheatFiles() {
 
 void OSD::showCheatDialog() {
 
+    OSD::flushBackbufferData();
+
     menu_level = 0;
     menu_curopt = 1;
 
@@ -2114,6 +2123,9 @@ void OSD::do_OSD_MenuUpdateROM(uint8_t arch) {
 
 void OSD::LoadState() {
     // State Load
+
+    flushBackbufferData();
+
     menu_level = 0;
     menu_curopt = 1;
 
@@ -2144,6 +2156,9 @@ void OSD::LoadState() {
 
 void OSD::SaveState() {
     // State Save
+
+    flushBackbufferData();
+
     menu_level = 0;
     menu_curopt = 1;
 
@@ -2166,6 +2181,8 @@ void OSD::SaveState() {
 }
 
 void OSD::FileBrowser() {
+
+    flushBackbufferData();
 
     menu_level = 0;
 
