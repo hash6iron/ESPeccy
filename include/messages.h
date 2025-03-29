@@ -250,14 +250,14 @@ static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_NO_PSRAM = "EAR config\n"
     "USB 1 (GPIO 32)\t[32]\n"\
     "USB 1 (GPIO 33)\t[33]\n"\
     "USB 2 (GPIO 16)\t[16]\n"\
-    "USB 2 (GPIO 17)\t[17]\n"\
-    "MOD (GPIO 39)\t[39]\n";
+    "USB 2 (GPIO 17)\t[17]\n"/*\
+    "MOD (GPIO 39)\t[39]\n"*/;
 
 static const char *MENU_REALTAPE_OPTIONS_VILLENA_BOARD_PSRAM = "EAR config\n"\
     "EAR\t[3]\n"\
     "USB 1 (GPIO 32)\t[32]\n"\
-    "USB 1 (GPIO 33)\t[33]\n"\
-    "MOD (GPIO 39)\t[39]\n";
+    "USB 1 (GPIO 33)\t[33]\n"/*\
+    "MOD (GPIO 39)\t[39]\n"*/;
 
 static const char *MENU_REALTAPE_OPTIONS_LILY = "EAR config\n"\
     "BOARD (GPIO 39)\t[39]\n"\

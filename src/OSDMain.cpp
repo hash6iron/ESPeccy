@@ -3348,13 +3348,12 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                             uint8_t prev_opt = Config::realtape_mode;
 
                                             string Mnustr = markSelectedOption(MENU_REALTAPE[Config::lang], to_string(prev_opt));
-
                                             menu_curopt = Config::realtape_mode + 1;
 
                                             uint8_t opt3 = menuRun(Mnustr);
                                             if (opt3) {
                                                 if (opt3 - 1 != prev_opt) {
-                                                    Config::realtape_mode = opt2 - 1;
+                                                    Config::realtape_mode = opt3 - 1;
                                                     Config::save("RealTapeMode");
                                                 }
                                                 menu_curopt = opt3;
