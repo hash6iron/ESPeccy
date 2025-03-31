@@ -96,8 +96,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_PT "Erro de atualiza\x87\x84o."
 
-#define MENU_ROM_TITLE_PT "Escolha ROM"
-
 #define OSD_ROM_ERR_PT "Erro de grava\x87\x84o."
 
 #define OSD_NOROMFILE_ERR_PT "Custom ROM n\x84o encontrada."
@@ -107,6 +105,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_ROM_BEGIN_PT "     Preparando espa\x87o.     "
 
 #define OSD_ROM_WRITE_PT "    Gravando ROM custom.    "
+
+#define MENU_UPG_TITLE_PT "Escolha firmware"
+
+#define MENU_ROM_TITLE_PT "Escolha ROM"
 
 #define MENU_FILE_OPEN_TITLE_PT "Escolha o arquivo"
 

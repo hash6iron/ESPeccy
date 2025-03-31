@@ -94,8 +94,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_EN "Problem updating firmware."
 
-#define MENU_ROM_TITLE_EN "Select ROM"
-
 #define OSD_ROM_ERR_EN "Problem flashing ROM."
 
 #define OSD_NOROMFILE_ERR_EN "No custom ROM file found."
@@ -105,6 +103,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_ROM_BEGIN_EN "   Preparing flash space.   "
 
 #define OSD_ROM_WRITE_EN "    Flashing custom ROM.    "
+
+#define MENU_UPG_TITLE_EN "Select firmware"
+
+#define MENU_ROM_TITLE_EN "Select ROM"
 
 #define MENU_FILE_OPEN_TITLE_EN "Select File"
 

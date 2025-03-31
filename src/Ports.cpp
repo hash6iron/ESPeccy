@@ -58,8 +58,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //   6: ula <= 8'hF8;
 //   7: ula <= 8'hFF;
 // and adjusted for BEEPER_MAX_VOLUME = 97
-//uint8_t Ports::speaker_values[8]={ 0, 19, 34, 53, 97, 101, 130, 134 };
-uint8_t Ports::speaker_values[8]={ 0x00, 0x24, 0x40, 0x64, 0xb8, 0xc0, 0xf8, 0xff };
+#if 0
+uint8_t Ports::speaker_values[8]={ 0, 19, 34, 53, 97, 101, 130, 134 };
+#else
+#define SPK_VAL         0xA0 // 0xB0
+#define MIC_VAL         0x50 // 0x40
+#define EARBIT_VAL      0x0F
+
+uint8_t Ports::speaker_values[8]={
+              MIC_VAL             , // 000
+              MIC_VAL + EARBIT_VAL, // 001
+    0                             , // 010
+                        EARBIT_VAL, // 011
+    SPK_VAL + MIC_VAL             , // 100
+    SPK_VAL + MIC_VAL + EARBIT_VAL, // 101
+    SPK_VAL                       , // 110
+    SPK_VAL           + EARBIT_VAL  // 111
+};
+#endif
+
 uint8_t Ports::port[128];
 uint8_t Ports::port254 = 0;
 uint8_t Ports::LastOutTo1FFD = 0;
@@ -458,8 +475,7 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
 #if 0
                 Audiobit = speaker_values[((data >> 2) & 0x04) | (Tape::tapeEarBit << 1) | ((data >> 3) & 0x01)];
 #else
-//                Audiobit = speaker_values[(((data ^ 0x08) >> 2) & 0x06) | (Tape::tapeEarBit & 0x1)];
-                Audiobit = speaker_values[(((data ^ 0x08) >> 1) & 0x04) | (((data & 0x10) >> 3) & 0x02) | (Tape::tapeEarBit & 0x1)]; // MIC - SPK - EAR (MONITOR)
+                Audiobit = speaker_values[((data >> 2) & 0x06) | (Tape::tapeEarBit & 0x1)]; // SPK - MIC - EAR MONITOR
 #endif
             }
 

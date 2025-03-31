@@ -2107,9 +2107,7 @@ void OSD::do_OSD_MenuUpdateROM(uint8_t arch) {
                     } else {
                         esp_err_t res = updateROM(customrom, arch);
                         fclose(customrom);
-                        string errMsg = OSD_ROM_ERR[Config::lang];
-                        errMsg += " Code = " + to_string(res);
-                        osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                        osdCenteredMsg((string)OSD_ROM_ERR[Config::lang] + " Code = " + to_string(res), LEVEL_ERROR, 3000);
                     }
                 }
             }
@@ -4378,31 +4376,36 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
                                 if ( FileUtils::isSDReady() ) {
 
-                                    string title = OSD_FIRMW_UPDATE[Config::lang];
-                                    string msg = OSD_DLG_SURE[Config::lang];
-                                    uint8_t res = msgDialog(title,msg);
+                                    menu_saverect = true;
 
-                                    if (res == DLG_YES) {
+                                    string mFile = fileDialog( FileUtils::UPG_Path, (string) MENU_UPG_TITLE[Config::lang], DISK_UPGFILE, 42, 10);
 
-                                        if ( FileUtils::isSDReady() ) {
-                                            // Open firmware file
-                                            FILE *firmware = fopen("/sd/firmware.upg", "rb");
-                                            if (firmware == NULL) {
-                                                osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
-                                            } else {
-                                                esp_err_t res = updateFirmware(firmware);
-                                                fclose(firmware);
-                                                string errMsg = OSD_FIRMW_ERR[Config::lang];
-                                                errMsg += " Code = " + to_string(res);
-                                                osdCenteredMsg(errMsg, LEVEL_ERROR, 3000);
+                                    if (mFile != "") {
+                                        mFile.erase(0, 1);
+                                        string fname = FileUtils::MountPoint + FileUtils::UPG_Path + mFile;
+
+                                        menu_saverect = false;
+
+                                        uint8_t res = msgDialog((string) OSD_FIRMW_UPDATE[Config::lang], OSD_DLG_SURE[Config::lang]);
+
+                                        if (res == DLG_YES) {
+
+                                            if ( FileUtils::isSDReady() ) {
+                                                // Open firmware file
+                                                FILE *firmware = fopen(fname.c_str(), "rb");
+                                                if (firmware == NULL) {
+                                                    osdCenteredMsg(OSD_NOFIRMW_ERR[Config::lang], LEVEL_WARN, 2000);
+                                                } else {
+                                                    esp_err_t res = updateFirmware(firmware);
+                                                    fclose(firmware);
+                                                    osdCenteredMsg((string)OSD_FIRMW_ERR[Config::lang] + " Code = " + to_string(res), LEVEL_ERROR, 3000);
+                                                }
                                             }
                                         }
                                     }
                                 }
 
-                                menu_curopt = 1;
-                                menu_level = 1;
-                                menu_saverect = false;
+                                menu_curopt = opt2;
 
                             } else if (opt2 == 2) {
                                 do_OSD_MenuUpdateROM(1); // 48k

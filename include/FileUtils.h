@@ -58,7 +58,8 @@ enum {
     DISK_ROMFILE,
     DISK_ESPFILE,
     DISK_CHTFILE,
-    DISK_SCRFILE
+    DISK_SCRFILE,
+    DISK_UPGFILE
 };
 
 #define DISK_DIR    0x80
@@ -125,14 +126,15 @@ public:
     static string MountPoint;
     static bool SDReady;
 
-    static string ALL_Path; // Current SNA path on the SD
+    static string ALL_Path; // Current ALL path on the SD
     static string SNA_Path; // Current SNA path on the SD
     static string TAP_Path; // Current TAP path on the SD
     static string DSK_Path; // Current DSK path on the SD
     static string ROM_Path; // Current ROM path on the SD
     static string ESP_Path; // Current ROM path on the SD
     static string CHT_Path; // Current POK path on the SD
-    static string SCR_Path; // Current POK path on the SD
+    static string SCR_Path; // Current SCR path on the SD
+    static string UPG_Path; // Current UPG path on the SD
 
     static DISK_FTYPE fileTypes[];
 

@@ -94,8 +94,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_ES "Error actualizando firmware."
 
-#define MENU_ROM_TITLE_ES "Elija ROM"
-
 #define OSD_ROM_ERR_ES "Error flasheando ROM."
 
 #define OSD_NOROMFILE_ERR_ES "Custom ROM no encontrada."
@@ -109,6 +107,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define MENU_FILE_OPEN_TITLE_ES "Elija archivo"
 
 #define MENU_SAVE_SNA_TITLE_ES "Guardar snapshot"
+
+#define MENU_UPG_TITLE_ES "Elija firmware"
+
+#define MENU_ROM_TITLE_ES "Elija ROM"
 
 #define MENU_TAP_TITLE_ES "Elija cinta"
 
