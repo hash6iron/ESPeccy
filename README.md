@@ -39,8 +39,8 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - Rodolfo Guerra's ROMs fast load routines support with on-the-fly standard speed blocks translation.
 - Virtual tape system with support for the SAVE command and block renaming, deleting, and moving.
 - SNA, Z80, and SP snapshot saving and loading.
-- Persistent snapshot (in slots) saving and loading.
-- Rename and delete persistent snapshot (in slots).
+- State saving and loading.
+- Rename and delete states.
 - Complete file navigation system with auto-indexing, folder support, and search functions.
 - Complete OSD menu in three languages: English, Spanish, and Portuguese.
 - BMP screen capture to SD Card (thanks David Crespo 😉).
@@ -57,7 +57,7 @@ This fork is maintained and developed by Juan José Ponteprino, known as [Splint
 - Kempston mouse support with configurable sample rate, DPI, and scaling.
 - Spectrum +2A model support.
 - SCR file support and screen autodetection in tape/snapshot/ROM files.
-- Persistent snapshot screen preview in slots.
+- State screen preview.
 - Real tape support (SAVE/LOAD)
 - ZXUnoPS2 (.ZXPURE) support (selectable from BIOS)
 - Configurable IO36 Button functionality on LilyGo (from BIOS) (RESET, NMI, CHEATS, POKE, STATS, MENU)

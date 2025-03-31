@@ -45,7 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Snapshot.h"
 #include "Config.h"
 #include "FileUtils.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "Ports.h"
 #include "MemESP.h"
 #include "cpuESP.h"
@@ -2067,36 +2067,32 @@ IRAM_ATTR bool ESPeccy::readKbd(fabgl::VirtualKeyItem *NextKey, uint8_t mode) {
                         // Detect and process physical kbd menu key combinations
                         // CS+SS+<1..0> -> F1..F10 Keys, CS+SS+Q -> F11, CS+SS+W -> F12, CS+SS+S -> Capture screen
                         if (NextKey->SHIFT && NextKey->CTRL) {
-                                 if (NextKey->vk == fabgl::VK_1)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F1; }
-                            else if (NextKey->vk == fabgl::VK_2)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F2; }
-                            else if (NextKey->vk == fabgl::VK_3)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F3; }
-                            else if (NextKey->vk == fabgl::VK_4)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F4; }
-                            else if (NextKey->vk == fabgl::VK_5)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F5; }
-                            else if (NextKey->vk == fabgl::VK_6)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F6; }
-                            else if (NextKey->vk == fabgl::VK_7)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F7; }
-                            else if (NextKey->vk == fabgl::VK_8)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F8; }
-                            else if (NextKey->vk == fabgl::VK_9)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F9; }
-                            else if (NextKey->vk == fabgl::VK_0)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F10; }
-                            else if (NextKey->vk == fabgl::VK_Q || NextKey->vk == fabgl::VK_q) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F11; }
-                            else if (NextKey->vk == fabgl::VK_W || NextKey->vk == fabgl::VK_w) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F12; }
-                            else if (NextKey->vk == fabgl::VK_P || NextKey->vk == fabgl::VK_p) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_PAUSE; }         // P -> Pause
-                            else if (NextKey->vk == fabgl::VK_I || NextKey->vk == fabgl::VK_i) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F1; }            // I -> INFO
-                            else if (NextKey->vk == fabgl::VK_E || NextKey->vk == fabgl::VK_e) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F6; }            // E -> Eject tape
-                            else if (NextKey->vk == fabgl::VK_R || NextKey->vk == fabgl::VK_r) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F11; }           // R -> Reset to TR-DOS
-                            else if (NextKey->vk == fabgl::VK_T || NextKey->vk == fabgl::VK_t) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F2; }            // T -> Turbo
-                            else if (NextKey->vk == fabgl::VK_B || NextKey->vk == fabgl::VK_b) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_PRINTSCREEN; }   // B -> BMP capture
-                            else if (NextKey->vk == fabgl::VK_O || NextKey->vk == fabgl::VK_o) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F9; }            // O -> Poke
-                            else if (NextKey->vk == fabgl::VK_Y || NextKey->vk == fabgl::VK_y) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F3; }            // Y -> Cartridge
-                            else if (NextKey->vk == fabgl::VK_U || NextKey->vk == fabgl::VK_u) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F9; }            // U -> Cheats
-                            else if (NextKey->vk == fabgl::VK_N || NextKey->vk == fabgl::VK_n) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F10; }           // N -> NMI
-                            else if (NextKey->vk == fabgl::VK_K || NextKey->vk == fabgl::VK_k) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F1; }            // K -> Help / Kbd layout
-                            else if (NextKey->vk == fabgl::VK_S || NextKey->vk == fabgl::VK_s) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F2; }            // S -> Save snapshot
-                            else if (NextKey->vk == fabgl::VK_D || NextKey->vk == fabgl::VK_d) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F5; }            // D -> Load .SCR
-                            else if (NextKey->vk == fabgl::VK_G || NextKey->vk == fabgl::VK_g) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_PRINTSCREEN; }   // G -> Capture SCR
-                            else if (NextKey->vk == fabgl::VK_Z || NextKey->vk == fabgl::VK_z) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F5; }            // Z -> CenterH
-                            else if (NextKey->vk == fabgl::VK_X || NextKey->vk == fabgl::VK_x) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F6; }            // X -> CenterH
-                            else if (NextKey->vk == fabgl::VK_C || NextKey->vk == fabgl::VK_c) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F7; }            // C -> CenterV
-                            else if (NextKey->vk == fabgl::VK_V || NextKey->vk == fabgl::VK_v) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F8; }            // V -> CenterV
+                                 if (NextKey->vk == fabgl::VK_1)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F1; }           // Main Menu
+                            else if (NextKey->vk == fabgl::VK_2)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F2; }           // Load State
+                            else if (NextKey->vk == fabgl::VK_3)                               { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F2; }           // Save State
+                            else if (NextKey->vk == fabgl::VK_5)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F5; }           // File Browser
+                            else if (NextKey->vk == fabgl::VK_6)                               { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F5; }           // Tape Browser
+                            else if (NextKey->vk == fabgl::VK_7)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F6; }           // Play/Stop
+                            else if (NextKey->vk == fabgl::VK_8)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F8; }           // CPU Stats
+                            else if (NextKey->vk == fabgl::VK_9)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F9; }           // Vol-
+                            else if (NextKey->vk == fabgl::VK_0)                               { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F10; }          // Vol+
+                            else if (NextKey->vk == fabgl::VK_Q || NextKey->vk == fabgl::VK_q) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F11; }          // Hard Reset
+                            else if (NextKey->vk == fabgl::VK_W || NextKey->vk == fabgl::VK_w) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_F12; }          // ESP32 Reset
+                            else if (NextKey->vk == fabgl::VK_P || NextKey->vk == fabgl::VK_p) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_PAUSE; }        // P -> Pause
+                            else if (NextKey->vk == fabgl::VK_I || NextKey->vk == fabgl::VK_i) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F1; }           // I -> INFO
+                            else if (NextKey->vk == fabgl::VK_E || NextKey->vk == fabgl::VK_e) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F6; }           // E -> Eject tape
+                            else if (NextKey->vk == fabgl::VK_R || NextKey->vk == fabgl::VK_r) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F11; }          // R -> Reset to TR-DOS
+                            else if (NextKey->vk == fabgl::VK_T || NextKey->vk == fabgl::VK_t) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F2; }           // T -> Turbo
+                            else if (NextKey->vk == fabgl::VK_B || NextKey->vk == fabgl::VK_b) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_PRINTSCREEN; }  // B -> BMP capture
+                            else if (NextKey->vk == fabgl::VK_O || NextKey->vk == fabgl::VK_o) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F9; }           // O -> Poke
+                            else if (NextKey->vk == fabgl::VK_U || NextKey->vk == fabgl::VK_u) { akey.SHIFT = true;  akey.CTRL = false; akey.vk = fabgl::VK_F9; }           // U -> Cheats
+                            else if (NextKey->vk == fabgl::VK_N || NextKey->vk == fabgl::VK_n) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F10; }          // N -> NMI
+                            else if (NextKey->vk == fabgl::VK_K || NextKey->vk == fabgl::VK_k) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F1; }           // K -> Help / Kbd layout
+                            else if (NextKey->vk == fabgl::VK_G || NextKey->vk == fabgl::VK_g) { akey.SHIFT = false; akey.CTRL = false; akey.vk = fabgl::VK_PRINTSCREEN; }  // G -> Capture SCR
+                            else if (NextKey->vk == fabgl::VK_Z || NextKey->vk == fabgl::VK_z) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F5; }           // Z -> CenterH
+                            else if (NextKey->vk == fabgl::VK_X || NextKey->vk == fabgl::VK_x) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F6; }           // X -> CenterH
+                            else if (NextKey->vk == fabgl::VK_C || NextKey->vk == fabgl::VK_c) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F7; }           // C -> CenterV
+                            else if (NextKey->vk == fabgl::VK_V || NextKey->vk == fabgl::VK_v) { akey.SHIFT = false; akey.CTRL = true;  akey.vk = fabgl::VK_F8; }           // V -> CenterV
                         }
                         break;
 
@@ -2183,6 +2179,10 @@ IRAM_ATTR bool ESPeccy::readKbd(fabgl::VirtualKeyItem *NextKey, uint8_t mode) {
                         else if (NextKey->vk == fabgl::VK_RETURN)                           { akey.vk = fabgl::VK_ESCAPE; } // RETURN -> ESCAPE
                         else if (NextKey->SHIFT && NextKey->CTRL) { // CS + SS
                             if (NextKey->vk == fabgl::VK_K || NextKey->vk == fabgl::VK_k)   { akey.vk = fabgl::VK_ESCAPE; }
+                        }
+                        else if (NextKey->SHIFT && !NextKey->CTRL) { // CS
+                                 if (NextKey->vk == fabgl::VK_PERCENT)                      { akey.vk = fabgl::VK_LEFT;   } // 5 -> LEFT
+                            else if (NextKey->vk == fabgl::VK_ASTERISK)                     { akey.vk = fabgl::VK_RIGHT;  } // 8 -> RIGHT
                         }
                         break;
 

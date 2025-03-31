@@ -44,7 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "messages.h"
 #include "ESPeccy.h"
 #include "roms.h"
-#include "OSDMain.h"
+#include "OSD.h"
 
 string   Config::arch = "48K";
 string   Config::romSet = "48K";

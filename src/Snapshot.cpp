@@ -42,7 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ESPeccy.h"
 #include "Ports.h"
 #include "messages.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "Tape.h"
 #include "AySound.h"
 #include "pwm_audio.h"
@@ -115,12 +115,12 @@ bool SaveSnapshot(string filename, bool force_saverom) {
 
 }
 
-std::string getSnapshotCheatPath(const std::string& path) {
+string getSnapshotCheatPath(const string& path) {
     // Buscar la posición del último separador '/' o '\' (para compatibilidad).
     size_t lastSlash = path.find_last_of("/\\");
 
     // Extraer el nombre del archivo sin ruta.
-    std::string filename = (lastSlash == std::string::npos)
+    std::string filename = (lastSlash == string::npos)
                             ? path
                             : path.substr(lastSlash + 1);
 
@@ -128,14 +128,14 @@ std::string getSnapshotCheatPath(const std::string& path) {
     size_t dotPos = filename.find_last_of('.');
 
     // Eliminar la extensión, si existe.
-    if (dotPos != std::string::npos) {
+    if (dotPos != string::npos) {
         filename = filename.substr(0, dotPos);
     }
 
     // Construir la nueva ruta: <directorio>/POKES/<archivo>.pok
-    std::string newPath = (lastSlash == std::string::npos)
-                            ? "POKES/" + filename + ".pok"
-                            : path.substr(0, lastSlash + 1) + "POKES/" + filename + ".pok";
+    string newPath = (lastSlash == string::npos)
+                        ? "POKES/" + filename + ".pok"
+                        : path.substr(0, lastSlash + 1) + "POKES/" + filename + ".pok";
 
     return newPath;
 }
@@ -460,7 +460,7 @@ bool FileSNA::load(string sna_fn, string force_arch, string force_romset, uint8_
 
 // ///////////////////////////////////////////////////////////////////////////////
 
-bool FileSNA::isPersistAvailable(string filename) {
+bool FileSNA::isStateAvailable(string filename) {
 
     FILE *f = fopen(filename.c_str(), "rb");
     if (f == NULL)

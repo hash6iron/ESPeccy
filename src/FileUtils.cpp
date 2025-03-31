@@ -45,7 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "ESPeccy.h"
 #include "hardpins.h"
 #include "messages.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "roms.h"
 #include "Video.h"
 #include "ZXKeyb.h"
@@ -62,6 +62,7 @@ string FileUtils::MountPoint = MOUNT_POINT_SD; // Start with SD
 bool FileUtils::SDReady = false;
 sdmmc_card_t *FileUtils::card;
 
+string FileUtils::ALL_Path = "/"; // Current path on the SD
 string FileUtils::SNA_Path = "/"; // Current path on the SD
 string FileUtils::TAP_Path = "/"; // Current path on the SD
 string FileUtils::DSK_Path = "/"; // Current path on the SD
@@ -69,15 +70,18 @@ string FileUtils::ROM_Path = "/"; // Current path on the SD
 string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
 string FileUtils::CHT_Path = "/"; // Current path on the SD
 string FileUtils::SCR_Path = "/"; // Current path on the SD
+string FileUtils::UPG_Path = "/"; // Current path on the SD
 
 DISK_FTYPE FileUtils::fileTypes[] = {
+    {"sna,z80,sp,p,tap,tzx,trd,scl,bin,rom,esp,pok,scr", ".all.idx", 2,2,0,""},
     {"sna,z80,sp,p",".s",2,2,0,""},
     {"tap,tzx,",".t",2,2,0,""},
     {"trd,scl",".d",2,2,0,""},
     {"bin,rom",".r",2,2,0,""},
     {"esp",".e",2,2,0,""},
     {"pok",".c.idx",2,2,0,""},
-    {"scr",".scr.idx",2,2,0,""}
+    {"scr",".scr.idx",2,2,0,""},
+    {"upg",".upg.idx",2,2,0,""}
 };
 
 string toLower(const std::string& str) {
@@ -105,6 +109,15 @@ string FileUtils::getLCaseExt(const string& filename) {
 
     return toLower( extension );
 
+}
+
+string FileUtils::getFileNameWithoutExt(const string& file) {
+    size_t lastSlash = file.find_last_of("/\\");
+    size_t lastDot = file.find_last_of('.');
+    if (lastDot == std::string::npos || (lastSlash != std::string::npos && lastDot < lastSlash)) {
+        return file.substr(lastSlash + 1); // No have extension
+    }
+    return file.substr(lastSlash + 1, lastDot - lastSlash - 1);
 }
 
 size_t FileUtils::fileSize(const char * mFile) {
@@ -242,7 +255,7 @@ int FileUtils::getDirStats(const string& filedir, const vector<string>& filexts,
     *elements = 0;
     *ndirs = 0;
 
-    string fdir = filedir.substr(0, filedir.length() - 1);
+    string fdir = (filedir.back() == '/') ? filedir.substr(0, filedir.length() - 1) : filedir;
     if ((dir = opendir(fdir.c_str())) != nullptr) {
         while ((de = readdir(dir)) != nullptr) {
             string fname = de->d_name;

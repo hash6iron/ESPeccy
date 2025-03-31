@@ -48,6 +48,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_INVALIDCHAR_ES "Car\xA0cter no v\xA0lido"
 
+#define ERR_INVALID_OPERATION_ES "Operaci\xA2n inv\xA0lida"
+
 #define OSD_TAPE_SAVE_ES "Comando SAVE"
 
 #define OSD_TAPE_SAVE_EXIST_ES "El fichero ya existe \xA8Sobreescribir?"
@@ -92,8 +94,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_ES "Error actualizando firmware."
 
-#define MENU_ROM_TITLE_ES "Elija ROM"
-
 #define OSD_ROM_ERR_ES "Error flasheando ROM."
 
 #define OSD_NOROMFILE_ERR_ES "Custom ROM no encontrada."
@@ -104,9 +104,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_ROM_WRITE_ES "    Grabando ROM custom.    "
 
-#define MENU_SNA_TITLE_ES "Elija snapshot"
+#define MENU_FILE_OPEN_TITLE_ES "Elija archivo"
 
 #define MENU_SAVE_SNA_TITLE_ES "Guardar snapshot"
+
+#define MENU_UPG_TITLE_ES "Elija firmware"
+
+#define MENU_ROM_TITLE_ES "Elija ROM"
 
 #define MENU_TAP_TITLE_ES "Elija cinta"
 
@@ -132,6 +136,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_ES "Cinta insertada"
 #define OSD_TAPE_EJECT_ES "Cinta expulsada"
 
+#define OSD_ROM_INSERTED_ES "Cartucho insertado"
 #define OSD_ROM_EJECT_ES "Cartucho expulsado"
 #define OSD_ROM_INSERT_ERR_ES "Cartucho no insertado"
 
@@ -139,21 +144,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define TRDOS_RESET_ERR_ES "Error en reset a TR-DOS. Active Betadisk."
 
-#define MENU_SNA_ES \
-    "Snapshots\n"\
-    "Cargar\t>\n"\
-    "Guardar\t>\n"\
-    "Cargar en slot\t>\n"\
-    "Guardar en slot\t>\n"
+#define OSD_DISK_INSERTED_ES "Disco insertado"
+#define OSD_DISK_EJECTED_ES "Disco expulsado"
+#define OSD_DISK_ERR_ES "Disco inv\xA0lido"
 
-#define MENU_TAPE_ES \
-    "Cintas\n"\
-    "Elegir (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
-    "Expulsar cinta\n"\
-    "Navegador cinta\t>\n"\
-	"Monitor LOAD\t>\n"\
-    "Cinta real\t>\n"
+#define MENU_STATE_ES \
+    "Estados\n"\
+    "Cargar\t>\n"\
+    "Guardar\t>\n"
 
 #define MENU_REALTAPE_ES "Carga de cinta real\n"\
     "Auto\t[0]\n"\
@@ -161,27 +159,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Forzar SAVE\t[2]\n"
 
 #define MENU_BETADISK_ES \
-    "Unidades\n"\
-    "Unidad A\t>\n"\
-    "Unidad B\t>\n"\
-    "Unidad C\t>\n"\
-    "Unidad D\t>\n"
+    "Elija unidad\n"\
+    "Unidad A\n"\
+    "Unidad B\n"\
+    "Unidad C\n"\
+    "Unidad D\n"
 
-#define MENU_BETADRIVE_ES \
-    "Unidad#\n"\
-    "Insertar disco\t>\n"\
-    "Expulsar disco\n"
+#define MENU_FILE_ES \
+    "Archivo\n"\
+    "Navegador archivos\t>\n"\
+    "Navegador cinta\t>\n"\
+    "Expulsar\t>\n"
 
-#define MENU_ROM_CART_ES \
-    "Cartuchos\n"\
-    "Insertar\t>\n"\
-    "Expulsar\n"
+#define MENU_FILE_CLOSE_ES \
+    "Expulsar\n"\
+    "Cinta\n"\
+    "Disco\t>\n"\
+    "Cartucho\n"
 
 #define MENU_MAIN_ES \
-    "Snapshots\t>\n"\
-    "Cintas\t>\n"\
-    "Betadisk\t>\n"\
-    "Cartuchos\t>\n"\
+    "Archivo\t>\n"\
+    "Estados\t>\n"\
     "Modelo\t>\n"\
     "Resetear\t>\n"\
     "Opciones\t>\n"\
@@ -236,15 +234,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Reset completo\t(F11)\n"\
     "Resetear ESP32\t(F12)\n"
 
-#define MENU_PERSIST_SAVE_ES \
-    "Guardar snapshot\n"
+#define MENU_STATE_SAVE_ES \
+    "Guardar estado\n"
 
-#define MENU_PERSIST_LOAD_ES \
-    "Cargar snapshot\n"
+#define MENU_STATE_LOAD_ES \
+    "Cargar estado\n"
 
 #define MENU_STORAGE_ES "Almacenamiento\n"\
     "Betadisk\t>\n"\
-    "Timings ROM R.G.\t>\n"
+    "Auto carga de cinta\t>\n"\
+    "Carga r\xA0pida cinta\t>\n"\
+    "Timings ROM R.G.\t>\n"\
+    "Monitor LOAD\t>\n"\
+    "Cinta real\t>\n"
 
 #define MENU_CAS_ES "Cintas\n"\
     "Auto carga de cinta\t>\n"\

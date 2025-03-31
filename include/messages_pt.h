@@ -50,6 +50,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_INVALIDCHAR_PT "Caractere inv\xA0lido"
 
+#define ERR_INVALID_OPERATION_PT "Opera\x87\x84o inv\xA0lida"
+
 #define OSD_TAPE_SAVE_PT "Comando SAVE"
 
 #define OSD_TAPE_SAVE_EXIST_PT "O arquivo j\xA0 existe. Substituir?"
@@ -94,8 +96,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_PT "Erro de atualiza\x87\x84o."
 
-#define MENU_ROM_TITLE_PT "Escolha ROM"
-
 #define OSD_ROM_ERR_PT "Erro de grava\x87\x84o."
 
 #define OSD_NOROMFILE_ERR_PT "Custom ROM n\x84o encontrada."
@@ -106,7 +106,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_ROM_WRITE_PT "    Gravando ROM custom.    "
 
-#define MENU_SNA_TITLE_PT "Escolha o snapshot"
+#define MENU_UPG_TITLE_PT "Escolha firmware"
+
+#define MENU_ROM_TITLE_PT "Escolha ROM"
+
+#define MENU_FILE_OPEN_TITLE_PT "Escolha o arquivo"
 
 #define MENU_SAVE_SNA_TITLE_PT "Salvar snapshot"
 
@@ -134,6 +138,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_PT "Fita inserida"
 #define OSD_TAPE_EJECT_PT "Fita ejetada"
 
+#define OSD_ROM_INSERTED_PT "Cartucho inserido"
 #define OSD_ROM_EJECT_PT "Cartucho ejetado"
 #define OSD_ROM_INSERT_ERR_PT "Cartucho n\x84o inserido"
 
@@ -141,21 +146,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define TRDOS_RESET_ERR_PT "TR-DOS n\x84o presente. Ative o Betadisk."
 
-#define MENU_SNA_PT \
-    "Snapshots\n"\
-    "Carregar\t>\n"\
-    "Salvar\t>\n"\
-    "Carregar no slot\t>\n"\
-    "Salvar no slot\t>\n"
+#define OSD_DISK_INSERTED_PT "Disco inserido"
+#define OSD_DISK_EJECTED_PT "Disco ejetado"
+#define OSD_DISK_ERR_PT "Disco inv\xA0lido"
 
-#define MENU_TAPE_PT \
-    "Fitas\n"\
-    "Escolher (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
-    "Ejetar fita\n"\
-    "Navegador fita\t>\n"\
-    "Monitor LOAD\t>\n"\
-    "Fita real\t>\n"
+#define MENU_STATE_PT \
+    "Estados\n"\
+    "Carregar\t>\n"\
+    "Salvar\t>\n"
 
 #define MENU_REALTAPE_PT "Carga de fita real\n"\
     "Auto\t[0]\n"\
@@ -163,27 +161,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "For\x87ar SAVE\t[2]\n"
 
 #define MENU_BETADISK_PT \
-    "Drives\n"\
-    "Drive A\t>\n"\
-    "Drive B\t>\n"\
-    "Drive C\t>\n"\
-    "Drive D\t>\n"
+    "Escolha drive\n"\
+    "Drive A\n"\
+    "Drive B\n"\
+    "Drive C\n"\
+    "Drive D\n"
 
-#define MENU_BETADRIVE_PT \
-    "Drive#\n"\
-    "Inserir disco\t>\n"\
-    "Ejetar disco\n"
+#define MENU_FILE_PT \
+    "Arquivo\n"\
+    "Navegador arquivo\t>\n"\
+    "Navegador fita\t>\n"\
+    "Ejetar\t>\n"
 
-#define MENU_ROM_CART_PT \
-    "Cartuchos\n"\
-    "Inserir\t>\n"\
-    "Ejetar\n"
+#define MENU_FILE_CLOSE_PT \
+    "Ejetar\n"\
+    "Fita\n"\
+    "Disco\t>\n"\
+    "Cartucho\n"
 
 #define MENU_MAIN_PT \
-    "Snapshots\t>\n"\
-    "Fitas\t>\n"\
-    "Betadisk\t>\n"\
-    "Cartuchos\t>\n"\
+    "Arquivo\t>\n"\
+    "Estados\t>\n"\
     "Hardware\t>\n"\
     "Reiniciar\t>\n"\
     "Op\x87\x94" "es\t>\n"\
@@ -238,17 +236,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Reinicializa\x87\x84o total\t(F11)\n"\
     "Reiniciar ESP32\t(F12)\n"
 
-#define MENU_PERSIST_SAVE_PT \
-    "Salvar snapshot\n"
+#define MENU_STATE_SAVE_PT \
+    "Salvar estado\n"
 
-#define MENU_PERSIST_LOAD_PT \
-    "Carregar snapshot\n"
+#define MENU_STATE_LOAD_PT \
+    "Carregar estado\n"
 
 #define MENU_STORAGE_PT "Armazenamento\n"\
     "Betadisk\t>\n"\
     "Auto carregamento de fita\t>\n"\
     "Carregamento r\xA0pido\t>\n"\
-    "Timings ROM R.G.\t>\n"
+    "Timings ROM R.G.\t>\n"\
+    "Monitor LOAD\t>\n"\
+    "Fita real\t>\n"
 
 #define MENU_CAS_PT "Cassette\n"\
     "Auto carregamento de fita\t>\n"\

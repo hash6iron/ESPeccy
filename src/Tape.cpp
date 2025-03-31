@@ -45,7 +45,7 @@ using namespace std;
 #include "FileUtils.h"
 #include "cpuESP.h"
 #include "Video.h"
-#include "OSDMain.h"
+#include "OSD.h"
 #include "Config.h"
 #include "Snapshot.h"
 #include "messages.h"

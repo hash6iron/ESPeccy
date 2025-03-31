@@ -48,6 +48,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_INVALIDCHAR_EN "Invalid character"
 
+#define ERR_INVALID_OPERATION_EN "Invalid operation"
+
 #define OSD_TAPE_SAVE_EN "SAVE command"
 
 #define OSD_TAPE_SAVE_EXIST_EN "File exists. Overwrite?"
@@ -92,8 +94,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_FIRMW_ERR_EN "Problem updating firmware."
 
-#define MENU_ROM_TITLE_EN "Select ROM"
-
 #define OSD_ROM_ERR_EN "Problem flashing ROM."
 
 #define OSD_NOROMFILE_ERR_EN "No custom ROM file found."
@@ -104,7 +104,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_ROM_WRITE_EN "    Flashing custom ROM.    "
 
-#define MENU_SNA_TITLE_EN "Select Snapshot"
+#define MENU_UPG_TITLE_EN "Select firmware"
+
+#define MENU_ROM_TITLE_EN "Select ROM"
+
+#define MENU_FILE_OPEN_TITLE_EN "Select File"
 
 #define MENU_SAVE_SNA_TITLE_EN "Save Snapshot"
 
@@ -132,6 +136,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_TAPE_INSERT_EN "Tape inserted"
 #define OSD_TAPE_EJECT_EN "Tape ejected"
 
+#define OSD_ROM_INSERTED_EN "Cartridge inserted"
 #define OSD_ROM_EJECT_EN "Cartridge ejected"
 #define OSD_ROM_INSERT_ERR_EN "No cartridge inserted"
 
@@ -139,21 +144,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define TRDOS_RESET_ERR_EN "Can't reset to TR-DOS. Enable Betadisk."
 
-#define MENU_SNA_EN \
-    "Snapshots\n"\
-    "Load\t>\n"\
-    "Save\t>\n"\
-    "Load in slot \t>\n"\
-    "Save in slot \t>\n"
+#define OSD_DISK_INSERTED_EN "Disk inserted"
+#define OSD_DISK_EJECTED_EN "Disk ejected"
+#define OSD_DISK_ERR_EN "Invalid disk"
 
-#define MENU_TAPE_EN \
-    "Tapes\n"\
-    "Select (TAP,TZX)\t>\n"\
-    "Play/Stop\n"\
-    "Eject Tape\n"\
-    "Tape browser\t>\n"\
-    "LOAD monitor\t>\n"\
-    "Real tape\t>\n"
+#define MENU_STATE_EN \
+    "States\n"\
+    "Load\t>\n"\
+    "Save\t>\n"
 
 #define MENU_REALTAPE_EN "Real tape load\n"\
     "Auto\t[0]\n"\
@@ -161,27 +159,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Force SAVE\t[2]\n"
 
 #define MENU_BETADISK_EN \
-    "Drives\n"\
-    "Drive A\t>\n"\
-    "Drive B\t>\n"\
-    "Drive C\t>\n"\
-    "Drive D\t>\n"
+    "Select drive\n"\
+    "Drive A\n"\
+    "Drive B\n"\
+    "Drive C\n"\
+    "Drive D\n"
 
-#define MENU_BETADRIVE_EN \
-    "Drive#\n"\
-    "Insert disk\t>\n"\
-    "Eject disk\n"
+#define MENU_FILE_EN \
+    "File\n"\
+    "File browser\t>\n"\
+    "Tape browser\t>\n"\
+    "Eject\t>\n"
 
-#define MENU_ROM_CART_EN \
-    "Cartridges\n"\
-    "Insert\t>\n"\
-    "Eject\n"
+#define MENU_FILE_CLOSE_EN \
+    "Eject\n"\
+    "Tape\n"\
+    "Disk\t>\n"\
+    "Cartridge\n"
 
 #define MENU_MAIN_EN \
-    "Snapshots\t>\n"\
-    "Tapes\t>\n"\
-    "Betadisk\t>\n"\
-    "Cartridges\t>\n"\
+    "File\t>\n" \
+    "States\t>\n"\
     "Machine\t>\n"\
     "Reset\t>\n"\
     "Options\t>\n"\
@@ -236,15 +234,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Hard reset\t(F11)\n"\
     "ESP32 reset\t(F12)\n"
 
-#define MENU_PERSIST_SAVE_EN \
-    "Save snapshot\n"
+#define MENU_STATE_SAVE_EN \
+    "Save state\n"
 
-#define MENU_PERSIST_LOAD_EN \
-    "Load snapshot\n"
+#define MENU_STATE_LOAD_EN \
+    "Load state\n"
 
 #define MENU_STORAGE_EN "Storage\n"\
     "Betadisk\t>\n"\
-    "R.G. ROM timings\t>\n"
+    "Auto tape load\t>\n"\
+    "Flash tape load\t>\n"\
+    "R.G. ROM timings\t>\n"\
+    "LOAD monitor\t>\n"\
+    "Real tape\t>\n"
 
 #define MENU_CAS_EN "Tape\n"\
     "Auto tape load\t>\n"\

@@ -39,6 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <inttypes.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
+
 #include "sdmmc_cmd.h"
 
 using namespace std;
@@ -49,14 +51,18 @@ using namespace std;
 #define ASCII_NL 10
 
 enum {
+    DISK_ALLFILE = 0,
     DISK_SNAFILE,
     DISK_TAPFILE,
     DISK_DSKFILE,
     DISK_ROMFILE,
     DISK_ESPFILE,
     DISK_CHTFILE,
-    DISK_SCRFILE
+    DISK_SCRFILE,
+    DISK_UPGFILE
 };
+
+#define DISK_DIR    0x80
 
 struct DISK_FTYPE {
     string fileExts;
@@ -71,6 +77,26 @@ class FileUtils
 {
 public:
     static string getLCaseExt(const string& filename);
+
+    static int getFileType(const std::string& filename) {
+        static const std::unordered_map<std::string, int> extensionMap = {
+            {"sna", DISK_SNAFILE}, {"z80", DISK_SNAFILE},
+            {"sp",  DISK_SNAFILE}, {"p",   DISK_SNAFILE},
+            {"tap", DISK_TAPFILE}, {"tzx", DISK_TAPFILE},
+            {"trd", DISK_DSKFILE}, {"scl", DISK_DSKFILE},
+            {"bin", DISK_ROMFILE}, {"rom", DISK_ROMFILE},
+            {"esp", DISK_ESPFILE},
+            {"pok", DISK_CHTFILE},
+            {"scr", DISK_SCRFILE},
+            {"upg", DISK_UPGFILE}
+        };
+
+        std::string ext = getLCaseExt(filename);
+        auto it = extensionMap.find(ext);
+        return (it != extensionMap.end()) ? it->second : -1;
+    }
+
+    static string getFileNameWithoutExt(const string& file);
 
     static size_t fileSize(const char * mFile);
 
@@ -101,13 +127,15 @@ public:
     static string MountPoint;
     static bool SDReady;
 
+    static string ALL_Path; // Current ALL path on the SD
     static string SNA_Path; // Current SNA path on the SD
     static string TAP_Path; // Current TAP path on the SD
     static string DSK_Path; // Current DSK path on the SD
     static string ROM_Path; // Current ROM path on the SD
     static string ESP_Path; // Current ROM path on the SD
     static string CHT_Path; // Current POK path on the SD
-    static string SCR_Path; // Current POK path on the SD
+    static string SCR_Path; // Current SCR path on the SD
+    static string UPG_Path; // Current UPG path on the SD
 
     static DISK_FTYPE fileTypes[];
 
