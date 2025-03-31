@@ -81,13 +81,14 @@ public:
     static int getFileType(const std::string& filename) {
         static const std::unordered_map<std::string, int> extensionMap = {
             {"sna", DISK_SNAFILE}, {"z80", DISK_SNAFILE},
-            {"sp", DISK_SNAFILE}, {"p", DISK_SNAFILE},
+            {"sp",  DISK_SNAFILE}, {"p",   DISK_SNAFILE},
             {"tap", DISK_TAPFILE}, {"tzx", DISK_TAPFILE},
             {"trd", DISK_DSKFILE}, {"scl", DISK_DSKFILE},
             {"bin", DISK_ROMFILE}, {"rom", DISK_ROMFILE},
             {"esp", DISK_ESPFILE},
             {"pok", DISK_CHTFILE},
-            {"scr", DISK_SCRFILE}
+            {"scr", DISK_SCRFILE},
+            {"upg", DISK_UPGFILE}
         };
 
         std::string ext = getLCaseExt(filename);

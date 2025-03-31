@@ -232,7 +232,12 @@ void OSD::fd_PrintRow(uint8_t virtual_row_num, uint8_t line_type) {
 string OSD::getStatusBar(uint8_t ftype, bool thumb_funcs_enabled) {
 
     bool is_dir = ftype & DISK_DIR;
-    bool is_scr = menu_level == 0 && ftype == DISK_SCRFILE;
+    bool is_scr = menu_level == 0 && (ftype & ~DISK_DIR) == DISK_SCRFILE;
+
+    // Draw shortcut help
+    string StatusBar = "";
+
+    if ((ftype & ~DISK_DIR) != DISK_UPGFILE && (ftype & ~DISK_DIR) != DISK_ROMFILE) {
 
 #define NEW_TAP_SNA_EN  " SAVE (TAP/Snapshots) "
 #define NEW_TAP_SNA_ES  " SAVE (TAP/Snapshots) "
@@ -242,17 +247,27 @@ string OSD::getStatusBar(uint8_t ftype, bool thumb_funcs_enabled) {
 #define NEW_SNA_ROM_ES  " SAVE c/ROM (Snapshots) "
 #define NEW_SNA_ROM_PT  " SAVE c/ROM (Snapshots) "
 
-    // Draw shortcut help
-    string StatusBar = "";
-    if (ZXKeyb::Exists || Config::zxunops2) {
-        StatusBar += Config::lang == 0 ? "\x05+\x06+N:" NEW_TAP_SNA_EN "| \x05+\x06+R:" NEW_SNA_ROM_EN "| \x05+\x06+F: Search" :
-                     Config::lang == 1 ? "\x05+\x06+N:" NEW_TAP_SNA_ES "| \x05+\x06+R:" NEW_SNA_ROM_ES "| \x05+\x06+F: Buscar" :
-                                         "\x05+\x06+N:" NEW_TAP_SNA_PT "| \x05+\x06+R:" NEW_SNA_ROM_PT "| \x05+\x06+F: Procurar";
-    } else {
-        StatusBar += Config::lang == 0 ? "F2:" NEW_TAP_SNA_EN "| S+F2:" NEW_SNA_ROM_EN " | F3: Search" :
-                     Config::lang == 1 ? "F2:" NEW_TAP_SNA_ES "| S+F2:" NEW_SNA_ROM_ES " | F3: Buscar" :
-                                         "F2:" NEW_TAP_SNA_PT "| S+F2:" NEW_SNA_ROM_PT " | F3: Procurar" ;
+        if (ZXKeyb::Exists || Config::zxunops2) {
+            StatusBar += Config::lang == 0 ? "\x05+\x06+N:" NEW_TAP_SNA_EN "| \x05+\x06+R:" NEW_SNA_ROM_EN "| " :
+                         Config::lang == 1 ? "\x05+\x06+N:" NEW_TAP_SNA_ES "| \x05+\x06+R:" NEW_SNA_ROM_ES "| " :
+                                             "\x05+\x06+N:" NEW_TAP_SNA_PT "| \x05+\x06+R:" NEW_SNA_ROM_PT "| " ;
+        } else {
+            StatusBar += Config::lang == 0 ? "F2:" NEW_TAP_SNA_EN "| S+F2:" NEW_SNA_ROM_EN " | " :
+                         Config::lang == 1 ? "F2:" NEW_TAP_SNA_ES "| S+F2:" NEW_SNA_ROM_ES " | " :
+                                             "F2:" NEW_TAP_SNA_PT "| S+F2:" NEW_SNA_ROM_PT " | " ;
+        }
     }
+
+    if (ZXKeyb::Exists || Config::zxunops2) {
+        StatusBar += Config::lang == 0 ? "\x05+\x06+F: Search" :
+                     Config::lang == 1 ? "\x05+\x06+F: Buscar" :
+                                         "\x05+\x06+F: Procurar";
+    } else {
+        StatusBar += Config::lang == 0 ? "F3: Search" :
+                     Config::lang == 1 ? "F3: Buscar" :
+                                         "F3: Procurar" ;
+    }
+
 
     if (!is_dir) {
         if (ZXKeyb::Exists || Config::zxunops2) {
@@ -595,7 +610,11 @@ reset:
 
                 if (current_filetype != old_filetype || old_is_dir != current_is_dir || (oldext != currentext && (currentext == "p" || oldext == "p" ))) {
                     // Draw shortcut help
-                    StatusBar = getStatusBar(current_is_dir ? DISK_DIR : current_filetype, thumb_funcs_enabled);
+                    if (ftype != DISK_ALLFILE) {
+                        StatusBar = getStatusBar(current_is_dir ? ftype | DISK_DIR : ftype, thumb_funcs_enabled);
+                    } else {
+                        StatusBar = getStatusBar(current_is_dir ? DISK_DIR : current_filetype, thumb_funcs_enabled);
+                    }
 
                     fd_StatusbarDraw(StatusBar, FileUtils::fileTypes[ftype].fdMode);
 
@@ -724,7 +743,7 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_F2 /*&& ( ftype == DISK_TAPFILE || ftype == DISK_SNAFILE )*/ ) {
+                    } else if (Menukey.vk == fabgl::VK_F2 && ftype != DISK_UPGFILE && ftype != DISK_ROMFILE ) {
 
                         bool save_withrom = Menukey.SHIFT;
 
