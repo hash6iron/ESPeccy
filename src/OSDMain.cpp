@@ -69,7 +69,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "freertos/task.h"
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 // #include "driver/uart.h"
 // #include "esp_log.h"

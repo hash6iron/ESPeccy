@@ -39,6 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nvs_handle.hpp"
 #include <cctype>
 #include <algorithm>
+#include <sys/stat.h>
+
 #include "Config.h"
 #include "FileUtils.h"
 #include "messages.h"

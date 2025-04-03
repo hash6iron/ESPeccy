@@ -438,7 +438,6 @@ void ESPeccy::bootKeyboard() {
 #define FWBUFFSIZE 512 /* 4096 */
 #endif
 
-
 void ESPeccy::showBIOS() {
 
     Config::load(); // Restore original config values
@@ -1657,7 +1656,7 @@ void ESPeccy::setup()
     Tape::Init();
     Tape::tapeFileName = "none";
     Tape::tapeStatus = TAPE_STOPPED;
-    Tape::SaveStatus = SAVE_STOPPED;
+    Tape::tapeFileType = TAPE_FTYPE_EMPTY;
     Tape::romLoading = false;
 
     if (Z80Ops::is128 || Z80Ops::is2a3) { // Apply pulse length compensation for 128K
@@ -1775,7 +1774,6 @@ void ESPeccy::reset()
 
     Tape::tapeStatus = TAPE_STOPPED;
     Tape::tapePhase = TAPE_PHASE_STOPPED;
-    Tape::SaveStatus = SAVE_STOPPED;
     Tape::romLoading = false;
 
     if (Z80Ops::is128 || Z80Ops::is2a3) { // Apply pulse length compensation for 128K
@@ -2232,10 +2230,10 @@ IRAM_ATTR void ESPeccy::processKeyboard() {
         if (r) {
 
             if (!NextKey.SHIFT && !NextKey.CTRL && NextKey.vk == fabgl::VK_PRINTSCREEN) {
-                if (Tape::tapeSaveName=="none") {
+                if (Tape::tapeFullPathName=="none") {
                     OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
                 } else {
-                    OSD::saveSCR(Tape::tapeSaveName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
+                    OSD::saveSCR(Tape::tapeFullPathName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
                 }
                 continue;
             }

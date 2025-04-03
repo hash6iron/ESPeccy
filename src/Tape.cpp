@@ -57,10 +57,9 @@ using namespace std;
 FILE *Tape::tape;
 FILE *Tape::cswBlock;
 string Tape::tapeFileName = "none";
-string Tape::tapeSaveName = "none";
+string Tape::tapeFullPathName = "none";
 int Tape::tapeFileType = TAPE_FTYPE_EMPTY;
 uint8_t Tape::tapeStatus = TAPE_STOPPED;
-uint8_t Tape::SaveStatus = SAVE_STOPPED;
 uint8_t Tape::romLoading = false;
 uint8_t Tape::tapeEarBit;
 std::vector<TapeBlock> Tape::TapeListing;
@@ -342,7 +341,7 @@ void Tape::Eject() {
     tapeFileType = TAPE_FTYPE_EMPTY;
 
     tapeFileName = "none";
-    tapeSaveName = "none";
+    tapeFullPathName = "none";
 
 }
 
@@ -518,7 +517,7 @@ void Tape::TAP_Open(string name) {
         return;
     }
 
-    tapeSaveName = fname;
+    tapeFullPathName = fname;
     tapeFileName = name;
 
     TAP_getBlockData();
@@ -1473,10 +1472,10 @@ void Tape::removeSelectedBlocks() {
     }
 
     // Reemplazar el archivo original con el archivo temporal
-    std::remove(tapeSaveName.c_str());
-    std::rename(filenameTemp.c_str(), tapeSaveName.c_str());
+    std::remove(tapeFullPathName.c_str());
+    std::rename(filenameTemp.c_str(), tapeFullPathName.c_str());
 
-    Tape::TAP_Open(tapeSaveName.c_str());
+    Tape::TAP_Open(tapeFullPathName.c_str());
 
     selectedBlocks.clear();
 }
@@ -1573,10 +1572,10 @@ void Tape::moveSelectedBlocks(int targetPosition) {
         tape = NULL;
     }
 
-    std::remove(tapeSaveName.c_str());
-    std::rename(outputFilename.c_str(), tapeSaveName.c_str());
+    std::remove(tapeFullPathName.c_str());
+    std::rename(outputFilename.c_str(), tapeFullPathName.c_str());
 
-    Tape::TAP_Open(tapeSaveName.c_str());
+    Tape::TAP_Open(tapeFullPathName.c_str());
 
     selectedBlocks.clear();
 }

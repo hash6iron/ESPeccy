@@ -39,8 +39,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 
-
-
 // Tape file types
 #define TAPE_FTYPE_EMPTY 0
 #define TAPE_FTYPE_TAP 1
@@ -50,10 +48,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TAPE_STOPPED 0
 #define TAPE_LOADING 1
 #define TAPE_STOPPED_FORCED 0x80
-
-// Saving status
-#define SAVE_STOPPED 0
-#define TAPE_SAVING 1
 
 // Tape phases
 #define TAPE_PHASE_STOPPED 0
@@ -151,11 +145,10 @@ public:
     static FILE *tape;
     static FILE *cswBlock;
     static string tapeFileName;
-    static string tapeSaveName;
+    static string tapeFullPathName;
     static int tapeFileType;
     static uint8_t tapeEarBit;
     static uint8_t tapeStatus;
-    static uint8_t SaveStatus;
     static uint8_t romLoading;
     static int tapeCurBlock;
     static int tapeNumBlocks;
