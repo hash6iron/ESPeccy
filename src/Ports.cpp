@@ -476,7 +476,6 @@ IRAM_ATTR void Ports::output(uint16_t address, uint8_t data) {
                 Audiobit = speaker_values[((data >> 2) & 0x04) | (Tape::tapeEarBit << 1) | ((data >> 3) & 0x01)];
 #else
                 Audiobit = speaker_values[((data >> 2) & 0x06) | (Tape::tapeEarBit & 0x1)];
-                // Audiobit = speaker_values[((data >> 2) & 0x04) | (Tape::tapeEarBit << 1) | ~((data >> 3) & 0x01)]; // Con esto va perfecto!!!!
 #endif
             }
 
