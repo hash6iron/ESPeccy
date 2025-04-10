@@ -35,8 +35,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef ESPECCY_MESSAGES_h
 #define ESPECCY_MESSAGES_h
 
-#define EMU_VERSION "       v1.3 "
-
 // Language files
 #include "messages_en.h"
 #include "messages_es.h"
@@ -88,6 +86,8 @@ static const char *OSD_PAUSE[NLANGS] = { OSD_PAUSE_EN,OSD_PAUSE_ES,OSD_PAUSE_PT 
 #define OSD_ROM_LOAD_ERR "ERROR Loading ROM file"
 
 #define OSD_PLEASE_WAIT "Please Wait..."
+
+static const char *RESET_REQUIERED[NLANGS] = { RESET_REQUIERED_EN, RESET_REQUIERED_ES, RESET_REQUIERED_PT };
 
 static const char *OSD_DISK_INSERTED[NLANGS] = { OSD_DISK_INSERTED_EN, OSD_DISK_INSERTED_ES, OSD_DISK_INSERTED_PT };
 
@@ -159,11 +159,15 @@ static const char *OSD_ROM_ERR[NLANGS] = { OSD_ROM_ERR_EN,OSD_ROM_ERR_ES,OSD_ROM
 
 static const char *OSD_NOROMFILE_ERR[NLANGS] = { OSD_NOROMFILE_ERR_EN,OSD_NOROMFILE_ERR_ES,OSD_NOROMFILE_ERR_PT };
 
+static const char *OSD_FLASH_BEGIN[NLANGS] = { OSD_FLASH_BEGIN_EN,OSD_FLASH_BEGIN_ES,OSD_FLASH_BEGIN_PT };
+
 static const char *OSD_ROM[NLANGS] = { OSD_ROM_EN,OSD_ROM_ES,OSD_ROM_PT };
 
-static const char *OSD_ROM_BEGIN[NLANGS] = { OSD_ROM_BEGIN_EN,OSD_ROM_BEGIN_ES,OSD_ROM_BEGIN_PT };
-
 static const char *OSD_ROM_WRITE[NLANGS] = { OSD_ROM_WRITE_EN,OSD_ROM_WRITE_ES,OSD_ROM_WRITE_PT };
+
+static const char *OSD_KBD_LAYOUT[NLANGS] = { OSD_KBD_LAYOUT_EN,OSD_KBD_LAYOUT_ES,OSD_KBD_LAYOUT_PT };
+
+static const char *OSD_KBD_LAYOUT_WRITE[NLANGS] = { OSD_KBD_LAYOUT_WRITE_EN,OSD_KBD_LAYOUT_WRITE_ES,OSD_KBD_LAYOUT_WRITE_PT };
 
 static const char *MENU_UPG_TITLE[NLANGS] = { MENU_UPG_TITLE_EN, MENU_UPG_TITLE_ES, MENU_UPG_TITLE_PT };
 
@@ -293,6 +297,8 @@ static const char *MENU_KBD2NDPS2[NLANGS] = { MENU_KBD2NDPS2_EN, MENU_KBD2NDPS2_
 static const char *MENU_ALUTIMING[NLANGS] = { MENU_ALUTIMING_EN, MENU_ALUTIMING_ES, MENU_ALUTIMING_PT };
 
 static const char *MENU_ISSUE2[NLANGS] = { "48K Issue 2\n", "48K Issue 2\n", "48K Issue 2\n" };
+
+static const char *MENU_CUSTOM_KBD_LAYOUT[NLANGS] = { "Custom KDB layout\n", "Custom KDB layout\n", "Custom KDB layout\n" };
 
 #define MENU_ARCHS "Spectrum 48K\t>\n"\
     "Spectrum 128K\t>\n"\

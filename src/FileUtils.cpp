@@ -71,6 +71,7 @@ string FileUtils::ESP_Path = "/.p/"; // Current path on the SD
 string FileUtils::CHT_Path = "/"; // Current path on the SD
 string FileUtils::SCR_Path = "/"; // Current path on the SD
 string FileUtils::UPG_Path = "/"; // Current path on the SD
+string FileUtils::KBD_Path = "/"; // Current path on the SD
 
 DISK_FTYPE FileUtils::fileTypes[] = {
     {"sna,z80,sp,p,tap,tzx,trd,scl,bin,rom,esp,pok,scr", ".all.idx", 2,2,0,""},
@@ -81,7 +82,8 @@ DISK_FTYPE FileUtils::fileTypes[] = {
     {"esp",".e",2,2,0,""},
     {"pok",".c.idx",2,2,0,""},
     {"scr",".scr.idx",2,2,0,""},
-    {"upg",".upg.idx",2,2,0,""}
+    {"upg",".upg.idx",2,2,0,""},
+    {"kbd",".kdb",2,2,0,""}
 };
 
 string toLower(const std::string& str) {

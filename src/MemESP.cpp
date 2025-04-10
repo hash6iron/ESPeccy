@@ -105,13 +105,8 @@ bool MemESP::Init() {
         MemESP::ram[7] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
         if (!is48k) {
-#if 0
-            MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x8000, MALLOC_CAP_8BIT);
-            MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
-#else
             MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-#endif
             MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         }
@@ -119,7 +114,7 @@ bool MemESP::Init() {
     }
 
     for (int i=0; i < 8; i++) {
-        if (MemESP::ram[i] == NULL) {
+        if (MemESP::ram[i] == NULL && (Config::psramsize > 0 || !is48k || i == 0 || i == 2 || i == 5 || i == 7)) {
             if (Config::slog_on) printf("ERROR! Unable to allocate ram%d\n",i);
             return false;
         }
@@ -154,37 +149,15 @@ void MemESP::Reset() {
 
     if (Config::psramsize == 0) {
         if ( MemESP::pagingLock ) { // *48k
-            free( MemESP::ram[1] ); MemESP::ram[1] = NULL;
-#if 0
-            MemESP::ram[3] = NULL;
-#else
-            free( MemESP::ram[3] ); MemESP::ram[3] = NULL;
-#endif
-            free( MemESP::ram[4] ); MemESP::ram[4] = NULL;
-            free( MemESP::ram[6] ); MemESP::ram[6] = NULL;
+            heap_caps_free( MemESP::ram[1] ); MemESP::ram[1] = NULL;
+            heap_caps_free( MemESP::ram[3] ); MemESP::ram[3] = NULL;
+            heap_caps_free( MemESP::ram[4] ); MemESP::ram[4] = NULL;
+            heap_caps_free( MemESP::ram[6] ); MemESP::ram[6] = NULL;
         } else {
-#if 0
-            if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x8000, MALLOC_CAP_8BIT);
-            MemESP::ram[3] = ((unsigned char *) MemESP::ram[1]) + 0x4000;
-#else
-            if ( !MemESP::ram[1] ) MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-            if ( !MemESP::ram[3] ) MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-#endif
-            if ( !MemESP::ram[4] ) MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-            if ( !MemESP::ram[6] ) MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-
-            if ( !MemESP::ram[1] ) {
-                if (Config::slog_on) printf("ERROR! Unable to allocate ram1\n");
-            }
-            if ( !MemESP::ram[3] ) {
-                if (Config::slog_on) printf("ERROR! Unable to allocate ram3\n");
-            }
-            if ( !MemESP::ram[4] ) {
-                if (Config::slog_on) printf("ERROR! Unable to allocate ram4\n");
-            }
-            if ( !MemESP::ram[6] ) {
-                if (Config::slog_on) printf("ERROR! Unable to allocate ram6\n");
-            }
+            if ( !MemESP::ram[1] ) { MemESP::ram[1] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); if ( !MemESP::ram[1] ) printf("ERROR! Unable to allocate ram1\n"); }
+            if ( !MemESP::ram[3] ) { MemESP::ram[3] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); if ( !MemESP::ram[3] ) printf("ERROR! Unable to allocate ram3\n"); }
+            if ( !MemESP::ram[4] ) { MemESP::ram[4] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); if ( !MemESP::ram[4] ) printf("ERROR! Unable to allocate ram4\n"); }
+            if ( !MemESP::ram[6] ) { MemESP::ram[6] = (unsigned char *) heap_caps_malloc(0x4000, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); if ( !MemESP::ram[6] ) printf("ERROR! Unable to allocate ram6\n"); }
         }
     }
 

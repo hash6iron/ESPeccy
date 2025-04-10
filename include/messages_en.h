@@ -46,6 +46,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define POKE_ERR_ADDR2_EN "Address should be lower than 16384"
 #define POKE_ERR_VALUE_EN "Value should be lower than 256"
 
+#define RESET_REQUIERED_EN "Restart required. Restart now?"
+
 #define OSD_INVALIDCHAR_EN "Invalid character"
 
 #define ERR_INVALID_OPERATION_EN "Invalid operation"
@@ -98,11 +100,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_NOROMFILE_ERR_EN "No custom ROM file found."
 
+#define OSD_FLASH_BEGIN_EN "   Preparing flash space.   "
+
 #define OSD_ROM_EN "Flash Custom ROM"
 
-#define OSD_ROM_BEGIN_EN "   Preparing flash space.   "
-
 #define OSD_ROM_WRITE_EN "    Flashing custom ROM.    "
+
+#define OSD_KBD_LAYOUT_EN "Flash Custom Layout"
+
+#define OSD_KBD_LAYOUT_WRITE_EN "   Flashing custom layout.  "
 
 #define MENU_UPG_TITLE_EN "Select firmware"
 
@@ -208,7 +214,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Custom ROM 48K\n"\
     "Custom ROM 128k\n"\
     "Custom ROM +2A\n"\
-    "Custom ROM TK\n"
+    "Custom ROM TK\n"\
+    "Custom KBD Layout\n"
 
 #define MENU_VIDEO_EN \
     "Display\n"\
@@ -263,7 +270,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "ULA Timing\t>\n"\
     "48K Issue 2\t>\n"\
     "TK ULA\t>\n"\
-    "Second PS/2 device\t>\n"
+    "Second PS/2 device\t>\n"\
+    "Custom KDB layout\t>\n"
 
 #define MENU_KBD2NDPS2_EN "Device     \n"\
     "None\t[N]\n"\
@@ -350,7 +358,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_DEFJOY_EN "Assign keys\n"
 
-#define MENU_JOYPS2_EN "Joystick emulation\n" "Joy type\t>\n" "Cursor Keys as Joy\t>\n" "TAB as fire 1\t>\n"
+#define MENU_JOYPS2_EN "Joystick emulation\n"\
+    "Joy type\t>\n"\
+    "Cursor Keys as Joy\t>\n"\
+    "TAB as fire 1\t>\n"
 
 #define DLG_TITLE_INPUTPOK_EN "Input Poke"
 

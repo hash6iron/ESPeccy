@@ -59,7 +59,8 @@ enum {
     DISK_ESPFILE,
     DISK_CHTFILE,
     DISK_SCRFILE,
-    DISK_UPGFILE
+    DISK_UPGFILE,
+    DISK_KBDFILE
 };
 
 #define DISK_DIR    0x80
@@ -88,7 +89,8 @@ public:
             {"esp", DISK_ESPFILE},
             {"pok", DISK_CHTFILE},
             {"scr", DISK_SCRFILE},
-            {"upg", DISK_UPGFILE}
+            {"upg", DISK_UPGFILE},
+            {"kbd", DISK_KBDFILE}
         };
 
         std::string ext = getLCaseExt(filename);
@@ -136,6 +138,7 @@ public:
     static string CHT_Path; // Current POK path on the SD
     static string SCR_Path; // Current SCR path on the SD
     static string UPG_Path; // Current UPG path on the SD
+    static string KBD_Path; // Current UPG path on the SD
 
     static DISK_FTYPE fileTypes[];
 

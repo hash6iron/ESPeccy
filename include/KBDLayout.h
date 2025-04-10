@@ -32,9 +32,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef COMMIT_INFO_H
-#define COMMIT_INFO_H
+#ifndef KBDLAYOUT_H
+#define KBDLAYOUT_H
 
-const char* COMMIT_DATE = "2504100409";  // Formato YYmmddHHMM
+#include <stdio.h>
+#include <stdint.h>
 
-#endif // COMMIT_INFO_H
+class KBDLayout {
+
+    public:
+        static void reset();
+        static fabgl::KeyboardLayout * load(FILE *fp);
+        static void dump_layout(const fabgl::KeyboardLayout *customLayout);
+
+};
+
+#endif
