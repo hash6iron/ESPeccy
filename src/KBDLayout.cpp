@@ -559,7 +559,7 @@ static void parseLine(fabgl::KeyboardLayout *customLayout, const std::string &li
                 printf("Special %02X -> %s%s%s%s%s ignored too much entries!\n", entryLeft.scancode[0], entryRight.ctrl ? "CTRL " : "", entryRight.lalt ? "LALT " : "", entryRight.ralt ? "RALT " : "", entryRight.shift ? "SHIFT " : "", VKToString(entryRight.virtualKey).c_str());
             }
         } else {
-            // Special key
+            // Virtual key
             if (currentVirtual < sizeof(customLayout->alternateVK)/sizeof(customLayout->alternateVK[0])) {
                 customLayout->alternateVK[currentVirtual].reqVirtualKey = entryLeft.virtualKey;
                 customLayout->alternateVK[currentVirtual].modifiers = entryLeft.modifiers;
