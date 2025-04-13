@@ -46,6 +46,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define POKE_ERR_ADDR2_ES "Direcci\xA2n debe ser menor que 16384"
 #define POKE_ERR_VALUE_ES "Valor debe ser menor que 256"
 
+#define RESET_REQUIERED_ES "Se requiere reinicio. ¿Reiniciar hora?"
+
 #define OSD_INVALIDCHAR_ES "Car\xA0cter no v\xA0lido"
 
 #define ERR_INVALID_OPERATION_ES "Operaci\xA2n inv\xA0lida"
@@ -98,11 +100,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_NOROMFILE_ERR_ES "Custom ROM no encontrada."
 
+#define OSD_FLASH_BEGIN_ES "Preparando espacio en flash."
+
 #define OSD_ROM_ES "Flashear ROM Custom"
 
-#define OSD_ROM_BEGIN_ES "Preparando espacio en flash."
-
 #define OSD_ROM_WRITE_ES "    Grabando ROM custom.    "
+
+#define OSD_KBD_LAYOUT_ES "Flashear Layout Custom"
+
+#define OSD_KBD_LAYOUT_WRITE_ES "   Grabando layout custom.  "
 
 #define MENU_FILE_OPEN_TITLE_ES "Elija archivo"
 
@@ -209,7 +215,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "ROM Custom 48K\n"\
     "ROM Custom 128k\n"\
     "ROM Custom +2A\n"\
-    "ROM Custom TK\n"
+    "ROM Custom TK\n"\
+    "Custom KBD Layout\n"
 
 #define MENU_VIDEO_ES \
     "Pantalla\n"\
@@ -268,7 +275,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Timing ULA\t>\n"\
     "48K Issue 2\t>\n"\
     "ULA TK\t>\n"\
-    "Segundo disp. PS/2\t>\n"
+    "Segundo disp. PS/2\t>\n"\
+    "Custom KDB layout\t>\n"
 
 #define MENU_KBD2NDPS2_ES "Dispositivo\n"\
     "Nada\t[N]\n"\
@@ -355,7 +363,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_DEFJOY_ES "Definir\n"
 
-#define MENU_JOYPS2_ES "Emulaci\xA2n Joystick\n" "Tipo joystick\t>\n" "Joy en teclas de cursor\t>\n" "TAB como disparo 1\t>\n"
+#define MENU_JOYPS2_ES "Emulaci\xA2n Joystick\n"\
+    "Tipo joystick\t>\n"\
+    "Joy en teclas de cursor\t>\n"\
+    "TAB como disparo 1\t>\n"
 
 #define DLG_TITLE_INPUTPOK_ES "A\xA4" "adir Poke"
 

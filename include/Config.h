@@ -204,6 +204,9 @@ public:
 
     static uint8_t  io36button;
 
+    static bool     KBDLayoutEnable;
+    static string   KBDLayoutFile;
+
 };
 
 #endif // Config.h

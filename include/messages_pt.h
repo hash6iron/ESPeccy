@@ -43,10 +43,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define OSD_PAUSE_PT "--=[PAUSADO]=--"
 
 #define POKE_ERR_ADDR1_PT "O endere\x87o deve estar entre 16384 e 65535"
-
 #define POKE_ERR_ADDR2_PT "O endere\x87o deve ser inferior a 16384"
-
 #define POKE_ERR_VALUE_PT "O valor deve ser inferior a 256"
+
+#define RESET_REQUIERED_PT "Rein\xA1" "cio necess\xA0rio. Reinicie agora?"
 
 #define OSD_INVALIDCHAR_PT "Caractere inv\xA0lido"
 
@@ -100,11 +100,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define OSD_NOROMFILE_ERR_PT "Custom ROM n\x84o encontrada."
 
+#define OSD_FLASH_BEGIN_PT "     Preparando espa\x87o.     "
+
 #define OSD_ROM_PT "Gravar ROM Custom"
 
-#define OSD_ROM_BEGIN_PT "     Preparando espa\x87o.     "
-
 #define OSD_ROM_WRITE_PT "    Gravando ROM custom.    "
+
+#define OSD_KBD_LAYOUT_PT "Gravar Custom Layout"
+
+#define OSD_KBD_LAYOUT_WRITE_PT "   Gravando custom layout.  "
 
 #define MENU_UPG_TITLE_PT "Escolha firmware"
 
@@ -211,7 +215,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	"ROM Custom 48K\n"\
 	"ROM Custom 128k\n"\
     "ROM Custom +2A\n"\
-	"ROM Custom TK\n"
+	"ROM Custom TK\n"\
+    "Custom KBD Layout\n"
 
 #define MENU_VIDEO_PT \
     "Tela\n"\
@@ -270,7 +275,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     "Timing ULA\t>\n"\
     "48K Issue 2\t>\n"\
     "ULA TK\t>\n"\
-    "Segundo disp. PS/2\t>\n"
+    "Segundo disp. PS/2\t>\n"\
+    "Custom KDB layout\t>\n"
 
 #define MENU_KBD2NDPS2_PT "Dispositivo\n"\
     "Nada\t[N]\n"\
@@ -357,7 +363,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MENU_DEFJOY_PT "Definir\n"
 
-#define MENU_JOYPS2_PT "Emula\x87\x84o Joystick\n" "Tipo joystick\t>\n" "Joy nas teclas do cursor\t>\n" "TAB como fire 1\t>\n"
+#define MENU_JOYPS2_PT "Emula\x87\x84o Joystick\n"\
+    "Tipo joystick\t>\n"\
+    "Joy nas teclas do cursor\t>\n"\
+    "TAB como fire 1\t>\n"
 
 #define DLG_TITLE_INPUTPOK_PT "Adicionar Poke"
 

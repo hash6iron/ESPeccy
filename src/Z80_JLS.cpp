@@ -54,6 +54,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <algorithm>
+#include <sys/stat.h>
 
 #include "Z80_JLS/z80.h"
 #include "Ports.h"
@@ -2429,7 +2430,6 @@ IRAM_ATTR void Z80::decodeOpcodebf()
 
         if (Config::flashload &&
             Tape::tapeFileType == TAPE_FTYPE_TAP &&
-            Tape::tapeFileName != "none" &&
             Tape::tapeStatus != TAPE_LOADING) {
 
             //printf("Loading tape %s\n",Tape::tapeFileName.c_str());
@@ -4764,7 +4764,7 @@ void Z80::decodeDDFD(RegisterPair& regIXY) {
                     struct stat stat_buf;
                     SaveFileExists = Tape::tape && // Check if exists a tap opened
                                      Tape::tapeFileType == TAPE_FTYPE_TAP && // check if file is tap
-                                     !stat(Tape::tapeSaveName.c_str(), &stat_buf); // this check for SD fail
+                                     !stat(Tape::tapeFullPathName.c_str(), &stat_buf); // this check for SD fail
 
                     // if (!SaveFileExists) OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
 

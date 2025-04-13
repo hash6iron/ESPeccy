@@ -32,9 +32,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 */
 
-#ifndef COMMIT_INFO_H
-#define COMMIT_INFO_H
+#ifndef BIOS_H
+#define BIOS_H
 
-const char* COMMIT_DATE = "2504101621";  // Formato YYmmddHHMM
+#include <string>
+#include <vector>
+#include <cstdint>
 
-#endif // COMMIT_INFO_H
+// Clase para gestionar los Cheats
+class BIOS {
+public:
+    static void run();
+
+};
+
+#endif // CheatMngr_H

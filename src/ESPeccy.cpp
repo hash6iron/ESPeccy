@@ -57,12 +57,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "pwm_audio.h"
 #include "fabgl.h"
 #include "wd1793.h"
-
+#include "BIOS.h"
 #include "ROMLoad.h"
-
 #include "RealTape.h"
-
+#include "KBDLayout.h"
 #include "ZXKeyb.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/timer.h"
@@ -1694,7 +1694,34 @@ void ESPeccy::setup()
     // BIOS
     //=======================================================================================
 
-    if (runBios) showBIOS();
+    if (runBios) BIOS::run();
+
+    //=======================================================================================
+    // Custom Keyboard Layout
+    //=======================================================================================
+
+    if ( Config::KBDLayoutFile != "" ) {
+        if ( FileUtils::isSDReady() ) {
+            FILE *l = fopen(Config::KBDLayoutFile.c_str(), "rb");
+            Config::KBDLayoutFile = "";
+            Config::save("KBDLayoutFile");
+            if (l == NULL) {
+                OSD::osdCenteredMsg(ERR_READ_FILE, LEVEL_WARN, 2000);
+            } else {
+                uint8_t * layout = (uint8_t *)KBDLayout::load(l);
+                if (!layout) {
+                    OSD::osdCenteredMsg(ERR_READ_FILE, LEVEL_ERROR, 3000);
+                } else {
+                    esp_err_t res = OSD::updateFirmwareContent(layout, 128);
+                    free(layout);
+                    OSD::osdCenteredMsg((string)"ERROR Code = " + to_string(res), LEVEL_ERROR, 3000);
+                }
+                fclose(l);
+            }
+        }
+    }
+
+    KBDLayout::reset();
 
     //=======================================================================================
     // AUDIO
@@ -1800,7 +1827,7 @@ void ESPeccy::setup()
     Tape::Init();
     Tape::tapeFileName = "none";
     Tape::tapeStatus = TAPE_STOPPED;
-    Tape::SaveStatus = SAVE_STOPPED;
+    Tape::tapeFileType = TAPE_FTYPE_EMPTY;
     Tape::romLoading = false;
 
     if (Z80Ops::is128 || Z80Ops::is2a3) { // Apply pulse length compensation for 128K
@@ -1918,7 +1945,6 @@ void ESPeccy::reset()
 
     Tape::tapeStatus = TAPE_STOPPED;
     Tape::tapePhase = TAPE_PHASE_STOPPED;
-    Tape::SaveStatus = SAVE_STOPPED;
     Tape::romLoading = false;
 
     if (Z80Ops::is128 || Z80Ops::is2a3) { // Apply pulse length compensation for 128K
@@ -2375,10 +2401,10 @@ IRAM_ATTR void ESPeccy::processKeyboard() {
         if (r) {
 
             if (!NextKey.SHIFT && !NextKey.CTRL && NextKey.vk == fabgl::VK_PRINTSCREEN) {
-                if (Tape::tapeSaveName=="none") {
+                if (Tape::tapeFullPathName=="none") {
                     OSD::osdCenteredMsg(OSD_TAPE_SELECT_ERR[Config::lang], LEVEL_WARN);
                 } else {
-                    OSD::saveSCR(Tape::tapeSaveName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
+                    OSD::saveSCR(Tape::tapeFullPathName, (uint32_t *)(MemESP::videoLatch ? MemESP::ram[7] : MemESP::ram[5]));
                 }
                 continue;
             }

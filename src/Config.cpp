@@ -39,6 +39,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "nvs_handle.hpp"
 #include <cctype>
 #include <algorithm>
+#include <sys/stat.h>
+
 #include "Config.h"
 #include "FileUtils.h"
 #include "messages.h"
@@ -174,6 +176,9 @@ bool Config::zxunops2 = false;
 
 uint8_t Config::io36button = BTN_ASSIGN_RESET;
 
+bool Config::KBDLayoutEnable = false;
+string Config::KBDLayoutFile = "";
+
 // erase control characters (in place)
 static inline void erase_cntrl(std::string &s) {
     s.erase(std::remove_if(s.begin(), s.end(),
@@ -302,6 +307,9 @@ ConfigEntry configEntries[] = {
     {"ZXUnoPS2", CONFIG_TYPE_BOOL, &Config::zxunops2 },
 
     {"IO36Button", CONFIG_TYPE_UINT8, &Config::io36button},
+
+    {"KBDLayoutEnable", CONFIG_TYPE_BOOL, &Config::KBDLayoutEnable },
+    {"KBDLayoutFile", CONFIG_TYPE_STRING, &Config::KBDLayoutFile }, // For pending operation
 
 };
 
