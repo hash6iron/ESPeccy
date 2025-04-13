@@ -260,7 +260,7 @@ void OSD::drawWindow(uint16_t width, uint16_t height, string top, string bottom,
         VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(5, 0));
         VIDEO::vga.setFont(SystemFont);
         VIDEO::vga.setCursor(x + 3, y + height - 11);
-        VIDEO::vga.print(bottom.c_str());
+        VIDEO::vga.print(bottom.c_str()); 
     }
 
 }
