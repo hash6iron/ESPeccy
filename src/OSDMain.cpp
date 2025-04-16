@@ -2474,9 +2474,9 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
         if (KeytoESP == fabgl::VK_F1) { // Show H/W info
             OSD::HWInfo();
         }
-        else if (KeytoESP == fabgl::VK_F2) {
-            SaveState();
-        }
+        // else if (KeytoESP == fabgl::VK_F4) {
+        //     SaveState();
+        // }
         else if (KeytoESP == fabgl::VK_F5) {
             // Tape Browser
             if (Tape::tapeFileName=="none") {
@@ -2604,7 +2604,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
             }
 
         }
-        else if (KeytoESP == fabgl::VK_F2) {
+        else if (KeytoESP == fabgl::VK_F3) {
 
             // if (MemESP::cur_timemachine > 0)
             //     MemESP::cur_timemachine--;
@@ -2616,7 +2616,10 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
 
             LoadState();
         }
-        else if (KeytoESP == fabgl::VK_F5) {
+        else if (KeytoESP == fabgl::VK_F4) {
+            SaveState();
+        }        
+        else if (KeytoESP == fabgl::VK_F5 || KeytoESP == fabgl::VK_F7) {
             FileBrowser();
 
         }
