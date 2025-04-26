@@ -412,10 +412,22 @@ string OSD::rowReplace(string& menu, unsigned short row, const string& newRowCon
 
 // Paleta de colores del ZX Spectrum
 static const uint8_t ZX_PALETTE[16][3] = {
-    {0, 0, 0}, {0, 0, 128}, {128, 0, 0}, {128, 0, 128},
-    {0, 128, 0}, {0, 128, 128}, {128, 128, 0}, {128, 128, 128},
-    {0, 0, 0}, {0, 0, 255}, {255, 0, 0}, {255, 0, 255},
-    {0, 255, 0}, {0, 255, 255}, {255, 255, 0}, {255, 255, 255}
+    {  0,   0,   0},
+    {  0,   0, 128},
+    {128,   0,   0},
+    {128,   0, 128},
+    {  0, 128,   0},
+    {  0, 128, 128},
+    {128, 128,   0},
+    {128, 128, 128},
+    {  0,   0,   0},
+    {  0,   0, 192},
+    {192,   0,   0},
+    {192,   0, 192},
+    {  0, 192,   0},
+    {  0, 192, 192},
+    {192, 192,   0},
+    {192, 192, 192}
 };
 
 // Función común para construir el path en la subcarpeta SCRSHOT
@@ -1261,11 +1273,13 @@ void OSD::drawCompressedBMP(int x, int y, const uint8_t * bmp) {
 void OSD::drawOSD(bool bottom_info) {
     unsigned short x = scrAlignCenterX(OSD_W);
     unsigned short y = scrAlignCenterY(OSD_H);
+
     VIDEO::vga.fillRect(x, y, OSD_W, OSD_H, zxColor(1, 0));
     VIDEO::vga.rect(x, y, OSD_W, OSD_H, zxColor(0, 0));
     VIDEO::vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxColor(7, 0));
     VIDEO::vga.setTextColor(zxColor(0, 0), zxColor(5, 1));
     VIDEO::vga.setFont(SystemFont);
+
     osdHome();
     VIDEO::vga.print(OSD_TITLE);
     osdAt(22, 0);
@@ -2201,6 +2215,7 @@ void OSD::LoadState() {
 
         //uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
         uint8_t opt2 = menuSlotsWithPreview(menuload, statusbar, menuProcessSnapshot);
+        std::string().swap(menuload); // Reset menuload for save free usage
         if (opt2 && FileUtils::isSDReady()) {
             if ( stateLoad(opt2) ) {
                 // Clear Cheat data

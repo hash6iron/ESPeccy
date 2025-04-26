@@ -54,7 +54,7 @@ using namespace std;
 #include "Z80_JLS/z80.h"
 #include "Tape.h"
 
-FILE *dirfile;
+FILE *dirfile = NULL;
 unsigned int OSD::elements;
 unsigned int OSD::fdSearchElements;
 unsigned int OSD::ndirs;
@@ -406,6 +406,9 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
 
 reset:
 
+    if (dirfile) fclose(dirfile);
+    dirfile = NULL;
+
     // Draw blank rows
     uint8_t row = 2;
     for (; row < mf_rows; row++) {
@@ -744,7 +747,7 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_F2 && ftype != DISK_UPGFILE && ftype != DISK_ROMFILE ) {
+                    } else if (Menukey.vk == fabgl::VK_F2 && ftype != DISK_UPGFILE && ftype != DISK_ROMFILE) {
 
                         bool save_withrom = Menukey.SHIFT;
 
@@ -962,9 +965,6 @@ reset:
                             || Menukey.vk == fabgl::VK_JOY2C
                             || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1 && trim_copy(rowGet(menu,FileUtils::fileTypes[ftype].focus)) != "..")) {
 
-                        fclose(dirfile);
-                        dirfile = NULL;
-
                         if (current_is_dir) {
                             if (currentfile[0] == ASCII_SPC) {
                                 fdir.pop_back();
@@ -976,6 +976,9 @@ reset:
                             break;
 
                         } else {
+                            fclose(dirfile);
+                            dirfile = NULL;
+
                             OSD::restoreBackbufferData();
                             click();
                             std::string().swap(menu); // Reset Menu for save free usage
@@ -1123,6 +1126,9 @@ reset:
         }
 
     }
+
+    if (dirfile) fclose(dirfile);
+    dirfile = NULL;
 
     std::string().swap(menu); // Reset Menu for save free usage
     return "";
