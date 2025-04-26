@@ -35,6 +35,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef COMMIT_INFO_H
 #define COMMIT_INFO_H
 
+<<<<<<< HEAD
 const char* COMMIT_DATE = "2504101621";  // Formato YYmmddHHMM
+=======
+const char* COMMIT_DATE = "2504181957";  // Formato YYmmddHHMM
+>>>>>>> 429fedc (- Reduce memory usage)
 
 #endif // COMMIT_INFO_H
