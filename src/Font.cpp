@@ -40,7 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #if FONTFACE == 1 // iso8859_1
 
-unsigned char Font5x8Pixels[] = {
+const unsigned char Font5x8Pixels[] = {
 /* code=0, hex=0x00, ascii="." */
       0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,
