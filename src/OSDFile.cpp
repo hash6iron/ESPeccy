@@ -1,21 +1,20 @@
 /*
-
-ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
-
-This project is a fork of ESPectrum.
-ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
-https://github.com/EremusOne/ZX-ESPectrum-IDF
-
-Based on previous work:
-- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
-  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
-- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
-  https://github.com/rampa069/ZX-ESPectrum
-- Original project by Pete Todd
-  https://github.com/retrogubbins/paseVGA
+ESPeccy - Sinclair ZX Spectrum emulator for the Espressif ESP32 SoC
 
 Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
 https://github.com/SplinterGU/ESPeccy
+
+This file is part of ESPeccy.
+
+Based on previous work by:
+- Víctor Iborra [Eremus] and David Crespo [dcrespo3d] (ESPectrum)
+  https://github.com/EremusOne/ZX-ESPectrum-IDF
+- David Crespo [dcrespo3d] (ZX-ESPectrum-Wiimote)
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- Ramón Martinez and Jorge Fuertes (ZX-ESPectrum)
+  https://github.com/rampa069/ZX-ESPectrum
+- Pete Todd (paseVGA)
+  https://github.com/retrogubbins/paseVGA
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,8 +28,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 */
+
 
 #include <string>
 #include <algorithm>
@@ -55,7 +54,7 @@ using namespace std;
 #include "Z80_JLS/z80.h"
 #include "Tape.h"
 
-FILE *dirfile;
+FILE *dirfile = NULL;
 unsigned int OSD::elements;
 unsigned int OSD::fdSearchElements;
 unsigned int OSD::ndirs;
@@ -407,6 +406,9 @@ string OSD::fileDialog(string &fdir, string title, uint8_t ftype, uint8_t mfcols
 
 reset:
 
+    if (dirfile) fclose(dirfile);
+    dirfile = NULL;
+
     // Draw blank rows
     uint8_t row = 2;
     for (; row < mf_rows; row++) {
@@ -455,6 +457,7 @@ reset:
             FileUtils::unmountSDCard();
             OSD::restoreBackbufferData();
             click();
+            std::string().swap(menu); // Reset Menu for save free usage
             return "";
         }
 
@@ -498,6 +501,7 @@ reset:
                 FileUtils::unmountSDCard();
                 OSD::restoreBackbufferData();
                 click();
+                std::string().swap(menu); // Reset Menu for save free usage
                 return "";
             }
 
@@ -743,7 +747,7 @@ reset:
 
                         }
 
-                    } else if (Menukey.vk == fabgl::VK_F2 && ftype != DISK_UPGFILE && ftype != DISK_ROMFILE ) {
+                    } else if (Menukey.vk == fabgl::VK_F2 && ftype != DISK_UPGFILE && ftype != DISK_ROMFILE) {
 
                         bool save_withrom = Menukey.SHIFT;
 
@@ -776,6 +780,7 @@ reset:
                                 ext = ".sna";
                             }
 
+                            std::string().swap(menu); // Reset Menu for save free usage
                             return ( save_withrom ? "*" : "N" ) + new_file + ext;
 
                         } else {
@@ -947,6 +952,7 @@ reset:
                                 dirfile = NULL;
 
                                 click();
+                                std::string().swap(menu); // Reset Menu for save free usage
                                 return "";
                             }
 
@@ -959,9 +965,6 @@ reset:
                             || Menukey.vk == fabgl::VK_JOY2C
                             || (Menukey.vk == fabgl::VK_RIGHT && Config::osd_LRNav == 1 && trim_copy(rowGet(menu,FileUtils::fileTypes[ftype].focus)) != "..")) {
 
-                        fclose(dirfile);
-                        dirfile = NULL;
-
                         if (current_is_dir) {
                             if (currentfile[0] == ASCII_SPC) {
                                 fdir.pop_back();
@@ -973,8 +976,12 @@ reset:
                             break;
 
                         } else {
+                            fclose(dirfile);
+                            dirfile = NULL;
+
                             OSD::restoreBackbufferData();
                             click();
+                            std::string().swap(menu); // Reset Menu for save free usage
                             return (is_scr && !scr_loaded) ? "" : "R" + currentfile;
 
                         }
@@ -986,6 +993,7 @@ reset:
                         fclose(dirfile);
                         dirfile = NULL;
                         click();
+                        std::string().swap(menu); // Reset Menu for save free usage
                         return "";
                     }
 
@@ -1119,6 +1127,10 @@ reset:
 
     }
 
+    if (dirfile) fclose(dirfile);
+    dirfile = NULL;
+
+    std::string().swap(menu); // Reset Menu for save free usage
     return "";
 
 }

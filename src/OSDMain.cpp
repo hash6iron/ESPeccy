@@ -1,21 +1,20 @@
 /*
-
-ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
-
-This project is a fork of ESPectrum.
-ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
-https://github.com/EremusOne/ZX-ESPectrum-IDF
-
-Based on previous work:
-- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
-  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
-- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
-  https://github.com/rampa069/ZX-ESPectrum
-- Original project by Pete Todd
-  https://github.com/retrogubbins/paseVGA
+ESPeccy - Sinclair ZX Spectrum emulator for the Espressif ESP32 SoC
 
 Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
 https://github.com/SplinterGU/ESPeccy
+
+This file is part of ESPeccy.
+
+Based on previous work by:
+- Víctor Iborra [Eremus] and David Crespo [dcrespo3d] (ESPectrum)
+  https://github.com/EremusOne/ZX-ESPectrum-IDF
+- David Crespo [dcrespo3d] (ZX-ESPectrum-Wiimote)
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- Ramón Martinez and Jorge Fuertes (ZX-ESPectrum)
+  https://github.com/rampa069/ZX-ESPectrum
+- Pete Todd (paseVGA)
+  https://github.com/retrogubbins/paseVGA
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,8 +28,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 */
+
 
 #include "OSD.h"
 #include "FileUtils.h"
@@ -413,10 +412,22 @@ string OSD::rowReplace(string& menu, unsigned short row, const string& newRowCon
 
 // Paleta de colores del ZX Spectrum
 static const uint8_t ZX_PALETTE[16][3] = {
-    {0, 0, 0}, {0, 0, 128}, {128, 0, 0}, {128, 0, 128},
-    {0, 128, 0}, {0, 128, 128}, {128, 128, 0}, {128, 128, 128},
-    {0, 0, 0}, {0, 0, 255}, {255, 0, 0}, {255, 0, 255},
-    {0, 255, 0}, {0, 255, 255}, {255, 255, 0}, {255, 255, 255}
+    {  0,   0,   0},
+    {  0,   0, 128},
+    {128,   0,   0},
+    {128,   0, 128},
+    {  0, 128,   0},
+    {  0, 128, 128},
+    {128, 128,   0},
+    {128, 128, 128},
+    {  0,   0,   0},
+    {  0,   0, 192},
+    {192,   0,   0},
+    {192,   0, 192},
+    {  0, 192,   0},
+    {  0, 192, 192},
+    {192, 192,   0},
+    {192, 192, 192}
 };
 
 // Función común para construir el path en la subcarpeta SCRSHOT
@@ -1262,11 +1273,12 @@ void OSD::drawCompressedBMP(int x, int y, const uint8_t * bmp) {
 void OSD::drawOSD(bool bottom_info) {
     unsigned short x = scrAlignCenterX(OSD_W);
     unsigned short y = scrAlignCenterY(OSD_H);
-    VIDEO::vga.fillRect(x, y, OSD_W, OSD_H, zxColor(1, 0));
-    VIDEO::vga.rect(x, y, OSD_W, OSD_H, zxColor(0, 0));
+
+    VIDEO::vga.fillRect(x, y, OSD_W, OSD_H, zxColor(0, 0));
     VIDEO::vga.rect(x + 1, y + 1, OSD_W - 2, OSD_H - 2, zxColor(7, 0));
     VIDEO::vga.setTextColor(zxColor(0, 0), zxColor(5, 1));
     VIDEO::vga.setFont(SystemFont);
+
     osdHome();
     VIDEO::vga.print(OSD_TITLE);
     osdAt(22, 0);
@@ -2184,6 +2196,7 @@ void OSD::LoadState() {
 
     menu_level = 0;
     menu_curopt = 1;
+    std::string().swap(menu); // Reset Menu for save free usage
 
     if ( FileUtils::isSDReady() ) {
         // State Load
@@ -2201,6 +2214,7 @@ void OSD::LoadState() {
 
         //uint8_t opt2 = menuRun(menuload, statusbar, menuProcessSnapshot);
         uint8_t opt2 = menuSlotsWithPreview(menuload, statusbar, menuProcessSnapshot);
+        std::string().swap(menuload); // Reset menuload for save free usage
         if (opt2 && FileUtils::isSDReady()) {
             if ( stateLoad(opt2) ) {
                 // Clear Cheat data
@@ -2217,6 +2231,7 @@ void OSD::SaveState() {
 
     menu_level = 0;
     menu_curopt = 1;
+    std::string().swap(menu); // Reset Menu for save free usage
 
     if ( FileUtils::isSDReady() ) {
         string menusave = MENU_STATE_SAVE[Config::lang] + getStringStateCatalog();
@@ -2241,6 +2256,7 @@ void OSD::FileBrowser() {
     flushBackbufferData();
 
     menu_level = 0;
+    std::string().swap(menu); // Reset Menu for save free usage
 
     bool continue_while = true;
     while( continue_while ) {
@@ -4556,7 +4572,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                     int msgIndex = 0; int msgChar = 0;
                     int msgDelay = 0; int cursorBlink = 16; int nextChar = 0;
                     uint16_t cursorCol = zxColor(7,1);
-                    uint16_t cursorCol2 = zxColor(1,0);
+                    uint16_t cursorCol2 = zxColor(0,0);
 
                     while (1) {
                         if (msgDelay == 0) {
@@ -4574,7 +4590,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     VIDEO::vga.drawChar(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), nextChar);
                                 }
                             } else {
-                                VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W, OSD_FONT_H, zxColor(1, 0) );
+                                VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W, OSD_FONT_H, zxColor(0, 0) );
                             }
 
                             osdCol++;
@@ -4586,7 +4602,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                                     osdCol--;
                                     msgDelay = 192;
                                 } else {
-                                    VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, zxColor(1, 0) );
+                                    VIDEO::vga.fillRect(pos_x + (osdCol * OSD_FONT_W), pos_y + (osdRow * OSD_FONT_H), OSD_FONT_W,OSD_FONT_H, zxColor(0, 0) );
                                     osdCol = 0;
                                     msgChar++;
                                     osdRow++;
@@ -4595,7 +4611,7 @@ void OSD::do_OSD(fabgl::VirtualKey KeytoESP, bool CTRL, bool SHIFT) {
                         } else {
                             msgDelay--;
                             if (msgDelay==0) {
-                                VIDEO::vga.fillRect(osdInsideX(), osdInsideY() + 50 + 2, OSD_W - OSD_FONT_W - 2, ( osdRow + 1 ) * OSD_FONT_H, zxColor(1, 0)); // Clean page
+                                VIDEO::vga.fillRect(osdInsideX(), osdInsideY() + 50 + 2, OSD_W - OSD_FONT_W - 2, ( osdRow + 1 ) * OSD_FONT_H, zxColor(0, 0)); // Clean page
 
                                 osdCol = 0;
                                 osdRow  = 0;
@@ -4653,7 +4669,7 @@ void OSD::HWInfo() {
     drawOSD(true);
     osdAt(2, 0);
 
-    VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
+    VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(0, 0));
 
     // Get chip information
     esp_chip_info_t chip_info;

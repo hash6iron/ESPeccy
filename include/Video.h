@@ -1,21 +1,20 @@
 /*
-
-ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
-
-This project is a fork of ESPectrum.
-ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
-https://github.com/EremusOne/ZX-ESPectrum-IDF
-
-Based on previous work:
-- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
-  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
-- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
-  https://github.com/rampa069/ZX-ESPectrum
-- Original project by Pete Todd
-  https://github.com/retrogubbins/paseVGA
+ESPeccy - Sinclair ZX Spectrum emulator for the Espressif ESP32 SoC
 
 Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
 https://github.com/SplinterGU/ESPeccy
+
+This file is part of ESPeccy.
+
+Based on previous work by:
+- Víctor Iborra [Eremus] and David Crespo [dcrespo3d] (ESPectrum)
+  https://github.com/EremusOne/ZX-ESPectrum-IDF
+- David Crespo [dcrespo3d] (ZX-ESPectrum-Wiimote)
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- Ramón Martinez and Jorge Fuertes (ZX-ESPectrum)
+  https://github.com/rampa069/ZX-ESPectrum
+- Pete Todd (paseVGA)
+  https://github.com/retrogubbins/paseVGA
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,8 +28,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 */
+
 
 #ifndef VIDEO_h
 #define VIDEO_h
@@ -82,26 +81,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TS_BORDER_352x272_PENTAGON 9003  // START OF BORDER PENTAGON
 
 // Colors for 6 bit mode
-//                  //  BBGGRR 
-#define BLACK       0b00000000 
-#define BLUE        0b00100000
-#define RED         0b00000010
-#define MAGENTA     0b00100010
-#define GREEN       0b00001000
-#define CYAN        0b00101000
-#define YELLOW      0b00001010
-#define WHITE       0b00101010
-#define BRI_BLACK   0b00000000
-#define BRI_BLUE    0b00110000
-#define BRI_RED     0b00000011
-#define BRI_MAGENTA 0b00110011
-#define BRI_GREEN   0b00001100
-#define BRI_CYAN    0b00111100
-#define BRI_YELLOW  0b00001111
-#define BRI_WHITE   0b00111111
-#define ORANGE      0b00000111 // used in ESPectrum logo text
+//                  BBGGRR
+#define BLACK       0b00000000 // 0
+#define BLUE        0b00100000 // 20
+#define RED         0b00000010 // 2
+#define MAGENTA     0b00100010 // 34
+#define GREEN       0b00001000 // 8
+#define CYAN        0b00101000 // 40
+#define YELLOW      0b00001010 // 10
+#define WHITE       0b00101010 // 42
+#define BRI_BLACK   0b00000000 // 0
+#define BRI_BLUE    0b00110000 // 48
+#define BRI_RED     0b00000011 // 3
+#define BRI_MAGENTA 0b00110011 // 51
+#define BRI_GREEN   0b00001100 // 12
+#define BRI_CYAN    0b00111100 // 60
+#define BRI_YELLOW  0b00001111 // 15
+#define BRI_WHITE   0b00111111 // 63
 
-#define NUM_SPECTRUM_COLORS 17
+#define NUM_SPECTRUM_COLORS 16
 
 const int redPins[] = {RED_PINS_6B};
 const int grePins[] = {GRE_PINS_6B};
@@ -115,7 +113,7 @@ public:
 
   // Initialize video
   static void Init();
-    
+
   // Reset video
   static void Reset();
 
@@ -141,7 +139,7 @@ public:
   static void MainScreen_Blank_Snow_Opcode(bool contended);
   static void MainScreen_Snow(unsigned int statestoadd, bool contended);
   static void MainScreen_Snow_Opcode(bool contended);
-  
+
   static void TopBorder_Blank();
   static void TopBorder();
   static void MiddleBorder();
@@ -153,13 +151,13 @@ public:
   static void TopBorder_Pentagon();
   static void MiddleBorder_Pentagon();
   static void BottomBorder_Pentagon();
-  static void BottomBorder_OSD_Pentagon();  
-  
+  static void BottomBorder_OSD_Pentagon();
+
   static void (*Draw)(unsigned int, bool);
   static void (*Draw_Opcode)(bool);
   static void (*Draw_OSD169)(unsigned int, bool);
   static void (*Draw_OSD43)();
-  
+
   static void (*DrawBorder)();
 
   static void vgataskinit(void *unused);
@@ -185,7 +183,7 @@ public:
 
   static uint8_t tStatesPerLine;
   static int tStatesScreen;
-  static int tStatesBorder;  
+  static int tStatesBorder;
 
   static uint8_t flashing;
   static uint8_t flash_ctr;
@@ -194,16 +192,16 @@ public:
   static uint8_t bmp1;
   static uint8_t att2;
   static uint8_t bmp2;
-  
+
   static uint8_t dispUpdCycle;
   static bool snow_att;
   static bool dbl_att;
   static uint8_t lastbmp;
-  static uint8_t lastatt;    
+  static uint8_t lastatt;
   static uint8_t snowpage;
   static uint8_t snowR;
   static bool snow_toggle;
-  
+
   static uint8_t OSD;
 
   static uint32_t* SaveRect;

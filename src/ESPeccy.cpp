@@ -1,21 +1,20 @@
 /*
-
-ESPeccy, a Sinclair ZX Spectrum emulator for Espressif ESP32 SoC
-
-This project is a fork of ESPectrum.
-ESPectrum is developed by Víctor Iborra [Eremus] and David Crespo [dcrespo3d]
-https://github.com/EremusOne/ZX-ESPectrum-IDF
-
-Based on previous work:
-- ZX-ESPectrum-Wiimote (2020, 2022) by David Crespo [dcrespo3d]
-  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
-- ZX-ESPectrum by Ramón Martinez and Jorge Fuertes
-  https://github.com/rampa069/ZX-ESPectrum
-- Original project by Pete Todd
-  https://github.com/retrogubbins/paseVGA
+ESPeccy - Sinclair ZX Spectrum emulator for the Espressif ESP32 SoC
 
 Copyright (c) 2024 Juan José Ponteprino [SplinterGU]
 https://github.com/SplinterGU/ESPeccy
+
+This file is part of ESPeccy.
+
+Based on previous work by:
+- Víctor Iborra [Eremus] and David Crespo [dcrespo3d] (ESPectrum)
+  https://github.com/EremusOne/ZX-ESPectrum-IDF
+- David Crespo [dcrespo3d] (ZX-ESPectrum-Wiimote)
+  https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote
+- Ramón Martinez and Jorge Fuertes (ZX-ESPectrum)
+  https://github.com/rampa069/ZX-ESPectrum
+- Pete Todd (paseVGA)
+  https://github.com/retrogubbins/paseVGA
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,8 +28,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 */
+
 
 #include <stdio.h>
 #include <string>
@@ -216,7 +215,7 @@ void ShowStartMsg() {
     OSD::drawCompressedBMP(pos_x, pos_y, ESPeccy_logo);
 
     OSD::osdAt(7, 1);
-    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(1, 0));
+    VIDEO::vga.setTextColor(zxColor(7, 1), zxColor(0, 0));
 
     char nextChar;
     const char *text = StartMsg[Config::lang];
@@ -245,7 +244,7 @@ void ShowStartMsg() {
     for (int i=START_MSG_DURATION; i >= 0 && !quit; i--) {
         OSD::osdAt(20, 1);
         sprintf(msg,STARTMSG_CLOSE[Config::lang],i);
-        VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(1, 0));
+        VIDEO::vga.setTextColor(zxColor(7, 0), zxColor(0, 0));
         VIDEO::vga.print(msg);
 
         for (int j = 0; j < 200; j++) {
@@ -293,6 +292,8 @@ void ESPeccy::showMemInfo(const char* caption) {
 
     printf("CAPS\n", __FUNCTION__);
     printf("    MALLOC_CAP_8BIT      free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_8BIT), heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+    printf("    MALLOC_CAP_32BIT     free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_32BIT), heap_caps_get_minimum_free_size(MALLOC_CAP_32BIT), heap_caps_get_largest_free_block(MALLOC_CAP_32BIT));
+    printf("    MALLOC_CAP_32BIT INT free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_32BIT|MALLOC_CAP_INTERNAL), heap_caps_get_minimum_free_size(MALLOC_CAP_32BIT|MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_32BIT|MALLOC_CAP_INTERNAL));
     printf("    MALLOC_CAP_DMA       free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_DMA), heap_caps_get_minimum_free_size(MALLOC_CAP_DMA), heap_caps_get_largest_free_block(MALLOC_CAP_DMA));
     printf("    MALLOC_CAP_SPIRAM    free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_SPIRAM), heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM), heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     printf("    MALLOC_CAP_INTERNAL  free:%9lu min:%9lu largest free:%9lu\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
